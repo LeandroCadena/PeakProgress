@@ -264,6 +264,20 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         };
     }
 
+    async function deleteSet(setId: string) {
+        const { error } = await supabase
+            .from("workout_sets")
+            .delete()
+            .eq("id", setId);
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        await fetchSavedSets();
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{routineName}</Text>
@@ -323,6 +337,13 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                     <Text style={styles.savedSetText}>
                                         Set {set.set_number}: {set.weight ?? 0} kg x {set.reps}
                                     </Text>
+
+                                    <Pressable
+                                        style={styles.deleteSetButton}
+                                        onPress={() => deleteSet(set.id)}
+                                    >
+                                        <Text style={styles.deleteSetText}>Delete</Text>
+                                    </Pressable>
                                 </View>
                             ))}
 
@@ -478,9 +499,23 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         borderWidth: 1,
         borderColor: "#30363D",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
     savedSetText: {
         color: "#FFFFFF",
         fontWeight: "600",
+    },
+    deleteSetButton: {
+        backgroundColor: "#EF4444",
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+    },
+    deleteSetText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        fontSize: 12,
     },
 });
