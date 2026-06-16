@@ -149,3 +149,88 @@ export async function finishWorkoutSession(sessionId: string) {
 
     return data;
 }
+
+export async function addExerciseToRoutine(params: {
+    routineId: string;
+    exerciseId: string;
+    sets: number;
+    reps: number;
+    weight: number;
+    restSeconds: number;
+    position: number;
+}) {
+    const { error } = await supabase.from("routine_exercises").insert({
+        routine_id: params.routineId,
+        exercise_id: params.exerciseId,
+        sets: params.sets,
+        reps: params.reps,
+        weight: params.weight,
+        rest_seconds: params.restSeconds,
+        position: params.position,
+    });
+
+    if (error) throw error;
+}
+
+export async function getOrCreateActiveWorkoutSession(params: {
+    userId: string;
+    routineId: string;
+}) {
+    const { data: existingSession, error: existingError } = await supabase
+        .from("workout_sessions")
+        .select("id")
+        .eq("user_id", params.userId)
+        .eq("routine_id", params.routineId)
+        .is("completed_at", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (existingError) throw existingError;
+
+    if (existingSession) {
+        return existingSession;
+    }
+
+    const { data, error } = await supabase
+        .from("workout_sessions")
+        .insert({
+            user_id: params.userId,
+            routine_id: params.routineId,
+        })
+        .select("id")
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function deleteRoutineExercise(routineExerciseId: string) {
+    const { error } = await supabase
+        .from("routine_exercises")
+        .delete()
+        .eq("id", routineExerciseId);
+
+    if (error) throw error;
+}
+
+export async function updateRoutineExerciseConfig(params: {
+    routineExerciseId: string;
+    sets: number;
+    reps: number;
+    weight: number;
+    restSeconds: number;
+}) {
+    const { error } = await supabase
+        .from("routine_exercises")
+        .update({
+            sets: params.sets,
+            reps: params.reps,
+            weight: params.weight,
+            rest_seconds: params.restSeconds,
+        })
+        .eq("id", params.routineExerciseId);
+
+    if (error) throw error;
+}

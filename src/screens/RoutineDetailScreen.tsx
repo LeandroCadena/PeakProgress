@@ -10,12 +10,20 @@ import {
     Modal,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
 import {
     updateRoutine,
     deleteRoutineById,
 } from "../services/routineService";
+import { getExercises } from "../services/exerciseService";
+import {
+    getRoutineExercises,
+    addExerciseToRoutine as addExerciseToRoutineService,
+    getOrCreateActiveWorkoutSession,
+    deleteRoutineExercise as deleteRoutineExerciseService,
+    updateRoutineExerciseConfig,
+} from "../services/workoutService";
+import { RoutineExercise } from "../types/workout";
 
 type RouteParams = {
     RoutineDetail: {
@@ -27,19 +35,6 @@ type RouteParams = {
 type Exercise = {
     id: string;
     name: string;
-};
-
-type RoutineExercise = {
-    id: string;
-    exercise_id: string;
-    sets: number;
-    reps: number;
-    weight: number | null;
-    rest_seconds: number;
-    exercise: {
-        id: string;
-        name: string;
-    } | null;
 };
 
 export default function RoutineDetailScreen({ navigation }: any) {
@@ -70,66 +65,39 @@ export default function RoutineDetailScreen({ navigation }: any) {
     }, []);
 
     async function fetchAvailableExercises() {
-        const { data, error } = await supabase
-            .from("exercises")
-            .select("id, name")
-            .order("name");
-
-        if (error) {
+        try {
+            const data = await getExercises();
+            setAvailableExercises(data);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        setAvailableExercises(data ?? []);
     }
 
     async function fetchRoutineExercises() {
-        const { data, error } = await supabase
-            .from("routine_exercises")
-            .select(`
-            id,
-            exercise_id,
-            sets,
-            reps,
-            weight,
-            rest_seconds,
-            exercise:exercises (
-                id,
-                name
-                )
-            `)
-            .eq("routine_id", routineId)
-            .order("position");
-        if (error) {
+        try {
+            const data = await getRoutineExercises(routineId);
+            setRoutineExercises(data);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        const normalizedData = (data ?? []).map((item: any) => ({
-            ...item,
-            exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
-        }));
-
-        setRoutineExercises(normalizedData as RoutineExercise[]);
     }
 
     async function addExerciseToRoutine(exerciseId: string) {
-        const { error } = await supabase.from("routine_exercises").insert({
-            routine_id: routineId,
-            exercise_id: exerciseId,
-            sets: Number(sets),
-            reps: Number(reps),
-            weight: Number(weight),
-            rest_seconds: Number(restSeconds),
-            position: routineExercises.length,
-        });
+        try {
+            await addExerciseToRoutineService({
+                routineId,
+                exerciseId,
+                sets: Number(sets),
+                reps: Number(reps),
+                weight: Number(weight),
+                restSeconds: Number(restSeconds),
+                position: routineExercises.length,
+            });
 
-        if (error) {
+            await fetchRoutineExercises();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        await fetchRoutineExercises();
     }
 
     async function startWorkout() {
@@ -138,63 +106,29 @@ export default function RoutineDetailScreen({ navigation }: any) {
             return;
         }
 
-        const { data: existingSession, error: existingError } = await supabase
-            .from("workout_sessions")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("routine_id", routineId)
-            .is("completed_at", null)
-            .order("started_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
+        try {
+            const session = await getOrCreateActiveWorkoutSession({
+                userId: user.id,
+                routineId,
+            });
 
-        if (existingError) {
-            Alert.alert("Error", existingError.message);
-            return;
-        }
-
-        if (existingSession) {
             navigation.navigate("WorkoutSession", {
-                sessionId: existingSession.id,
+                sessionId: session.id,
                 routineId,
                 routineName,
             });
-            return;
-        }
-
-        const { data, error } = await supabase
-            .from("workout_sessions")
-            .insert({
-                user_id: user.id,
-                routine_id: routineId,
-            })
-            .select("id")
-            .single();
-
-        if (error) {
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        navigation.navigate("WorkoutSession", {
-            sessionId: data.id,
-            routineId,
-            routineName,
-        });
     }
 
     async function deleteRoutineExercise(routineExerciseId: string) {
-        const { error } = await supabase
-            .from("routine_exercises")
-            .delete()
-            .eq("id", routineExerciseId);
-
-        if (error) {
+        try {
+            await deleteRoutineExerciseService(routineExerciseId);
+            await fetchRoutineExercises();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        await fetchRoutineExercises();
     }
 
     function openEditModal(item: RoutineExercise) {
@@ -208,23 +142,20 @@ export default function RoutineDetailScreen({ navigation }: any) {
     async function saveEditedExercise() {
         if (!editingExercise) return;
 
-        const { error } = await supabase
-            .from("routine_exercises")
-            .update({
+        try {
+            await updateRoutineExerciseConfig({
+                routineExerciseId: editingExercise.id,
                 sets: Number(editSets),
                 reps: Number(editReps),
                 weight: Number(editWeight),
-                rest_seconds: Number(editRestSeconds),
-            })
-            .eq("id", editingExercise.id);
+                restSeconds: Number(editRestSeconds),
+            });
 
-        if (error) {
+            setEditingExercise(null);
+            await fetchRoutineExercises();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        setEditingExercise(null);
-        await fetchRoutineExercises();
     }
 
     async function saveRoutineChanges() {
