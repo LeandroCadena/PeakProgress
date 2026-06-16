@@ -11,38 +11,14 @@ import {
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
-
-type RouteParams = {
-    WorkoutSession: {
-        sessionId: string;
-        routineId: string;
-        routineName: string;
-    };
-};
-
-type RoutineExercise = {
-    id: string;
-    exercise_id: string;
-    sets: number;
-    reps: number;
-    weight: number | null;
-    rest_seconds: number;
-    exercise: {
-        name: string;
-    } | null;
-};
-
-type SavedSet = {
-    id: string;
-    exercise_id: string;
-    set_number: number;
-    reps: number;
-    weight: number | null;
-    is_completed: boolean;
-};
+import {
+    WorkoutSessionRouteParams,
+    RoutineExercise,
+    SavedSet,
+} from "../types/workout";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
-    const route = useRoute<RouteProp<RouteParams, "WorkoutSession">>();
+    const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
     const { sessionId, routineId, routineName } = route.params;
 
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
