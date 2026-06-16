@@ -16,6 +16,19 @@ import {
     RoutineExercise,
     SavedSet,
 } from "../types/workout";
+import {
+    getRoutineExercises,
+    getSavedSets,
+} from "../services/workoutService";
+import {
+    getRoutineExercises,
+    getSavedSets,
+    createWorkoutSet,
+    updateWorkoutSetValue,
+    toggleWorkoutSetCompleted,
+    deleteWorkoutSet,
+    createEmptyWorkoutSet,
+} from "../services/workoutService";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -57,102 +70,42 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     }, [timerRunning, timer]);
 
     async function fetchRoutineExercises() {
-        const { data, error } = await supabase
-            .from("routine_exercises")
-            .select(`
-            id,
-            exercise_id,
-            sets,
-            reps,
-            weight,
-            rest_seconds,
-            exercise:exercises (
-            name
-            )
-            `)
-            .eq("routine_id", routineId)
-            .order("position");
+        try {
+            const items = await getRoutineExercises(routineId);
 
-        if (error) {
+            setRoutineExercises(items);
+
+            const initialWeights: Record<string, string> = {};
+            const initialReps: Record<string, string> = {};
+
+            items.forEach((item) => {
+                initialWeights[item.exercise_id] = String(item.weight ?? 0);
+                initialReps[item.exercise_id] = String(item.reps ?? 10);
+            });
+
+            setWeightByExercise(initialWeights);
+            setRepsByExercise(initialReps);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        const items = (data ?? []).map((item: any) => ({
-            ...item,
-            exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
-        })) as RoutineExercise[];
-
-        setRoutineExercises(items);
-
-        const initialWeights: Record<string, string> = {};
-        const initialReps: Record<string, string> = {};
-
-        items.forEach((item) => {
-            initialWeights[item.exercise_id] = String(item.weight ?? 0);
-            initialReps[item.exercise_id] = String(item.reps ?? 10);
-        });
-
-        setWeightByExercise(initialWeights);
-        setRepsByExercise(initialReps);
     }
 
-    async function saveSet(exerciseId: string) {
-        console.log("Saving set:", {
-            sessionId,
-            exerciseId,
-            reps: repsByExercise[exerciseId],
-            weight: weightByExercise[exerciseId],
-        });
-
-        if (!sessionId || !exerciseId) {
-            Alert.alert("Error", "Missing session or exercise id");
-            return;
+    async function fetchSavedSets() {
+        try {
+            const groupedSets = await getSavedSets(sessionId);
+            setSavedSets(groupedSets);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
         }
+    }
 
-        const { data: existingSets, error: existingSetsError } = await supabase
-            .from("workout_sets")
-            .select("id")
-            .eq("workout_session_id", sessionId)
-            .eq("exercise_id", exerciseId);
-
-        if (existingSetsError) {
-            console.log("Existing sets error:", existingSetsError);
-            Alert.alert("Error loading sets", existingSetsError.message);
-            return;
+    async function deleteSet(setId: string) {
+        try {
+            await deleteWorkoutSet(setId);
+            await fetchSavedSets();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
         }
-
-        const setNumber = (existingSets?.length ?? 0) + 1;
-
-        const { data, error } = await supabase
-            .from("workout_sets")
-            .insert({
-                workout_session_id: sessionId,
-                exercise_id: exerciseId,
-                set_number: setNumber,
-                reps: Number(repsByExercise[exerciseId] ?? 0),
-                weight: Number(weightByExercise[exerciseId] ?? 0),
-            })
-            .select()
-            .single();
-
-        console.log("Save set result:", { data, error });
-
-        if (error) {
-            Alert.alert("Error saving set", error.message);
-            return;
-        }
-
-        await fetchSavedSets();
-
-        const routineExercise = routineExercises.find(
-            (item) => item.exercise_id === exerciseId
-        );
-
-        setTimer(routineExercise?.rest_seconds ?? 90);
-        setTimerRunning(true);
-
-        console.log(`Set ${setNumber} saved successfully`);
     }
 
     async function finishWorkout() {
@@ -185,49 +138,6 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         });
     }
 
-    async function fetchSavedSets() {
-        console.log("Fetching saved sets for session:", sessionId);
-
-        const { data, error } = await supabase
-            .from("workout_sets")
-            .select("id, exercise_id, set_number, reps, weight, is_completed")
-            .eq("workout_session_id", sessionId)
-            .order("set_number", { ascending: true });
-
-        console.log("Saved sets result:", { data, error });
-
-        if (error) {
-            Alert.alert("Error", error.message);
-            return;
-        }
-
-        const grouped: Record<string, SavedSet[]> = {};
-
-        data?.forEach((set) => {
-            if (!grouped[set.exercise_id]) {
-                grouped[set.exercise_id] = [];
-            }
-
-            grouped[set.exercise_id].push(set as SavedSet);
-        });
-
-        setSavedSets(grouped);
-    }
-
-    async function deleteSet(setId: string) {
-        const { error } = await supabase
-            .from("workout_sets")
-            .delete()
-            .eq("id", setId);
-
-        if (error) {
-            Alert.alert("Error", error.message);
-            return;
-        }
-
-        await fetchSavedSets();
-    }
-
     async function updateSetValue(
         setId: string,
         field: "weight" | "reps",
@@ -240,56 +150,47 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             return;
         }
 
-        const { error } = await supabase
-            .from("workout_sets")
-            .update({
-                [field]: numericValue,
-            })
-            .eq("id", setId);
+        try {
+            await updateWorkoutSetValue({
+                setId,
+                field,
+                value: numericValue,
+            });
 
-        if (error) {
+            await fetchSavedSets();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        await fetchSavedSets();
     }
 
     async function toggleSetCompleted(set: SavedSet) {
-        const { error } = await supabase
-            .from("workout_sets")
-            .update({
-                is_completed: !set.is_completed,
-            })
-            .eq("id", set.id);
+        try {
+            await toggleWorkoutSetCompleted({
+                setId: set.id,
+                isCompleted: set.is_completed,
+            });
 
-        if (error) {
+            await fetchSavedSets();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        await fetchSavedSets();
     }
 
     async function addEmptySet(exerciseId: string) {
         const currentSets = savedSets[exerciseId] ?? [];
         const setNumber = currentSets.length + 1;
 
-        const { error } = await supabase.from("workout_sets").insert({
-            workout_session_id: sessionId,
-            exercise_id: exerciseId,
-            set_number: setNumber,
-            reps: 10,
-            weight: 0,
-            is_completed: false,
-        });
+        try {
+            await createEmptyWorkoutSet({
+                sessionId,
+                exerciseId,
+                setNumber,
+            });
 
-        if (error) {
+            await fetchSavedSets();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        await fetchSavedSets();
     }
 
     function getSetInputValue(setId: string, field: "weight" | "reps", value: number | null) {
