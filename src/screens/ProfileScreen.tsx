@@ -12,6 +12,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
 
+type WeightLog = {
+    id: string;
+    weight_kg: number;
+    logged_at: string;
+};
+
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
 
@@ -20,6 +26,15 @@ export default function ProfileScreen() {
     const [experienceLevel, setExperienceLevel] = useState("");
     const [heightCm, setHeightCm] = useState("");
     const [weightKg, setWeightKg] = useState("");
+    const [newWeight, setNewWeight] = useState("");
+    const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchProfile();
+            fetchWeightLogs();
+        }, [user?.id])
+    );
 
     async function fetchProfile() {
         if (!user?.id) return;
@@ -64,11 +79,58 @@ export default function ProfileScreen() {
         Alert.alert("Saved", "Profile updated successfully.");
     }
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchProfile();
-        }, [user?.id])
-    );
+    async function fetchWeightLogs() {
+        if (!user?.id) return;
+
+        const { data, error } = await supabase
+            .from("weight_logs")
+            .select("id, weight_kg, logged_at")
+            .order("logged_at", { ascending: false })
+            .limit(10);
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        setWeightLogs(data ?? []);
+    }
+
+    async function addWeightLog() {
+        if (!user?.id) return;
+
+        if (!newWeight.trim()) {
+            Alert.alert("Validation", "Weight is required");
+            return;
+        }
+
+        const { error } = await supabase.from("weight_logs").insert({
+            user_id: user.id,
+            weight_kg: Number(newWeight),
+        });
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        setNewWeight("");
+        await fetchWeightLogs();
+    }
+
+    async function deleteWeightLog(id: string) {
+        const { error } = await supabase
+            .from("weight_logs")
+            .delete()
+            .eq("id", id);
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        await fetchWeightLogs();
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -121,6 +183,39 @@ export default function ProfileScreen() {
                 <Text style={styles.buttonText}>Save Profile</Text>
             </Pressable>
 
+            <Text style={styles.sectionTitle}>Weight Tracking</Text>
+
+            <TextInput
+                style={styles.input}
+                placeholder="New weight kg"
+                placeholderTextColor="#6B7280"
+                keyboardType="numeric"
+                value={newWeight}
+                onChangeText={setNewWeight}
+            />
+
+            <Pressable style={styles.button} onPress={addWeightLog}>
+                <Text style={styles.buttonText}>Add Weight Log</Text>
+            </Pressable>
+
+            {weightLogs.map((log) => (
+                <View key={log.id} style={styles.weightLogCard}>
+                    <View>
+                        <Text style={styles.weightValue}>{log.weight_kg} kg</Text>
+                        <Text style={styles.weightDate}>
+                            {new Date(log.logged_at).toLocaleDateString()}
+                        </Text>
+                    </View>
+
+                    <Pressable
+                        style={styles.deleteButton}
+                        onPress={() => deleteWeightLog(log.id)}
+                    >
+                        <Text style={styles.deleteButtonText}>Delete</Text>
+                    </Pressable>
+                </View>
+            ))}
+
             <Pressable style={styles.logoutButton} onPress={signOut}>
                 <Text style={styles.buttonText}>Logout</Text>
             </Pressable>
@@ -171,5 +266,42 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
+    },
+    sectionTitle: {
+        color: "#FFFFFF",
+        fontSize: 22,
+        fontWeight: "800",
+        marginTop: 28,
+        marginBottom: 14,
+    },
+    weightLogCard: {
+        backgroundColor: "#161B22",
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#30363D",
+        marginTop: 10,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    weightValue: {
+        color: "#FFFFFF",
+        fontSize: 18,
+        fontWeight: "800",
+    },
+    weightDate: {
+        color: "#9CA3AF",
+        marginTop: 4,
+    },
+    deleteButton: {
+        backgroundColor: "#EF4444",
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+    },
+    deleteButtonText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
     },
 });
