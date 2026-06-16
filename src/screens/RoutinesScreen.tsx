@@ -8,16 +8,14 @@ import {
     FlatList,
     Alert,
 } from "react-native";
-import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
-
-type Routine = {
-    id: string;
-    name: string;
-    description: string | null;
-};
+import {
+    getRoutines,
+    createRoutine as createRoutineService,
+    Routine,
+} from "../services/routineService";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -26,23 +24,22 @@ export default function RoutinesScreen({ navigation }: any) {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
 
+    useFocusEffect(
+        useCallback(() => {
+            fetchRoutines();
+        }, [])
+    );
+
     async function fetchRoutines() {
-        const { data, error } = await supabase
-            .from("routines")
-            .select("id, name, description")
-            .order("created_at", { ascending: false });
-
-        if (error) {
+        try {
+            const data = await getRoutines();
+            setRoutines(data);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        setRoutines(data ?? []);
     }
 
     async function createRoutine() {
-        console.log("Create routine pressed");
-
         if (!user?.id) {
             Alert.alert("Auth error", "User is not logged in");
             return;
@@ -53,34 +50,20 @@ export default function RoutinesScreen({ navigation }: any) {
             return;
         }
 
-        const { data, error } = await supabase
-            .from("routines")
-            .insert({
-                user_id: user.id,
-                name: name.trim(),
-                description: description.trim() || null,
-            })
-            .select();
+        try {
+            await createRoutineService({
+                userId: user.id,
+                name,
+                description,
+            });
 
-        console.log("Insert result:", { data, error });
-
-        if (error) {
-            Alert.alert("Error creating routine", error.message);
-            return;
+            setName("");
+            setDescription("");
+            await fetchRoutines();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
         }
-
-        setName("");
-        setDescription("");
-        await fetchRoutines();
-
-        Alert.alert("Success", "Routine created");
     }
-
-    useFocusEffect(
-        useCallback(() => {
-            fetchRoutines();
-        }, [])
-    );
 
     return (
         <View style={styles.container}>

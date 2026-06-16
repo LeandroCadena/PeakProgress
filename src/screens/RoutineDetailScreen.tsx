@@ -12,6 +12,10 @@ import {
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
+import {
+    updateRoutine,
+    deleteRoutineById,
+} from "../services/routineService";
 
 type RouteParams = {
     RoutineDetail: {
@@ -229,17 +233,17 @@ export default function RoutineDetailScreen({ navigation }: any) {
             return;
         }
 
-        const { error } = await supabase
-            .from("routines")
-            .update({
-                name: editRoutineName.trim(),
-                description: editRoutineDescription.trim() || null,
-            })
-            .eq("id", routineId);
+        try {
+            await updateRoutine({
+                routineId,
+                name: editRoutineName,
+                description: editRoutineDescription,
+            });
 
-        if (error) {
+            setRoutineTitle(editRoutineName.trim());
+            setEditRoutineVisible(false);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
 
         setRoutineTitle(editRoutineName.trim());
@@ -256,14 +260,11 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 text: "Delete",
                 style: "destructive",
                 onPress: async () => {
-                    const { error } = await supabase
-                        .from("routines")
-                        .delete()
-                        .eq("id", routineId);
-
-                    if (error) {
+                    try {
+                        await deleteRoutineById(routineId);
+                        navigation.goBack();
+                    } catch (error: any) {
                         Alert.alert("Error", error.message);
-                        return;
                     }
 
                     navigation.goBack();
