@@ -38,6 +38,31 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
     const [weightByExercise, setWeightByExercise] = useState<Record<string, string>>({});
     const [repsByExercise, setRepsByExercise] = useState<Record<string, string>>({});
+    const [savedSets, setSavedSets] = useState<Record<string, number>>({});
+    const [timer, setTimer] = useState(0);
+    const [timerRunning, setTimerRunning] = useState(false);
+
+    useEffect(() => {
+        fetchRoutineExercises();
+        fetchSavedSets();
+    }, []);
+
+    useEffect(() => {
+        if (!timerRunning || timer <= 0) return;
+
+        const interval = setInterval(() => {
+            setTimer((prev) => {
+                if (prev <= 1) {
+                    setTimerRunning(false);
+                    return 0;
+                }
+
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [timerRunning, timer]);
 
     async function fetchRoutineExercises() {
         const { data, error } = await supabase
@@ -94,6 +119,17 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             weight: Number(weightByExercise[exerciseId] ?? 0),
         });
 
+        await fetchSavedSets();
+
+        const routineExercise = routineExercises.find(
+            (item) => item.exercise_id === exerciseId
+        );
+
+        setTimer(routineExercise?.rest_seconds ?? 90);
+        setTimerRunning(true);
+
+        Alert.alert("Set saved", `Set ${setNumber} saved successfully.`);
+
         if (error) {
             Alert.alert("Error", error.message);
             return;
@@ -125,14 +161,61 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         ]);
     }
 
-    useEffect(() => {
-        fetchRoutineExercises();
-    }, []);
+    async function fetchSavedSets() {
+        const { data, error } = await supabase
+            .from("workout_sets")
+            .select("exercise_id")
+            .eq("workout_session_id", sessionId);
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        const counts: Record<string, number> = {};
+
+        data?.forEach((set) => {
+            counts[set.exercise_id] = (counts[set.exercise_id] ?? 0) + 1;
+        });
+
+        setSavedSets(counts);
+    }
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{routineName}</Text>
             <Text style={styles.subtitle}>Workout Session</Text>
+
+            <View style={styles.timerCard}>
+                <Text style={styles.timerLabel}>Rest Timer</Text>
+                <Text style={styles.timerText}>{timer}s</Text>
+
+                <View style={styles.timerActions}>
+                    <Pressable
+                        style={styles.timerButton}
+                        onPress={() => setTimerRunning(true)}
+                    >
+                        <Text style={styles.buttonText}>Start</Text>
+                    </Pressable>
+
+                    <Pressable
+                        style={styles.timerButton}
+                        onPress={() => setTimerRunning(false)}
+                    >
+                        <Text style={styles.buttonText}>Pause</Text>
+                    </Pressable>
+
+                    <Pressable
+                        style={styles.timerButton}
+                        onPress={() => {
+                            setTimer(0);
+                            setTimerRunning(false);
+                        }}
+                    >
+                        <Text style={styles.buttonText}>Reset</Text>
+                    </Pressable>
+                </View>
+            </View>
 
             <FlatList
                 data={routineExercises}
@@ -147,6 +230,9 @@ export default function WorkoutSessionScreen({ navigation }: any) {
 
                             <Text style={styles.cardText}>
                                 Target: {item.sets} sets · {item.reps} reps · {item.rest_seconds}s rest
+                            </Text>
+                            <Text style={styles.cardText}>
+                                Saved sets: {savedSets[item.exercise_id] ?? 0}/{item.sets}
                             </Text>
 
                             <View style={styles.row}>
@@ -264,5 +350,34 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
+    },
+    timerCard: {
+        backgroundColor: "#161B22",
+        padding: 16,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: "#30363D",
+        marginBottom: 16,
+    },
+    timerLabel: {
+        color: "#9CA3AF",
+        fontSize: 14,
+    },
+    timerText: {
+        color: "#FFFFFF",
+        fontSize: 36,
+        fontWeight: "800",
+        marginTop: 4,
+        marginBottom: 12,
+    },
+    timerActions: {
+        flexDirection: "row",
+        gap: 8,
+    },
+    timerButton: {
+        flex: 1,
+        backgroundColor: "#2563EB",
+        paddingVertical: 10,
+        borderRadius: 10,
     },
 });
