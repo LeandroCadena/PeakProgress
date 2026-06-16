@@ -7,6 +7,7 @@ import {
     Alert,
     Pressable,
     TextInput,
+    Modal,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
@@ -42,6 +43,15 @@ export default function RoutineDetailScreen({ navigation }: any) {
 
     const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
+    const [editingExercise, setEditingExercise] = useState<RoutineExercise | null>(null);
+    const [editSets, setEditSets] = useState("");
+    const [editReps, setEditReps] = useState("");
+    const [editWeight, setEditWeight] = useState("");
+    const [editRestSeconds, setEditRestSeconds] = useState("");
+    const [routineTitle, setRoutineTitle] = useState(routineName);
+    const [editRoutineVisible, setEditRoutineVisible] = useState(false);
+    const [editRoutineName, setEditRoutineName] = useState(routineName);
+    const [editRoutineDescription, setEditRoutineDescription] = useState("");
 
     const [sets, setSets] = useState("3");
     const [reps, setReps] = useState("10");
@@ -151,39 +161,103 @@ export default function RoutineDetailScreen({ navigation }: any) {
         await fetchRoutineExercises();
     }
 
-    async function updateRoutineExercise(
-        routineExerciseId: string,
-        currentValues: {
-            sets: number;
-            reps: number;
-            weight: number | null;
-            rest_seconds: number;
-        }
-    ) {
+    function openEditModal(item: RoutineExercise) {
+        setEditingExercise(item);
+        setEditSets(String(item.sets));
+        setEditReps(String(item.reps));
+        setEditWeight(String(item.weight ?? 0));
+        setEditRestSeconds(String(item.rest_seconds));
+    }
+
+    async function saveEditedExercise() {
+        if (!editingExercise) return;
+
         const { error } = await supabase
             .from("routine_exercises")
             .update({
-                sets: currentValues.sets,
-                reps: currentValues.reps,
-                weight: currentValues.weight ?? 0,
-                rest_seconds: currentValues.rest_seconds,
+                sets: Number(editSets),
+                reps: Number(editReps),
+                weight: Number(editWeight),
+                rest_seconds: Number(editRestSeconds),
             })
-            .eq("id", routineExerciseId);
+            .eq("id", editingExercise.id);
 
         if (error) {
             Alert.alert("Error", error.message);
             return;
         }
 
+        setEditingExercise(null);
         await fetchRoutineExercises();
-        Alert.alert("Updated", "Exercise configuration updated.");
+    }
+
+    async function saveRoutineChanges() {
+        if (!editRoutineName.trim()) {
+            Alert.alert("Validation", "Routine name is required");
+            return;
+        }
+
+        const { error } = await supabase
+            .from("routines")
+            .update({
+                name: editRoutineName.trim(),
+                description: editRoutineDescription.trim() || null,
+            })
+            .eq("id", routineId);
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        setRoutineTitle(editRoutineName.trim());
+        setEditRoutineVisible(false);
+    }
+
+    async function deleteRoutine() {
+        Alert.alert("Delete routine", "Are you sure?", [
+            {
+                text: "Cancel",
+                style: "cancel",
+            },
+            {
+                text: "Delete",
+                style: "destructive",
+                onPress: async () => {
+                    const { error } = await supabase
+                        .from("routines")
+                        .delete()
+                        .eq("id", routineId);
+
+                    if (error) {
+                        Alert.alert("Error", error.message);
+                        return;
+                    }
+
+                    navigation.goBack();
+                },
+            },
+        ]);
     }
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>{routineName}</Text>
+            <Text style={styles.title}>{routineTitle}</Text>
 
             <Text style={styles.sectionTitle}>Current exercises</Text>
+
+            <View style={styles.routineActions}>
+                <Pressable
+                    style={styles.editRoutineButton}
+                    onPress={() => setEditRoutineVisible(true)}
+                >
+                    <Text style={styles.actionText}>Edit Routine</Text>
+                </Pressable>
+
+                <Pressable style={styles.deleteRoutineButton} onPress={deleteRoutine}>
+                    <Text style={styles.actionText}>Delete Routine</Text>
+                </Pressable>
+            </View>
 
             <Pressable style={styles.startButton} onPress={startWorkout}>
                 <Text style={styles.startButtonText}>Start Workout</Text>
@@ -210,14 +284,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                         <View style={styles.cardActions}>
                             <Pressable
                                 style={styles.editButton}
-                                onPress={() =>
-                                    updateRoutineExercise(item.id, {
-                                        sets: item.sets,
-                                        reps: item.reps,
-                                        weight: item.weight,
-                                        rest_seconds: item.rest_seconds,
-                                    })
-                                }
+                                onPress={() => openEditModal(item)}
                             >
                                 <Text style={styles.actionText}>Edit</Text>
                             </Pressable>
@@ -289,6 +356,104 @@ export default function RoutineDetailScreen({ navigation }: any) {
                     </Pressable>
                 )}
             />
+            <Modal
+                visible={!!editingExercise}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setEditingExercise(null)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Edit Exercise</Text>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Sets"
+                            placeholderTextColor="#6B7280"
+                            keyboardType="numeric"
+                            value={editSets}
+                            onChangeText={setEditSets}
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Reps"
+                            placeholderTextColor="#6B7280"
+                            keyboardType="numeric"
+                            value={editReps}
+                            onChangeText={setEditReps}
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Weight"
+                            placeholderTextColor="#6B7280"
+                            keyboardType="numeric"
+                            value={editWeight}
+                            onChangeText={setEditWeight}
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Rest seconds"
+                            placeholderTextColor="#6B7280"
+                            keyboardType="numeric"
+                            value={editRestSeconds}
+                            onChangeText={setEditRestSeconds}
+                        />
+
+                        <Pressable style={styles.button} onPress={saveEditedExercise}>
+                            <Text style={styles.buttonText}>Save Changes</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={styles.cancelButton}
+                            onPress={() => setEditingExercise(null)}
+                        >
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
+            <Modal
+                visible={editRoutineVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setEditRoutineVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Edit Routine</Text>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Routine name"
+                            placeholderTextColor="#6B7280"
+                            value={editRoutineName}
+                            onChangeText={setEditRoutineName}
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Description"
+                            placeholderTextColor="#6B7280"
+                            value={editRoutineDescription}
+                            onChangeText={setEditRoutineDescription}
+                        />
+
+                        <Pressable style={styles.button} onPress={saveRoutineChanges}>
+                            <Text style={styles.buttonText}>Save Changes</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={styles.cancelButton}
+                            onPress={() => setEditRoutineVisible(false)}
+                        >
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -390,5 +555,67 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.7)",
+        justifyContent: "center",
+        padding: 24,
+    },
+    modalContent: {
+        backgroundColor: "#161B22",
+        padding: 20,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+    modalTitle: {
+        color: "#FFFFFF",
+        fontSize: 22,
+        fontWeight: "800",
+        marginBottom: 16,
+    },
+    cancelButton: {
+        backgroundColor: "#374151",
+        paddingVertical: 14,
+        borderRadius: 12,
+        marginTop: 12,
+    },
+    input: {
+        backgroundColor: "#0B0F14",
+        color: "#FFFFFF",
+        padding: 14,
+        borderRadius: 12,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+    button: {
+        backgroundColor: "#4CAF50",
+        paddingVertical: 14,
+        borderRadius: 12,
+        marginTop: 8,
+    },
+    buttonText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        textAlign: "center",
+    },
+    routineActions: {
+        flexDirection: "row",
+        gap: 10,
+        marginBottom: 16,
+    },
+    editRoutineButton: {
+        flex: 1,
+        backgroundColor: "#2563EB",
+        paddingVertical: 12,
+        borderRadius: 12,
+    },
+    deleteRoutineButton: {
+        flex: 1,
+        backgroundColor: "#EF4444",
+        paddingVertical: 12,
+        borderRadius: 12,
     },
 });
