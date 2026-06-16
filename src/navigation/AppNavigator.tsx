@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import RoutineDetailScreen from "../screens/RoutineDetailScreen";
 import WorkoutSessionScreen from "../screens/WorkoutSessionScreen";
 import WorkoutDetailScreen from "../screens/WorkoutDetailScreen";
+import WorkoutSummaryScreen from "../screens/WorkoutSummaryScreen";
 
 export type RootStackParamList = {
     Login: undefined;
@@ -24,6 +25,10 @@ export type RootStackParamList = {
         routineName: string;
     };
     WorkoutDetail: {
+        sessionId: string;
+        routineName: string;
+    };
+    WorkoutSummary: {
         sessionId: string;
         routineName: string;
     };
@@ -56,6 +61,7 @@ export default function AppNavigator() {
                         <Stack.Screen name="RoutineDetail" component={RoutineDetailScreen} />
                         <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
                         <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
+                        <Stack.Screen name="WorkoutSummary" component={WorkoutSummaryScreen} />
                     </>
                 ) : (
                     <>

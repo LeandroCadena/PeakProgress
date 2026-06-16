@@ -203,7 +203,10 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             return;
         }
 
-        navigation.goBack();
+        navigation.navigate("WorkoutSummary", {
+            sessionId,
+            routineName,
+        });
     }
 
     async function fetchSavedSets() {
