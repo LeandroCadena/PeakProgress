@@ -11,6 +11,8 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
+import { Dimensions } from "react-native";
+import { LineChart } from "react-native-chart-kit";
 
 type WeightLog = {
     id: string;
@@ -185,6 +187,38 @@ export default function ProfileScreen() {
 
             <Text style={styles.sectionTitle}>Weight Tracking</Text>
 
+            {weightLogs.length > 0 ? (
+                <LineChart
+                    data={{
+                        labels: weightLogs
+                            .slice()
+                            .reverse()
+                            .map((_, index) => `${index + 1}`),
+                        datasets: [
+                            {
+                                data: weightLogs
+                                    .slice()
+                                    .reverse()
+                                    .map((log) => Number(log.weight_kg)),
+                            },
+                        ],
+                    }}
+                    width={Dimensions.get("window").width - 48}
+                    height={220}
+                    yAxisSuffix="kg"
+                    chartConfig={{
+                        backgroundColor: "#161B22",
+                        backgroundGradientFrom: "#161B22",
+                        backgroundGradientTo: "#161B22",
+                        decimalPlaces: 1,
+                        color: () => "#4CAF50",
+                        labelColor: () => "#9CA3AF",
+                    }}
+                    bezier
+                    style={styles.chart}
+                />
+            ) : null}
+
             <TextInput
                 style={styles.input}
                 placeholder="New weight kg"
@@ -303,5 +337,9 @@ const styles = StyleSheet.create({
     deleteButtonText: {
         color: "#FFFFFF",
         fontWeight: "700",
+    },
+    chart: {
+        borderRadius: 16,
+        marginBottom: 16,
     },
 });
