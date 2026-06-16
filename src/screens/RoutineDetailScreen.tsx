@@ -134,6 +134,30 @@ export default function RoutineDetailScreen({ navigation }: any) {
             return;
         }
 
+        const { data: existingSession, error: existingError } = await supabase
+            .from("workout_sessions")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("routine_id", routineId)
+            .is("completed_at", null)
+            .order("started_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (existingError) {
+            Alert.alert("Error", existingError.message);
+            return;
+        }
+
+        if (existingSession) {
+            navigation.navigate("WorkoutSession", {
+                sessionId: existingSession.id,
+                routineId,
+                routineName,
+            });
+            return;
+        }
+
         const { data, error } = await supabase
             .from("workout_sessions")
             .insert({
@@ -307,46 +331,6 @@ export default function RoutineDetailScreen({ navigation }: any) {
                     </View>
                 )}
             />
-
-            <Text style={styles.sectionTitle}>Default configuration</Text>
-
-            <View style={styles.row}>
-                <TextInput
-                    style={styles.smallInput}
-                    placeholder="Sets"
-                    placeholderTextColor="#6B7280"
-                    keyboardType="numeric"
-                    value={sets}
-                    onChangeText={setSets}
-                />
-                <TextInput
-                    style={styles.smallInput}
-                    placeholder="Reps"
-                    placeholderTextColor="#6B7280"
-                    keyboardType="numeric"
-                    value={reps}
-                    onChangeText={setReps}
-                />
-            </View>
-
-            <View style={styles.row}>
-                <TextInput
-                    style={styles.smallInput}
-                    placeholder="Weight"
-                    placeholderTextColor="#6B7280"
-                    keyboardType="numeric"
-                    value={weight}
-                    onChangeText={setWeight}
-                />
-                <TextInput
-                    style={styles.smallInput}
-                    placeholder="Rest"
-                    placeholderTextColor="#6B7280"
-                    keyboardType="numeric"
-                    value={restSeconds}
-                    onChangeText={setRestSeconds}
-                />
-            </View>
 
             <Text style={styles.sectionTitle}>Add exercise</Text>
 

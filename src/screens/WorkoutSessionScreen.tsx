@@ -7,6 +7,7 @@ import {
     TextInput,
     Pressable,
     Alert,
+    Modal,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
@@ -37,6 +38,7 @@ type SavedSet = {
     set_number: number;
     reps: number;
     weight: number | null;
+    is_completed: boolean;
 };
 
 export default function WorkoutSessionScreen({ navigation }: any) {
@@ -47,13 +49,19 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     const [weightByExercise, setWeightByExercise] = useState<Record<string, string>>({});
     const [repsByExercise, setRepsByExercise] = useState<Record<string, string>>({});
     const [savedSets, setSavedSets] = useState<Record<string, SavedSet[]>>({});
+    const [editingSet, setEditingSet] = useState<SavedSet | null>(null);
+    const [editSetWeight, setEditSetWeight] = useState("");
+    const [editSetReps, setEditSetReps] = useState("");
+    const [editingValues, setEditingValues] = useState<Record<string, string>>({});
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
 
     useEffect(() => {
+        if (!sessionId || !routineId) return;
+
         fetchRoutineExercises();
         fetchSavedSets();
-    }, []);
+    }, [sessionId, routineId]);
 
     useEffect(() => {
         if (!timerRunning || timer <= 0) return;
@@ -199,11 +207,15 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     }
 
     async function fetchSavedSets() {
+        console.log("Fetching saved sets for session:", sessionId);
+
         const { data, error } = await supabase
             .from("workout_sets")
-            .select("id, exercise_id, set_number, reps, weight")
+            .select("id, exercise_id, set_number, reps, weight, is_completed")
             .eq("workout_session_id", sessionId)
             .order("set_number", { ascending: true });
+
+        console.log("Saved sets result:", { data, error });
 
         if (error) {
             Alert.alert("Error", error.message);
@@ -223,47 +235,6 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         setSavedSets(grouped);
     }
 
-    async function getWorkoutSummary() {
-        const { data: sessionData, error: sessionError } = await supabase
-            .from("workout_sessions")
-            .select("started_at, completed_at")
-            .eq("id", sessionId)
-            .single();
-
-        if (sessionError) {
-            Alert.alert("Error", sessionError.message);
-            return null;
-        }
-
-        const { data: setsData, error: setsError } = await supabase
-            .from("workout_sets")
-            .select("reps, weight")
-            .eq("workout_session_id", sessionId);
-
-        if (setsError) {
-            Alert.alert("Error", setsError.message);
-            return null;
-        }
-
-        const totalSets = setsData?.length ?? 0;
-
-        const totalVolume =
-            setsData?.reduce((sum, set) => {
-                return sum + Number(set.weight ?? 0) * Number(set.reps ?? 0);
-            }, 0) ?? 0;
-
-        const start = new Date(sessionData.started_at).getTime();
-        const end = new Date(sessionData.completed_at ?? new Date()).getTime();
-
-        const durationMinutes = Math.max(1, Math.round((end - start) / 60000));
-
-        return {
-            totalSets,
-            totalVolume,
-            durationMinutes,
-        };
-    }
-
     async function deleteSet(setId: string) {
         const { error } = await supabase
             .from("workout_sets")
@@ -276,6 +247,84 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         }
 
         await fetchSavedSets();
+    }
+
+    async function updateSetValue(
+        setId: string,
+        field: "weight" | "reps",
+        value: string
+    ) {
+        const numericValue = Number(value);
+
+        if (Number.isNaN(numericValue)) {
+            Alert.alert("Validation", "Please enter a valid number");
+            return;
+        }
+
+        const { error } = await supabase
+            .from("workout_sets")
+            .update({
+                [field]: numericValue,
+            })
+            .eq("id", setId);
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        await fetchSavedSets();
+    }
+
+    async function toggleSetCompleted(set: SavedSet) {
+        const { error } = await supabase
+            .from("workout_sets")
+            .update({
+                is_completed: !set.is_completed,
+            })
+            .eq("id", set.id);
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        await fetchSavedSets();
+    }
+
+    async function addEmptySet(exerciseId: string) {
+        const currentSets = savedSets[exerciseId] ?? [];
+        const setNumber = currentSets.length + 1;
+
+        const { error } = await supabase.from("workout_sets").insert({
+            workout_session_id: sessionId,
+            exercise_id: exerciseId,
+            set_number: setNumber,
+            reps: 10,
+            weight: 0,
+            is_completed: false,
+        });
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        await fetchSavedSets();
+    }
+
+    function getSetInputValue(setId: string, field: "weight" | "reps", value: number | null) {
+        const key = `${setId}-${field}`;
+        return editingValues[key] ?? String(value ?? 0);
+    }
+
+    function updateLocalSetValue(setId: string, field: "weight" | "reps", value: string) {
+        const key = `${setId}-${field}`;
+
+        setEditingValues((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
     }
 
     return (
@@ -332,58 +381,69 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 Saved sets: {savedSets[item.exercise_id]?.length ?? 0}/{item.sets}
                             </Text>
 
+                            <View style={styles.setTableHeader}>
+                                <Text style={styles.setHeaderText}>weights</Text>
+                                <Text style={styles.setHeaderText}>reps</Text>
+                                <Text style={styles.setHeaderText}>Done</Text>
+                                <Text style={styles.setHeaderText}></Text>
+                            </View>
+
                             {savedSets[item.exercise_id]?.map((set) => (
-                                <View key={set.id} style={styles.savedSetRow}>
-                                    <Text style={styles.savedSetText}>
-                                        Set {set.set_number}: {set.weight ?? 0} kg x {set.reps}
-                                    </Text>
+                                <View key={set.id} style={styles.setTableRow}>
+                                    <TextInput
+                                        style={[styles.setInput, set.is_completed && styles.disabledInput]}
+                                        keyboardType="numeric"
+                                        value={getSetInputValue(set.id, "weight", set.weight)}
+                                        editable={!set.is_completed}
+                                        onChangeText={(value) =>
+                                            updateLocalSetValue(set.id, "weight", value)
+                                        }
+                                        onEndEditing={(event) =>
+                                            updateSetValue(set.id, "weight", event.nativeEvent.text)
+                                        }
+                                    />
+                                    <TextInput
+                                        style={[styles.setInput, set.is_completed && styles.disabledInput]}
+                                        keyboardType="numeric"
+                                        value={getSetInputValue(set.id, "reps", set.reps)}
+                                        editable={!set.is_completed}
+                                        onChangeText={(value) =>
+                                            updateLocalSetValue(set.id, "reps", value)
+                                        }
+                                        onEndEditing={(event) =>
+                                            updateSetValue(set.id, "reps", event.nativeEvent.text)
+                                        }
+                                    />
+
+                                    <Pressable
+                                        style={[
+                                            styles.checkbox,
+                                            set.is_completed && styles.checkboxChecked,
+                                        ]}
+                                        onPress={() => toggleSetCompleted(set)}
+                                    >
+                                        <Text style={styles.checkboxText}>
+                                            {set.is_completed ? "✓" : ""}
+                                        </Text>
+                                    </Pressable>
 
                                     <Pressable
                                         style={styles.deleteSetButton}
                                         onPress={() => deleteSet(set.id)}
                                     >
-                                        <Text style={styles.deleteSetText}>Delete</Text>
+                                        <Text style={styles.deleteSetText}>X</Text>
                                     </Pressable>
                                 </View>
                             ))}
 
-                            <View style={styles.row}>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Weight"
-                                    placeholderTextColor="#6B7280"
-                                    keyboardType="numeric"
-                                    value={weightByExercise[item.exercise_id] ?? ""}
-                                    onChangeText={(value) =>
-                                        setWeightByExercise((prev) => ({
-                                            ...prev,
-                                            [item.exercise_id]: value,
-                                        }))
-                                    }
-                                />
-
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Reps"
-                                    placeholderTextColor="#6B7280"
-                                    keyboardType="numeric"
-                                    value={repsByExercise[item.exercise_id] ?? ""}
-                                    onChangeText={(value) =>
-                                        setRepsByExercise((prev) => ({
-                                            ...prev,
-                                            [item.exercise_id]: value,
-                                        }))
-                                    }
-                                />
-                            </View>
-
                             <Pressable
-                                style={styles.button}
-                                onPress={() => saveSet(item.exercise_id)}
+                                style={styles.addSetRow}
+                                onPress={() => addEmptySet(item.exercise_id)}
                             >
-                                <Text style={styles.buttonText}>Save Set</Text>
+                                <Text style={styles.addSetText}>+ Add Set</Text>
                             </Pressable>
                         </View>
+
                     );
                 }}
             />
@@ -517,5 +577,106 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         fontSize: 12,
+    },
+    setActions: {
+        flexDirection: "row",
+        gap: 8,
+    },
+    editSetButton: {
+        backgroundColor: "#2563EB",
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+    },
+    setActionText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        fontSize: 12,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.7)",
+        justifyContent: "center",
+        padding: 24,
+    },
+    modalContent: {
+        backgroundColor: "#161B22",
+        padding: 20,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+    modalTitle: {
+        color: "#FFFFFF",
+        fontSize: 22,
+        fontWeight: "800",
+        marginBottom: 16,
+    },
+    cancelButton: {
+        backgroundColor: "#374151",
+        paddingVertical: 14,
+        borderRadius: 12,
+        marginTop: 12,
+    },
+    setTableHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 12,
+        marginBottom: 8,
+        gap: 8,
+    },
+    setHeaderText: {
+        flex: 1,
+        color: "#9CA3AF",
+        fontWeight: "700",
+        fontSize: 12,
+    },
+    setTableRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 8,
+    },
+    setInput: {
+        flex: 1,
+        backgroundColor: "#0B0F14",
+        color: "#FFFFFF",
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+    disabledInput: {
+        opacity: 0.5,
+    },
+    checkbox: {
+        flex: 1,
+        height: 42,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#4CAF50",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    checkboxChecked: {
+        backgroundColor: "#4CAF50",
+    },
+    checkboxText: {
+        color: "#FFFFFF",
+        fontWeight: "800",
+    },
+    addSetRow: {
+        backgroundColor: "#102A1A",
+        paddingVertical: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#4CAF50",
+        alignItems: "center",
+        marginTop: 6,
+    },
+    addSetText: {
+        color: "#4CAF50",
+        fontWeight: "800",
     },
 });
