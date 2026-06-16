@@ -4,16 +4,13 @@ import { ActivityIndicator, View } from "react-native";
 
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-import HomeScreen from "../screens/HomeScreen";
+import MainTabs from "./MainTabs";
 import { useAuth } from "../context/AuthContext";
-
-import RoutinesScreen from "../screens/RoutinesScreen";
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
-    Home: undefined;
-    Routines: undefined;
+    Main: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,9 +27,7 @@ export default function AppNavigator() {
                     justifyContent: "center",
                     alignItems: "center",
                 }}
-            >
-                <ActivityIndicator size="large" />
-            </View>
+            />
         );
     }
 
@@ -40,10 +35,7 @@ export default function AppNavigator() {
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {session ? (
-                    <>
-                        <Stack.Screen name="Home" component={HomeScreen} />
-                        <Stack.Screen name="Routines" component={RoutinesScreen} />
-                    </>
+                    <Stack.Screen name="Main" component={MainTabs} />
                 ) : (
                     <>
                         <Stack.Screen name="Login" component={LoginScreen} />
