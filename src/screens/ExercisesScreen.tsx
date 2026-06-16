@@ -5,6 +5,7 @@ import {
     StyleSheet,
     FlatList,
     Alert,
+    Pressable
 } from "react-native";
 import { supabase } from "../services/supabase";
 
@@ -15,7 +16,7 @@ type Exercise = {
     difficulty: string | null;
 };
 
-export default function ExercisesScreen() {
+export default function ExercisesScreen({ navigation }: any) {
     const [exercises, setExercises] = useState<Exercise[]>([]);
 
     async function fetchExercises() {
@@ -45,13 +46,20 @@ export default function ExercisesScreen() {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
+                    <Pressable
+                        style={styles.card}
+                        onPress={() =>
+                            navigation.navigate("ExerciseDetail", {
+                                exerciseId: item.id,
+                                exerciseName: item.name,
+                            })
+                        }
+                    >
                         <Text style={styles.cardTitle}>{item.name}</Text>
-
                         <Text style={styles.cardText}>
                             {item.equipment ?? "No equipment"} · {item.difficulty ?? "No difficulty"}
                         </Text>
-                    </View>
+                    </Pressable>
                 )}
             />
         </View>

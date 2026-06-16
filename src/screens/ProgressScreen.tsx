@@ -14,6 +14,7 @@ type WorkoutSet = {
 };
 
 type ExerciseProgress = {
+    exerciseId: string;
     exerciseName: string;
     bestWeight: number;
     bestReps: number;
@@ -21,7 +22,7 @@ type ExerciseProgress = {
     totalSets: number;
 };
 
-export default function ProgressScreen() {
+export default function ProgressScreen({ navigation }: any) {
     const [records, setRecords] = useState<ExerciseProgress[]>([]);
 
     async function fetchPersonalRecords() {
@@ -51,12 +52,14 @@ export default function ProgressScreen() {
 
         sets.forEach((set) => {
             const exerciseName = set.exercise?.name ?? "Exercise";
+            const exerciseId = set.exercise?.id ?? "";
             const weight = Number(set.weight ?? 0);
             const reps = Number(set.reps ?? 0);
             const volume = weight * reps;
 
             if (!progressByExercise[exerciseName]) {
                 progressByExercise[exerciseName] = {
+                    exerciseId,
                     exerciseName,
                     bestWeight: weight,
                     bestReps: reps,
@@ -99,7 +102,15 @@ export default function ProgressScreen() {
                     <Text style={styles.emptyText}>No records yet. Complete a workout first.</Text>
                 }
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
+                    <Pressable
+                        style={styles.card}
+                        onPress={() =>
+                            navigation.navigate("ExerciseProgress", {
+                                exerciseId: item.exerciseId,
+                                exerciseName: item.exerciseName,
+                            })
+                        }
+                    >
                         <Text style={styles.cardTitle}>{item.exerciseName}</Text>
 
                         <Text style={styles.cardValue}>
@@ -113,7 +124,7 @@ export default function ProgressScreen() {
                         <Text style={styles.cardText}>
                             Total Sets: {item.totalSets}
                         </Text>
-                    </View>
+                    </Pressable>
                 )}
             />
         </View>
