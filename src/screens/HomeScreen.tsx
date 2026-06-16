@@ -9,6 +9,7 @@ type DashboardStats = {
     completedWorkouts: number;
     totalSets: number;
     lastWorkoutName: string | null;
+    currentStreak: number;
 };
 
 export default function HomeScreen({ navigation }: any) {
@@ -19,7 +20,14 @@ export default function HomeScreen({ navigation }: any) {
         completedWorkouts: 0,
         totalSets: 0,
         lastWorkoutName: null,
+        currentStreak: 0,
     });
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchDashboardStats();
+        }, [user?.id])
+    );
 
     async function fetchDashboardStats() {
         if (!user?.id) return;
@@ -71,19 +79,54 @@ export default function HomeScreen({ navigation }: any) {
             return;
         }
 
+        const { data: completedSessions, error: streakError } = await supabase
+            .from("workout_sessions")
+            .select("completed_at")
+            .not("completed_at", "is", null);
+
+        if (streakError) {
+            Alert.alert("Error", streakError.message);
+            return;
+        }
+
         setStats({
             routinesCount: routinesCount ?? 0,
             completedWorkouts: completedWorkouts ?? 0,
             totalSets: totalSets ?? 0,
             lastWorkoutName: lastWorkout?.routines?.[0]?.name ?? null,
+            currentStreak: calculateWorkoutStreak(
+                completedSessions?.map((session) => session.completed_at) ?? []
+            ),
         });
     }
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchDashboardStats();
-        }, [user?.id])
-    );
+    function calculateWorkoutStreak(dates: string[]) {
+        if (!dates.length) return 0;
+
+        const uniqueDays = Array.from(
+            new Set(
+                dates.map((date) => new Date(date).toISOString().split("T")[0])
+            )
+        ).sort((a, b) => (a > b ? -1 : 1));
+
+        let streak = 0;
+        const today = new Date();
+
+        for (let i = 0; i < uniqueDays.length; i++) {
+            const expectedDate = new Date(today);
+            expectedDate.setDate(today.getDate() - i);
+
+            const expectedDay = expectedDate.toISOString().split("T")[0];
+
+            if (uniqueDays.includes(expectedDay)) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+
+        return streak;
+    }
 
     return (
         <View style={styles.container}>
@@ -111,6 +154,11 @@ export default function HomeScreen({ navigation }: any) {
                         {stats.lastWorkoutName ?? "-"}
                     </Text>
                     <Text style={styles.cardLabel}>Last Workout</Text>
+                </View>
+
+                <View style={styles.card}>
+                    <Text style={styles.cardValue}>🔥 {stats.currentStreak}</Text>
+                    <Text style={styles.cardLabel}>Day Streak</Text>
                 </View>
             </View>
 
