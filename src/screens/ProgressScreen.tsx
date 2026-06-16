@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
+import {
+    getExerciseProgress,
+    ExerciseProgress,
+} from "../services/progressService";
 
 type WorkoutSet = {
     id: string;
@@ -13,74 +16,16 @@ type WorkoutSet = {
     } | null;
 };
 
-type ExerciseProgress = {
-    exerciseId: string;
-    exerciseName: string;
-    bestWeight: number;
-    bestReps: number;
-    totalVolume: number;
-    totalSets: number;
-};
-
 export default function ProgressScreen({ navigation }: any) {
     const [records, setRecords] = useState<ExerciseProgress[]>([]);
 
     async function fetchPersonalRecords() {
-        const { data, error } = await supabase
-            .from("workout_sets")
-            .select(`
-      id,
-      weight,
-      reps,
-      exercise:exercises (
-        id,
-        name
-      )
-    `);
-
-        if (error) {
+        try {
+            const progress = await getExerciseProgress();
+            setRecords(progress);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        const sets = (data ?? []).map((item: any) => ({
-            ...item,
-            exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
-        })) as WorkoutSet[];
-
-        const progressByExercise: Record<string, ExerciseProgress> = {};
-
-        sets.forEach((set) => {
-            const exerciseName = set.exercise?.name ?? "Exercise";
-            const exerciseId = set.exercise?.id ?? "";
-            const weight = Number(set.weight ?? 0);
-            const reps = Number(set.reps ?? 0);
-            const volume = weight * reps;
-
-            if (!progressByExercise[exerciseName]) {
-                progressByExercise[exerciseName] = {
-                    exerciseId,
-                    exerciseName,
-                    bestWeight: weight,
-                    bestReps: reps,
-                    totalVolume: volume,
-                    totalSets: 1,
-                };
-                return;
-            }
-
-            const current = progressByExercise[exerciseName];
-
-            current.totalVolume += volume;
-            current.totalSets += 1;
-
-            if (weight > current.bestWeight) {
-                current.bestWeight = weight;
-                current.bestReps = reps;
-            }
-        });
-
-        setRecords(Object.values(progressByExercise));
     }
 
     useFocusEffect(

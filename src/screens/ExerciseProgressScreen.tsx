@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, Alert } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { LineChart } from "react-native-chart-kit";
-import { supabase } from "../services/supabase";
+import { getExerciseProgressPoints } from "../services/progressService";
 
 type RouteParams = {
     ExerciseProgress: {
@@ -24,18 +24,12 @@ export default function ExerciseProgressScreen() {
     const [points, setPoints] = useState<ProgressPoint[]>([]);
 
     async function fetchExerciseProgress() {
-        const { data, error } = await supabase
-            .from("workout_sets")
-            .select("weight, reps, created_at")
-            .eq("exercise_id", exerciseId)
-            .order("created_at", { ascending: true });
-
-        if (error) {
+        try {
+            const data = await getExerciseProgressPoints(exerciseId);
+            setPoints(data);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        setPoints(data ?? []);
     }
 
     useEffect(() => {

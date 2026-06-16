@@ -4,16 +4,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import {
     getDashboardStats,
+    DashboardStats,
 } from "../services/dashboardService";
-
-type DashboardStats = {
-    routinesCount: number;
-    completedWorkouts: number;
-    totalSets: number;
-    lastWorkoutName: string | null;
-    currentStreak: number;
-    nextWorkoutName: string | null;
-};
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
