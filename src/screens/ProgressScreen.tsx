@@ -13,27 +13,29 @@ type WorkoutSet = {
     } | null;
 };
 
-type PersonalRecord = {
+type ExerciseProgress = {
     exerciseName: string;
-    weight: number;
-    reps: number;
+    bestWeight: number;
+    bestReps: number;
+    totalVolume: number;
+    totalSets: number;
 };
 
 export default function ProgressScreen() {
-    const [records, setRecords] = useState<PersonalRecord[]>([]);
+    const [records, setRecords] = useState<ExerciseProgress[]>([]);
 
     async function fetchPersonalRecords() {
         const { data, error } = await supabase
             .from("workout_sets")
             .select(`
-            id,
-            weight,
-            reps,
-            exercise:exercises (
-            id,
-            name
-            )
-        `);
+      id,
+      weight,
+      reps,
+      exercise:exercises (
+        id,
+        name
+      )
+    `);
 
         if (error) {
             Alert.alert("Error", error.message);
@@ -45,24 +47,37 @@ export default function ProgressScreen() {
             exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
         })) as WorkoutSet[];
 
-        const bestByExercise: Record<string, PersonalRecord> = {};
+        const progressByExercise: Record<string, ExerciseProgress> = {};
 
         sets.forEach((set) => {
             const exerciseName = set.exercise?.name ?? "Exercise";
             const weight = Number(set.weight ?? 0);
+            const reps = Number(set.reps ?? 0);
+            const volume = weight * reps;
 
-            const currentBest = bestByExercise[exerciseName];
-
-            if (!currentBest || weight > currentBest.weight) {
-                bestByExercise[exerciseName] = {
+            if (!progressByExercise[exerciseName]) {
+                progressByExercise[exerciseName] = {
                     exerciseName,
-                    weight,
-                    reps: set.reps,
+                    bestWeight: weight,
+                    bestReps: reps,
+                    totalVolume: volume,
+                    totalSets: 1,
                 };
+                return;
+            }
+
+            const current = progressByExercise[exerciseName];
+
+            current.totalVolume += volume;
+            current.totalSets += 1;
+
+            if (weight > current.bestWeight) {
+                current.bestWeight = weight;
+                current.bestReps = reps;
             }
         });
 
-        setRecords(Object.values(bestByExercise));
+        setRecords(Object.values(progressByExercise));
     }
 
     useFocusEffect(
@@ -86,8 +101,18 @@ export default function ProgressScreen() {
                 renderItem={({ item }) => (
                     <View style={styles.card}>
                         <Text style={styles.cardTitle}>{item.exerciseName}</Text>
-                        <Text style={styles.cardValue}>{item.weight} kg</Text>
-                        <Text style={styles.cardText}>{item.reps} reps</Text>
+
+                        <Text style={styles.cardValue}>
+                            PR: {item.bestWeight} kg x {item.bestReps}
+                        </Text>
+
+                        <Text style={styles.cardText}>
+                            Total Volume: {item.totalVolume} kg
+                        </Text>
+
+                        <Text style={styles.cardText}>
+                            Total Sets: {item.totalSets}
+                        </Text>
                     </View>
                 )}
             />
