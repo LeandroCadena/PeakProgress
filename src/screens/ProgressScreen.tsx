@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, FlatList, Alert, Pressable } from "react-native
 import { useFocusEffect } from "@react-navigation/native";
 import {
     getExerciseProgress,
-    ExerciseProgress,
 } from "../services/progressService";
+import { ExerciseProgress } from "../types/progress";
 
 type WorkoutSet = {
     id: string;

@@ -14,8 +14,8 @@ import { useCallback } from "react";
 import {
     getRoutines,
     createRoutine as createRoutineService,
-    Routine,
 } from "../services/routineService";
+import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();

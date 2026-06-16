@@ -4,8 +4,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import {
     getDashboardStats,
-    DashboardStats,
 } from "../services/dashboardService";
+import { DashboardStats } from "../types/dashboard";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();

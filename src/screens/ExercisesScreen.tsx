@@ -10,9 +10,8 @@ import {
 import {
     getMuscles,
     getExercisesByMuscle,
-    Exercise,
-    Muscle,
 } from "../services/exerciseService";
+import { Exercise, Muscle } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
     const [exercises, setExercises] = useState<Exercise[]>([]);
