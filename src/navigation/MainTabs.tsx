@@ -5,10 +5,12 @@ import HomeScreen from "../screens/HomeScreen";
 import RoutinesScreen from "../screens/RoutinesScreen";
 import ProgressScreen from "../screens/ProgressScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import ExercisesScreen from "../screens/ExercisesScreen";
 
 export type MainTabsParamList = {
     Home: undefined;
     Routines: undefined;
+    Exercises: undefined;
     Progress: undefined;
     Profile: undefined;
 };
@@ -34,6 +36,7 @@ export default function MainTabs() {
 
                     if (route.name === "Home") iconName = "home-outline";
                     if (route.name === "Routines") iconName = "barbell-outline";
+                    if (route.name === "Exercises") iconName = "fitness-outline";
                     if (route.name === "Progress") iconName = "stats-chart-outline";
                     if (route.name === "Profile") iconName = "person-outline";
 
@@ -43,6 +46,7 @@ export default function MainTabs() {
         >
             <Tab.Screen name="Home" component={HomeScreen} />
             <Tab.Screen name="Routines" component={RoutinesScreen} />
+            <Tab.Screen name="Exercises" component={ExercisesScreen} />
             <Tab.Screen name="Progress" component={ProgressScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
