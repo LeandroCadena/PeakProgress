@@ -8,7 +8,7 @@ import {
     Alert,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
+import { getCompletedWorkoutSessions } from "../services/historyService";
 
 type WorkoutSession = {
     id: string;
@@ -22,33 +22,20 @@ type WorkoutSession = {
 export default function HistoryScreen({ navigation }: any) {
     const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
-    async function fetchSessions() {
-        const { data, error } = await supabase
-            .from("workout_sessions")
-            .select(`
-        id,
-        started_at,
-        completed_at,
-        routines (
-          name
-        )
-      `)
-            .not("completed_at", "is", null)
-            .order("started_at", { ascending: false });
-
-        if (error) {
-            Alert.alert("Error", error.message);
-            return;
-        }
-
-        setSessions((data ?? []) as WorkoutSession[]);
-    }
-
     useFocusEffect(
         useCallback(() => {
             fetchSessions();
         }, [])
     );
+
+    async function fetchSessions() {
+        try {
+            const data = await getCompletedWorkoutSessions();
+            setSessions(data as WorkoutSession[]);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
 
     function formatDate(value: string) {
         return new Date(value).toLocaleDateString();

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
+import { getWorkoutSets } from "../services/historyService";
 
 type RouteParams = {
     WorkoutDetail: {
@@ -26,32 +26,18 @@ export default function WorkoutDetailScreen() {
 
     const [sets, setSets] = useState<WorkoutSet[]>([]);
 
-    async function fetchSets() {
-        const { data, error } = await supabase
-            .from("workout_sets")
-            .select(`
-        id,
-        set_number,
-        reps,
-        weight,
-        exercises (
-          name
-        )
-      `)
-            .eq("workout_session_id", sessionId)
-            .order("created_at", { ascending: true });
-
-        if (error) {
-            Alert.alert("Error", error.message);
-            return;
-        }
-
-        setSets((data ?? []) as WorkoutSet[]);
-    }
-
     useEffect(() => {
         fetchSets();
     }, []);
+
+    async function fetchSets() {
+        try {
+            const data = await getWorkoutSets(sessionId);
+            setSets(data as WorkoutSet[]);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
 
     return (
         <View style={styles.container}>
