@@ -6,11 +6,16 @@ import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import MainTabs from "./MainTabs";
 import { useAuth } from "../context/AuthContext";
+import RoutineDetailScreen from "../screens/RoutineDetailScreen";
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     Main: undefined;
+    RoutineDetail: {
+        routineId: string;
+        routineName: string;
+    };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,7 +40,10 @@ export default function AppNavigator() {
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {session ? (
-                    <Stack.Screen name="Main" component={MainTabs} />
+                    <>
+                        <Stack.Screen name="Main" component={MainTabs} />
+                        <Stack.Screen name="RoutineDetail" component={RoutineDetailScreen} />
+                    </>
                 ) : (
                     <>
                         <Stack.Screen name="Login" component={LoginScreen} />

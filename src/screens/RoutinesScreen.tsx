@@ -17,7 +17,7 @@ type Routine = {
     description: string | null;
 };
 
-export default function RoutinesScreen() {
+export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
 
     const [routines, setRoutines] = useState<Routine[]>([]);
@@ -103,12 +103,21 @@ export default function RoutinesScreen() {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
+                    <Pressable
+                        style={styles.card}
+                        onPress={() =>
+                            navigation.navigate("RoutineDetail", {
+                                routineId: item.id,
+                                routineName: item.name,
+                            })
+                        }
+                    >
                         <Text style={styles.cardTitle}>{item.name}</Text>
+
                         {item.description ? (
                             <Text style={styles.cardDescription}>{item.description}</Text>
                         ) : null}
-                    </View>
+                    </Pressable>
                 )}
             />
         </View>
