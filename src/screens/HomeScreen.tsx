@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
 import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
+import {
+    getDashboardStats,
+} from "../services/dashboardService";
 
 type DashboardStats = {
     routinesCount: number;
@@ -34,91 +36,12 @@ export default function HomeScreen({ navigation }: any) {
     async function fetchDashboardStats() {
         if (!user?.id) return;
 
-        const { count: routinesCount, error: routinesError } = await supabase
-            .from("routines")
-            .select("*", { count: "exact", head: true });
-
-        if (routinesError) {
-            Alert.alert("Error", routinesError.message);
-            return;
+        try {
+            const dashboardStats = await getDashboardStats();
+            setStats(dashboardStats);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
         }
-
-        const { count: completedWorkouts, error: workoutsError } = await supabase
-            .from("workout_sessions")
-            .select("*", { count: "exact", head: true })
-            .not("completed_at", "is", null);
-
-        if (workoutsError) {
-            Alert.alert("Error", workoutsError.message);
-            return;
-        }
-
-        const { count: totalSets, error: setsError } = await supabase
-            .from("workout_sets")
-            .select("*", { count: "exact", head: true });
-
-        if (setsError) {
-            Alert.alert("Error", setsError.message);
-            return;
-        }
-
-        const { data: lastWorkout, error: lastWorkoutError } = await supabase
-            .from("workout_sessions")
-            .select(`
-        id,
-        started_at,
-        routines (
-          name
-        )
-      `)
-            .not("completed_at", "is", null)
-            .order("started_at", { ascending: false })
-            .limit(1)
-            .single();
-
-        if (lastWorkoutError && lastWorkoutError.code !== "PGRST116") {
-            Alert.alert("Error", lastWorkoutError.message);
-            return;
-        }
-
-        const { data: completedSessions, error: streakError } = await supabase
-            .from("workout_sessions")
-            .select("completed_at")
-            .not("completed_at", "is", null);
-
-        if (streakError) {
-            Alert.alert("Error", streakError.message);
-            return;
-        }
-
-        const { data: routinesData, error: routinesListError } = await supabase
-            .from("routines")
-            .select("id, name")
-            .order("created_at", { ascending: false });
-
-        if (routinesListError) {
-            Alert.alert("Error", routinesListError.message);
-            return;
-        }
-
-        const lastWorkoutName =
-            (lastWorkout?.routines as any)?.[0]?.name ?? null;
-
-        const nextWorkout =
-            routinesData?.find((routine) => routine.name !== lastWorkoutName) ??
-            routinesData?.[0] ??
-            null;
-
-        setStats({
-            routinesCount: routinesCount ?? 0,
-            completedWorkouts: completedWorkouts ?? 0,
-            totalSets: totalSets ?? 0,
-            lastWorkoutName,
-            currentStreak: calculateWorkoutStreak(
-                completedSessions?.map((session) => session.completed_at) ?? []
-            ),
-            nextWorkoutName: nextWorkout?.name ?? null,
-        });
     }
 
     function calculateWorkoutStreak(dates: string[]) {

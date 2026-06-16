@@ -9,10 +9,16 @@ import {
     ScrollView,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
 import { Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
+import {
+    getProfile,
+    upsertProfile,
+    getWeightLogs,
+    createWeightLog,
+    removeWeightLog,
+} from "../services/profileService";
 
 type WeightLog = {
     id: string;
@@ -41,61 +47,47 @@ export default function ProfileScreen() {
     async function fetchProfile() {
         if (!user?.id) return;
 
-        const { data, error } = await supabase
-            .from("profiles")
-            .select("full_name, goal, experience_level, height_cm, weight_kg")
-            .eq("id", user.id)
-            .maybeSingle();
+        try {
+            const data = await getProfile(user.id);
 
-        if (error) {
+            if (!data) return;
+
+            setFullName(data.full_name ?? "");
+            setGoal(data.goal ?? "");
+            setExperienceLevel(data.experience_level ?? "");
+            setHeightCm(data.height_cm ? String(data.height_cm) : "");
+            setWeightKg(data.weight_kg ? String(data.weight_kg) : "");
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        if (!data) return;
-
-        setFullName(data.full_name ?? "");
-        setGoal(data.goal ?? "");
-        setExperienceLevel(data.experience_level ?? "");
-        setHeightCm(data.height_cm ? String(data.height_cm) : "");
-        setWeightKg(data.weight_kg ? String(data.weight_kg) : "");
     }
 
     async function saveProfile() {
         if (!user?.id) return;
 
-        const { error } = await supabase.from("profiles").upsert({
-            id: user.id,
-            full_name: fullName.trim() || null,
-            goal: goal.trim() || null,
-            experience_level: experienceLevel.trim() || null,
-            height_cm: heightCm ? Number(heightCm) : null,
-            weight_kg: weightKg ? Number(weightKg) : null,
-        });
+        try {
+            await upsertProfile({
+                userId: user.id,
+                fullName,
+                goal,
+                experienceLevel,
+                heightCm,
+                weightKg,
+            });
 
-        if (error) {
+            Alert.alert("Saved", "Profile updated successfully.");
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        Alert.alert("Saved", "Profile updated successfully.");
     }
 
     async function fetchWeightLogs() {
-        if (!user?.id) return;
-
-        const { data, error } = await supabase
-            .from("weight_logs")
-            .select("id, weight_kg, logged_at")
-            .order("logged_at", { ascending: false })
-            .limit(10);
-
-        if (error) {
+        try {
+            const data = await getWeightLogs();
+            setWeightLogs(data);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        setWeightLogs(data ?? []);
     }
 
     async function addWeightLog() {
@@ -106,32 +98,26 @@ export default function ProfileScreen() {
             return;
         }
 
-        const { error } = await supabase.from("weight_logs").insert({
-            user_id: user.id,
-            weight_kg: Number(newWeight),
-        });
+        try {
+            await createWeightLog({
+                userId: user.id,
+                weightKg: Number(newWeight),
+            });
 
-        if (error) {
+            setNewWeight("");
+            await fetchWeightLogs();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        setNewWeight("");
-        await fetchWeightLogs();
     }
 
     async function deleteWeightLog(id: string) {
-        const { error } = await supabase
-            .from("weight_logs")
-            .delete()
-            .eq("id", id);
-
-        if (error) {
+        try {
+            await removeWeightLog(id);
+            await fetchWeightLogs();
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        await fetchWeightLogs();
     }
 
     return (
