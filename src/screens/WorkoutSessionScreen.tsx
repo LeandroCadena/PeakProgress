@@ -31,6 +31,14 @@ type RoutineExercise = {
     } | null;
 };
 
+type SavedSet = {
+    id: string;
+    exercise_id: string;
+    set_number: number;
+    reps: number;
+    weight: number | null;
+};
+
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "WorkoutSession">>();
     const { sessionId, routineId, routineName } = route.params;
@@ -38,7 +46,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
     const [weightByExercise, setWeightByExercise] = useState<Record<string, string>>({});
     const [repsByExercise, setRepsByExercise] = useState<Record<string, string>>({});
-    const [savedSets, setSavedSets] = useState<Record<string, number>>({});
+    const [savedSets, setSavedSets] = useState<Record<string, SavedSet[]>>({});
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
 
@@ -193,21 +201,26 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     async function fetchSavedSets() {
         const { data, error } = await supabase
             .from("workout_sets")
-            .select("exercise_id")
-            .eq("workout_session_id", sessionId);
+            .select("id, exercise_id, set_number, reps, weight")
+            .eq("workout_session_id", sessionId)
+            .order("set_number", { ascending: true });
 
         if (error) {
             Alert.alert("Error", error.message);
             return;
         }
 
-        const counts: Record<string, number> = {};
+        const grouped: Record<string, SavedSet[]> = {};
 
         data?.forEach((set) => {
-            counts[set.exercise_id] = (counts[set.exercise_id] ?? 0) + 1;
+            if (!grouped[set.exercise_id]) {
+                grouped[set.exercise_id] = [];
+            }
+
+            grouped[set.exercise_id].push(set as SavedSet);
         });
 
-        setSavedSets(counts);
+        setSavedSets(grouped);
     }
 
     async function getWorkoutSummary() {
@@ -302,8 +315,16 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 Target: {item.sets} sets · {item.reps} reps · {item.rest_seconds}s rest
                             </Text>
                             <Text style={styles.cardText}>
-                                Saved sets: {savedSets[item.exercise_id] ?? 0}/{item.sets}
+                                Saved sets: {savedSets[item.exercise_id]?.length ?? 0}/{item.sets}
                             </Text>
+
+                            {savedSets[item.exercise_id]?.map((set) => (
+                                <View key={set.id} style={styles.savedSetRow}>
+                                    <Text style={styles.savedSetText}>
+                                        Set {set.set_number}: {set.weight ?? 0} kg x {set.reps}
+                                    </Text>
+                                </View>
+                            ))}
 
                             <View style={styles.row}>
                                 <TextInput
@@ -449,5 +470,17 @@ const styles = StyleSheet.create({
         backgroundColor: "#2563EB",
         paddingVertical: 10,
         borderRadius: 10,
+    },
+    savedSetRow: {
+        backgroundColor: "#0B0F14",
+        padding: 10,
+        borderRadius: 10,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+    savedSetText: {
+        color: "#FFFFFF",
+        fontWeight: "600",
     },
 });
