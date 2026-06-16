@@ -10,6 +10,7 @@ type DashboardStats = {
     totalSets: number;
     lastWorkoutName: string | null;
     currentStreak: number;
+    nextWorkoutName: string | null;
 };
 
 export default function HomeScreen({ navigation }: any) {
@@ -21,6 +22,7 @@ export default function HomeScreen({ navigation }: any) {
         totalSets: 0,
         lastWorkoutName: null,
         currentStreak: 0,
+        nextWorkoutName: null,
     });
 
     useFocusEffect(
@@ -89,14 +91,33 @@ export default function HomeScreen({ navigation }: any) {
             return;
         }
 
+        const { data: routinesData, error: routinesListError } = await supabase
+            .from("routines")
+            .select("id, name")
+            .order("created_at", { ascending: false });
+
+        if (routinesListError) {
+            Alert.alert("Error", routinesListError.message);
+            return;
+        }
+
+        const lastWorkoutName =
+            (lastWorkout?.routines as any)?.[0]?.name ?? null;
+
+        const nextWorkout =
+            routinesData?.find((routine) => routine.name !== lastWorkoutName) ??
+            routinesData?.[0] ??
+            null;
+
         setStats({
             routinesCount: routinesCount ?? 0,
             completedWorkouts: completedWorkouts ?? 0,
             totalSets: totalSets ?? 0,
-            lastWorkoutName: lastWorkout?.routines?.[0]?.name ?? null,
+            lastWorkoutName,
             currentStreak: calculateWorkoutStreak(
                 completedSessions?.map((session) => session.completed_at) ?? []
             ),
+            nextWorkoutName: nextWorkout?.name ?? null,
         });
     }
 
@@ -159,6 +180,11 @@ export default function HomeScreen({ navigation }: any) {
                 <View style={styles.card}>
                     <Text style={styles.cardValue}>🔥 {stats.currentStreak}</Text>
                     <Text style={styles.cardLabel}>Day Streak</Text>
+                </View>
+
+                <View style={styles.card}>
+                    <Text style={styles.cardValue}>{stats.nextWorkoutName ?? "-"}</Text>
+                    <Text style={styles.cardLabel}>Next Workout</Text>
                 </View>
             </View>
 
