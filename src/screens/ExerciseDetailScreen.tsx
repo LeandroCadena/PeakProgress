@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Alert, ScrollView } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
+import { getExerciseDetail } from "../services/exerciseService";
 
 type RouteParams = {
     ExerciseDetail: {
@@ -31,37 +31,18 @@ export default function ExerciseDetailScreen() {
 
     const [exercise, setExercise] = useState<ExerciseDetail | null>(null);
 
-    async function fetchExerciseDetail() {
-        const { data, error } = await supabase
-            .from("exercises")
-            .select(`
-        id,
-        name,
-        description,
-        instructions,
-        equipment,
-        difficulty,
-        exercise_muscles (
-          role,
-          muscles (
-            name
-          )
-        )
-      `)
-            .eq("id", exerciseId)
-            .single();
-
-        if (error) {
-            Alert.alert("Error", error.message);
-            return;
-        }
-
-        setExercise(data as ExerciseDetail);
-    }
-
     useEffect(() => {
         fetchExerciseDetail();
     }, []);
+
+    async function fetchExerciseDetail() {
+        try {
+            const data = await getExerciseDetail(exerciseId);
+            setExercise(data as ExerciseDetail);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
 
     const primaryMuscles =
         exercise?.exercise_muscles

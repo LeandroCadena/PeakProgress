@@ -7,19 +7,12 @@ import {
     Alert,
     Pressable
 } from "react-native";
-import { supabase } from "../services/supabase";
-
-type Exercise = {
-    id: string;
-    name: string;
-    equipment: string | null;
-    difficulty: string | null;
-};
-
-type Muscle = {
-    id: string;
-    name: string;
-};
+import {
+    getMuscles,
+    getExercisesByMuscle,
+    Exercise,
+    Muscle,
+} from "../services/exerciseService";
 
 export default function ExercisesScreen({ navigation }: any) {
     const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -34,50 +27,22 @@ export default function ExercisesScreen({ navigation }: any) {
         fetchExercises();
     }, [selectedMuscleId]);
 
-    async function fetchExercises() {
-        let query = supabase
-            .from("exercises")
-            .select(`
-      id,
-      name,
-      equipment,
-      difficulty,
-      exercise_muscles (
-        muscle_id
-      )
-    `)
-            .order("name");
-
-        const { data, error } = await query;
-
-        if (error) {
+    async function fetchMuscles() {
+        try {
+            const data = await getMuscles();
+            setMuscles(data);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        const filtered = selectedMuscleId
-            ? (data ?? []).filter((exercise: any) =>
-                exercise.exercise_muscles?.some(
-                    (relation: any) => relation.muscle_id === selectedMuscleId
-                )
-            )
-            : data ?? [];
-
-        setExercises(filtered);
     }
 
-    async function fetchMuscles() {
-        const { data, error } = await supabase
-            .from("muscles")
-            .select("id, name")
-            .order("name");
-
-        if (error) {
+    async function fetchExercises() {
+        try {
+            const data = await getExercisesByMuscle(selectedMuscleId);
+            setExercises(data);
+        } catch (error: any) {
             Alert.alert("Error", error.message);
-            return;
         }
-
-        setMuscles(data ?? []);
     }
 
     return (
