@@ -1,12 +1,58 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { useState } from "react";
+import {
+    View,
+    Text,
+    Pressable,
+    StyleSheet,
+    TextInput,
+    Alert,
+} from "react-native";
+import { useAuth } from "../context/AuthContext";
 
 export default function RegisterScreen({ navigation }: any) {
+    const { signUp } = useAuth();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    async function handleRegister() {
+        try {
+            await signUp(email.trim(), password);
+            Alert.alert(
+                "Account created",
+                "Please check your email to confirm your account."
+            );
+            navigation.navigate("Login");
+        } catch (error: any) {
+            Alert.alert("Register error", error.message);
+        }
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Create account</Text>
             <Text style={styles.subtitle}>Start tracking your gym progress today.</Text>
 
-            <Pressable style={styles.button} onPress={() => navigation.navigate("Home")}>
+            <TextInput
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor="#6B7280"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+            />
+
+            <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#6B7280"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+            />
+
+            <Pressable style={styles.button} onPress={handleRegister}>
                 <Text style={styles.buttonText}>Register</Text>
             </Pressable>
 
@@ -37,17 +83,29 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginBottom: 32,
     },
+    input: {
+        width: "100%",
+        backgroundColor: "#161B22",
+        color: "#FFFFFF",
+        padding: 14,
+        borderRadius: 12,
+        marginBottom: 14,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
     button: {
+        width: "100%",
         backgroundColor: "#4CAF50",
         paddingVertical: 14,
-        paddingHorizontal: 48,
         borderRadius: 12,
         marginBottom: 18,
+        marginTop: 8,
     },
     buttonText: {
         color: "#FFFFFF",
         fontWeight: "700",
         fontSize: 16,
+        textAlign: "center",
     },
     link: {
         color: "#4CAF50",
