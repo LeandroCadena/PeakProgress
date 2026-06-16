@@ -19,12 +19,7 @@ import {
     createWeightLog,
     removeWeightLog,
 } from "../services/profileService";
-
-type WeightLog = {
-    id: string;
-    weight_kg: number;
-    logged_at: string;
-};
+import { WeightLog } from "../types/profile";
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();

@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { ExerciseProgress } from "../types/progress";
 
 export type WorkoutSetProgress = {
     id: string;
@@ -8,15 +9,6 @@ export type WorkoutSetProgress = {
         id: string;
         name: string;
     } | null;
-};
-
-export type ExerciseProgress = {
-    exerciseId: string;
-    exerciseName: string;
-    bestWeight: number;
-    bestReps: number;
-    totalVolume: number;
-    totalSets: number;
 };
 
 export async function getExerciseProgress(): Promise<ExerciseProgress[]> {

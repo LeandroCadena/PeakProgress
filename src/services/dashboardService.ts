@@ -1,13 +1,5 @@
 import { supabase } from "./supabase";
-
-export type DashboardStats = {
-    routinesCount: number;
-    completedWorkouts: number;
-    totalSets: number;
-    lastWorkoutName: string | null;
-    currentStreak: number;
-    nextWorkoutName: string | null;
-};
+import { DashboardStats } from "../types/dashboard";
 
 function calculateWorkoutStreak(dates: string[]) {
     if (!dates.length) return 0;

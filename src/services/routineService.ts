@@ -1,10 +1,5 @@
 import { supabase } from "./supabase";
-
-export type Routine = {
-    id: string;
-    name: string;
-    description: string | null;
-};
+import { Routine } from "../types/routine";
 
 export async function getRoutines(): Promise<Routine[]> {
     const { data, error } = await supabase

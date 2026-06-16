@@ -1,16 +1,5 @@
 import { supabase } from "./supabase";
-
-export type Exercise = {
-    id: string;
-    name: string;
-    equipment: string | null;
-    difficulty: string | null;
-};
-
-export type Muscle = {
-    id: string;
-    name: string;
-};
+import { Exercise, Muscle } from "../types/exercise";
 
 export async function getExercises(): Promise<Exercise[]> {
     const { data, error } = await supabase
