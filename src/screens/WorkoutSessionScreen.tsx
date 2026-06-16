@@ -26,9 +26,9 @@ type RoutineExercise = {
     reps: number;
     weight: number | null;
     rest_seconds: number;
-    exercises: {
+    exercise: {
         name: string;
-    }[];
+    } | null;
 };
 
 export default function WorkoutSessionScreen({ navigation }: any) {
@@ -68,16 +68,16 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         const { data, error } = await supabase
             .from("routine_exercises")
             .select(`
-        id,
-        exercise_id,
-        sets,
-        reps,
-        weight,
-        rest_seconds,
-        exercises (
-        name
-        )
-    `)
+            id,
+            exercise_id,
+            sets,
+            reps,
+            weight,
+            rest_seconds,
+            exercise:exercises (
+            name
+            )
+            `)
             .eq("routine_id", routineId)
             .order("position");
 
@@ -86,7 +86,10 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             return;
         }
 
-        const items = (data ?? []) as RoutineExercise[];
+        const items = (data ?? []).map((item: any) => ({
+            ...item,
+            exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
+        })) as RoutineExercise[];
 
         setRoutineExercises(items);
 
@@ -103,11 +106,21 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     }
 
     async function saveSet(exerciseId: string) {
+        if (!exerciseId) {
+            Alert.alert("Error", "Missing exercise id");
+            return;
+        }
+
         const existingSets = await supabase
             .from("workout_sets")
             .select("id")
             .eq("workout_session_id", sessionId)
             .eq("exercise_id", exerciseId);
+
+        if (existingSets.error) {
+            Alert.alert("Error", existingSets.error.message);
+            return;
+        }
 
         const setNumber = (existingSets.data?.length ?? 0) + 1;
 
@@ -222,7 +235,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 renderItem={({ item }) => {
-                    const exerciseName = item.exercises?.[0]?.name ?? "Exercise";
+                    const exerciseName = item.exercise?.name ?? "Exercise";
 
                     return (
                         <View style={styles.card}>

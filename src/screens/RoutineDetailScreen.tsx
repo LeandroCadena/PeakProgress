@@ -27,13 +27,15 @@ type Exercise = {
 
 type RoutineExercise = {
     id: string;
+    exercise_id: string;
     sets: number;
     reps: number;
     weight: number | null;
     rest_seconds: number;
-    exercises: {
+    exercise: {
+        id: string;
         name: string;
-    }[];
+    } | null;
 };
 
 export default function RoutineDetailScreen({ navigation }: any) {
@@ -81,24 +83,30 @@ export default function RoutineDetailScreen({ navigation }: any) {
         const { data, error } = await supabase
             .from("routine_exercises")
             .select(`
-        id,
-        sets,
-        reps,
-        weight,
-        rest_seconds,
-        exercises (
-        name
-        )
-        `)
+            id,
+            exercise_id,
+            sets,
+            reps,
+            weight,
+            rest_seconds,
+            exercise:exercises (
+                id,
+                name
+                )
+            `)
             .eq("routine_id", routineId)
             .order("position");
-
         if (error) {
             Alert.alert("Error", error.message);
             return;
         }
 
-        setRoutineExercises(data ?? []);
+        const normalizedData = (data ?? []).map((item: any) => ({
+            ...item,
+            exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
+        }));
+
+        setRoutineExercises(normalizedData as RoutineExercise[]);
     }
 
     async function addExerciseToRoutine(exerciseId: string) {
@@ -273,7 +281,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 renderItem={({ item }) => (
                     <View style={styles.card}>
                         <Text style={styles.cardTitle}>
-                            {item.exercises?.[0]?.name ?? "Exercise"}
+                            {item.exercise?.name ?? "Exercise"}
                         </Text>
 
                         <Text style={styles.cardText}>
