@@ -134,3 +134,18 @@ export async function createEmptyWorkoutSet(params: {
 
     if (error) throw error;
 }
+
+export async function finishWorkoutSession(sessionId: string) {
+    const completedAt = new Date().toISOString();
+
+    const { data, error } = await supabase
+        .from("workout_sessions")
+        .update({ completed_at: completedAt })
+        .eq("id", sessionId)
+        .select("id, completed_at")
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}

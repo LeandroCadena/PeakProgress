@@ -7,10 +7,8 @@ import {
     TextInput,
     Pressable,
     Alert,
-    Modal,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
 import {
     WorkoutSessionRouteParams,
     RoutineExercise,
@@ -19,15 +17,12 @@ import {
 import {
     getRoutineExercises,
     getSavedSets,
-} from "../services/workoutService";
-import {
-    getRoutineExercises,
-    getSavedSets,
     createWorkoutSet,
     updateWorkoutSetValue,
     toggleWorkoutSetCompleted,
     deleteWorkoutSet,
     createEmptyWorkoutSet,
+    finishWorkoutSession,
 } from "../services/workoutService";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
@@ -38,9 +33,6 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     const [weightByExercise, setWeightByExercise] = useState<Record<string, string>>({});
     const [repsByExercise, setRepsByExercise] = useState<Record<string, string>>({});
     const [savedSets, setSavedSets] = useState<Record<string, SavedSet[]>>({});
-    const [editingSet, setEditingSet] = useState<SavedSet | null>(null);
-    const [editSetWeight, setEditSetWeight] = useState("");
-    const [editSetReps, setEditSetReps] = useState("");
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
@@ -109,33 +101,21 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     }
 
     async function finishWorkout() {
-        console.log("Finishing workout:", { sessionId });
-
         if (!sessionId) {
             Alert.alert("Error", "Missing session id");
             return;
         }
 
-        const completedAt = new Date().toISOString();
+        try {
+            await finishWorkoutSession(sessionId);
 
-        const { data, error } = await supabase
-            .from("workout_sessions")
-            .update({ completed_at: completedAt })
-            .eq("id", sessionId)
-            .select("id, completed_at")
-            .single();
-
-        console.log("Finish workout result:", { data, error });
-
-        if (error) {
+            navigation.navigate("WorkoutSummary", {
+                sessionId,
+                routineName,
+            });
+        } catch (error: any) {
             Alert.alert("Error finishing workout", error.message);
-            return;
         }
-
-        navigation.navigate("WorkoutSummary", {
-            sessionId,
-            routineName,
-        });
     }
 
     async function updateSetValue(
@@ -457,40 +437,6 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         fontSize: 12,
-    },
-    setActions: {
-        flexDirection: "row",
-        gap: 8,
-    },
-    editSetButton: {
-        backgroundColor: "#2563EB",
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        borderRadius: 8,
-    },
-    setActionText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        fontSize: 12,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.7)",
-        justifyContent: "center",
-        padding: 24,
-    },
-    modalContent: {
-        backgroundColor: "#161B22",
-        padding: 20,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    modalTitle: {
-        color: "#FFFFFF",
-        fontSize: 22,
-        fontWeight: "800",
-        marginBottom: 16,
     },
     cancelButton: {
         backgroundColor: "#374151",
