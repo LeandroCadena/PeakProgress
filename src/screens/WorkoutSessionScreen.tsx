@@ -106,31 +106,50 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     }
 
     async function saveSet(exerciseId: string) {
-        if (!exerciseId) {
-            Alert.alert("Error", "Missing exercise id");
+        console.log("Saving set:", {
+            sessionId,
+            exerciseId,
+            reps: repsByExercise[exerciseId],
+            weight: weightByExercise[exerciseId],
+        });
+
+        if (!sessionId || !exerciseId) {
+            Alert.alert("Error", "Missing session or exercise id");
             return;
         }
 
-        const existingSets = await supabase
+        const { data: existingSets, error: existingSetsError } = await supabase
             .from("workout_sets")
             .select("id")
             .eq("workout_session_id", sessionId)
             .eq("exercise_id", exerciseId);
 
-        if (existingSets.error) {
-            Alert.alert("Error", existingSets.error.message);
+        if (existingSetsError) {
+            console.log("Existing sets error:", existingSetsError);
+            Alert.alert("Error loading sets", existingSetsError.message);
             return;
         }
 
-        const setNumber = (existingSets.data?.length ?? 0) + 1;
+        const setNumber = (existingSets?.length ?? 0) + 1;
 
-        const { error } = await supabase.from("workout_sets").insert({
-            workout_session_id: sessionId,
-            exercise_id: exerciseId,
-            set_number: setNumber,
-            reps: Number(repsByExercise[exerciseId] ?? 0),
-            weight: Number(weightByExercise[exerciseId] ?? 0),
-        });
+        const { data, error } = await supabase
+            .from("workout_sets")
+            .insert({
+                workout_session_id: sessionId,
+                exercise_id: exerciseId,
+                set_number: setNumber,
+                reps: Number(repsByExercise[exerciseId] ?? 0),
+                weight: Number(weightByExercise[exerciseId] ?? 0),
+            })
+            .select()
+            .single();
+
+        console.log("Save set result:", { data, error });
+
+        if (error) {
+            Alert.alert("Error saving set", error.message);
+            return;
+        }
 
         await fetchSavedSets();
 
@@ -141,20 +160,22 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         setTimer(routineExercise?.rest_seconds ?? 90);
         setTimerRunning(true);
 
-        Alert.alert("Set saved", `Set ${setNumber} saved successfully.`);
-
-        if (error) {
-            Alert.alert("Error", error.message);
-            return;
-        }
-
-        Alert.alert("Set saved", `Set ${setNumber} saved successfully.`);
+        console.log(`Set ${setNumber} saved successfully`);
     }
 
     async function finishWorkout() {
+        console.log("Finishing workout:", { sessionId });
+
+        if (!sessionId) {
+            Alert.alert("Error", "Missing session id");
+            return;
+        }
+
+        const completedAt = new Date().toISOString();
+
         const { data, error } = await supabase
             .from("workout_sessions")
-            .update({ completed_at: new Date().toISOString() })
+            .update({ completed_at: completedAt })
             .eq("id", sessionId)
             .select("id, completed_at")
             .single();
@@ -166,12 +187,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             return;
         }
 
-        Alert.alert("Workout completed", "Great job!", [
-            {
-                text: "OK",
-                onPress: () => navigation.goBack(),
-            },
-        ]);
+        navigation.goBack();
     }
 
     async function fetchSavedSets() {
@@ -192,6 +208,47 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         });
 
         setSavedSets(counts);
+    }
+
+    async function getWorkoutSummary() {
+        const { data: sessionData, error: sessionError } = await supabase
+            .from("workout_sessions")
+            .select("started_at, completed_at")
+            .eq("id", sessionId)
+            .single();
+
+        if (sessionError) {
+            Alert.alert("Error", sessionError.message);
+            return null;
+        }
+
+        const { data: setsData, error: setsError } = await supabase
+            .from("workout_sets")
+            .select("reps, weight")
+            .eq("workout_session_id", sessionId);
+
+        if (setsError) {
+            Alert.alert("Error", setsError.message);
+            return null;
+        }
+
+        const totalSets = setsData?.length ?? 0;
+
+        const totalVolume =
+            setsData?.reduce((sum, set) => {
+                return sum + Number(set.weight ?? 0) * Number(set.reps ?? 0);
+            }, 0) ?? 0;
+
+        const start = new Date(sessionData.started_at).getTime();
+        const end = new Date(sessionData.completed_at ?? new Date()).getTime();
+
+        const durationMinutes = Math.max(1, Math.round((end - start) / 60000));
+
+        return {
+            totalSets,
+            totalVolume,
+            durationMinutes,
+        };
     }
 
     return (
