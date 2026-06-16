@@ -16,30 +16,108 @@ type Exercise = {
     difficulty: string | null;
 };
 
+type Muscle = {
+    id: string;
+    name: string;
+};
+
 export default function ExercisesScreen({ navigation }: any) {
     const [exercises, setExercises] = useState<Exercise[]>([]);
+    const [muscles, setMuscles] = useState<Muscle[]>([]);
+    const [selectedMuscleId, setSelectedMuscleId] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchMuscles();
+    }, []);
+
+    useEffect(() => {
+        fetchExercises();
+    }, [selectedMuscleId]);
 
     async function fetchExercises() {
-        const { data, error } = await supabase
+        let query = supabase
             .from("exercises")
-            .select("id, name, equipment, difficulty")
-            .order("name", { ascending: true });
+            .select(`
+      id,
+      name,
+      equipment,
+      difficulty,
+      exercise_muscles (
+        muscle_id
+      )
+    `)
+            .order("name");
+
+        const { data, error } = await query;
 
         if (error) {
             Alert.alert("Error", error.message);
             return;
         }
 
-        setExercises(data ?? []);
+        const filtered = selectedMuscleId
+            ? (data ?? []).filter((exercise: any) =>
+                exercise.exercise_muscles?.some(
+                    (relation: any) => relation.muscle_id === selectedMuscleId
+                )
+            )
+            : data ?? [];
+
+        setExercises(filtered);
     }
 
-    useEffect(() => {
-        fetchExercises();
-    }, []);
+    async function fetchMuscles() {
+        const { data, error } = await supabase
+            .from("muscles")
+            .select("id, name")
+            .order("name");
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        setMuscles(data ?? []);
+    }
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Exercises</Text>
+
+            <FlatList
+                horizontal
+                data={[{ id: "all", name: "All" }, ...muscles]}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.filters}
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => {
+                    const isSelected =
+                        item.id === "all"
+                            ? selectedMuscleId === null
+                            : selectedMuscleId === item.id;
+
+                    return (
+                        <Pressable
+                            style={[
+                                styles.filterChip,
+                                isSelected && styles.filterChipActive,
+                            ]}
+                            onPress={() =>
+                                setSelectedMuscleId(item.id === "all" ? null : item.id)
+                            }
+                        >
+                            <Text
+                                style={[
+                                    styles.filterText,
+                                    isSelected && styles.filterTextActive,
+                                ]}
+                            >
+                                {item.name}
+                            </Text>
+                        </Pressable>
+                    );
+                }}
+            />
 
             <FlatList
                 data={exercises}
@@ -98,5 +176,28 @@ const styles = StyleSheet.create({
     cardText: {
         color: "#9CA3AF",
         marginTop: 6,
+    },
+    filters: {
+        gap: 10,
+        marginBottom: 20,
+    },
+    filterChip: {
+        backgroundColor: "#161B22",
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+    filterChipActive: {
+        backgroundColor: "#4CAF50",
+        borderColor: "#4CAF50",
+    },
+    filterText: {
+        color: "#9CA3AF",
+        fontWeight: "700",
+    },
+    filterTextActive: {
+        color: "#FFFFFF",
     },
 });
