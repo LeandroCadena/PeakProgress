@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
+import { useAuth } from "../context/AuthContext";
 
 type RouteParams = {
     RoutineDetail: {
@@ -34,7 +35,8 @@ type RoutineExercise = {
     }[];
 };
 
-export default function RoutineDetailScreen() {
+export default function RoutineDetailScreen({ navigation }: any) {
+    const { user } = useAuth();
     const route = useRoute<RouteProp<RouteParams, "RoutineDetail">>();
     const { routineId, routineName } = route.params;
 
@@ -108,11 +110,42 @@ export default function RoutineDetailScreen() {
         fetchRoutineExercises();
     }, []);
 
+    async function startWorkout() {
+        if (!user?.id) {
+            Alert.alert("Auth error", "User is not logged in");
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from("workout_sessions")
+            .insert({
+                user_id: user.id,
+                routine_id: routineId,
+            })
+            .select("id")
+            .single();
+
+        if (error) {
+            Alert.alert("Error", error.message);
+            return;
+        }
+
+        navigation.navigate("WorkoutSession", {
+            sessionId: data.id,
+            routineId,
+            routineName,
+        });
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{routineName}</Text>
 
             <Text style={styles.sectionTitle}>Current exercises</Text>
+
+            <Pressable style={styles.startButton} onPress={startWorkout}>
+                <Text style={styles.startButtonText}>Start Workout</Text>
+            </Pressable>
 
             <FlatList
                 data={routineExercises}
@@ -257,5 +290,17 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         borderColor: "#30363D",
+    },
+    startButton: {
+        backgroundColor: "#2563EB",
+        paddingVertical: 14,
+        borderRadius: 12,
+        marginBottom: 20,
+    },
+    startButtonText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        textAlign: "center",
+        fontSize: 16,
     },
 });

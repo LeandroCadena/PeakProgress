@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     View,
     Text,
@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { supabase } from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 type Routine = {
     id: string;
@@ -73,6 +75,12 @@ export default function RoutinesScreen({ navigation }: any) {
 
         Alert.alert("Success", "Routine created");
     }
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchRoutines();
+        }, [])
+    );
 
     return (
         <View style={styles.container}>
