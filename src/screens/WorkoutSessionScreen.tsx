@@ -23,7 +23,6 @@ import {
     finishWorkoutSession,
 } from "../services/workoutService";
 import RestTimerCard from "../components/workout/RestTimerCard";
-import WorkoutSetRow from "../components/workout/WorkoutSetRow";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 
 export default function WorkoutSessionScreen({ navigation }: any) {

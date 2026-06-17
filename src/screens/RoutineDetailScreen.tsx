@@ -8,6 +8,7 @@ import {
     Pressable,
     TextInput,
     Modal,
+    ScrollView,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +25,10 @@ import {
     updateRoutineExerciseConfig,
 } from "../services/workoutService";
 import { RoutineExercise } from "../types/workout";
+import RoutineExerciseCard from "../components/routine/RoutineExerciseCard";
+import AvailableExerciseCard from "../components/routine/AvailableExerciseCard";
+import RoutineActions from "../components/routine/RoutineActions";
+import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
 
 type RouteParams = {
     RoutineDetail: {
@@ -205,81 +210,47 @@ export default function RoutineDetailScreen({ navigation }: any) {
     }
 
     return (
-        <View style={styles.container}>
+        <RoutineDetailLayout>
             <Text style={styles.title}>{routineTitle}</Text>
 
-            <Text style={styles.sectionTitle}>Current exercises</Text>
-
-            <View style={styles.routineActions}>
-                <Pressable
-                    style={styles.editRoutineButton}
-                    onPress={() => setEditRoutineVisible(true)}
-                >
-                    <Text style={styles.actionText}>Edit Routine</Text>
-                </Pressable>
-
-                <Pressable style={styles.deleteRoutineButton} onPress={deleteRoutine}>
-                    <Text style={styles.actionText}>Delete Routine</Text>
-                </Pressable>
-            </View>
+            <RoutineActions
+                onEdit={() => setEditRoutineVisible(true)}
+                onDelete={deleteRoutine}
+            />
 
             <Pressable style={styles.startButton} onPress={startWorkout}>
                 <Text style={styles.startButtonText}>Start Workout</Text>
             </Pressable>
 
-            <FlatList
-                data={routineExercises}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.list}
-                ListEmptyComponent={
-                    <Text style={styles.emptyText}>No exercises added yet.</Text>
-                }
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>
-                            {item.exercise?.name ?? "Exercise"}
-                        </Text>
+            <Text style={styles.sectionTitle}>Current exercises</Text>
 
-                        <Text style={styles.cardText}>
-                            {item.sets} sets · {item.reps} reps · {item.weight ?? 0} kg ·{" "}
-                            {item.rest_seconds}s rest
-                        </Text>
-
-                        <View style={styles.cardActions}>
-                            <Pressable
-                                style={styles.editButton}
-                                onPress={() => openEditModal(item)}
-                            >
-                                <Text style={styles.actionText}>Edit</Text>
-                            </Pressable>
-
-                            <Pressable
-                                style={styles.deleteButton}
-                                onPress={() => deleteRoutineExercise(item.id)}
-                            >
-                                <Text style={styles.actionText}>Delete</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                )}
-            />
+            {routineExercises.length === 0 ? (
+                <Text style={styles.emptyText}>No exercises added yet.</Text>
+            ) : (
+                <View style={styles.list}>
+                    {routineExercises.map((item) => (
+                        <RoutineExerciseCard
+                            key={item.id}
+                            item={item}
+                            onEdit={() => openEditModal(item)}
+                            onDelete={() => deleteRoutineExercise(item.id)}
+                        />
+                    ))}
+                </View>
+            )}
 
             <Text style={styles.sectionTitle}>Add exercise</Text>
 
-            <FlatList
-                data={availableExercises}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.list}
-                renderItem={({ item }) => (
-                    <Pressable
-                        style={styles.addCard}
+            <View style={styles.list}>
+                {availableExercises.map((item) => (
+                    <AvailableExerciseCard
+                        key={item.id}
+                        exercise={item}
                         onPress={() => addExerciseToRoutine(item.id)}
-                    >
-                        <Text style={styles.cardTitle}>{item.name}</Text>
-                        <Text style={styles.cardText}>Tap to add</Text>
-                    </Pressable>
-                )}
-            />
+                    />
+                ))}
+            </View>
+
             <Modal
                 visible={!!editingExercise}
                 transparent
@@ -339,6 +310,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                     </View>
                 </View>
             </Modal>
+
             <Modal
                 visible={editRoutineVisible}
                 transparent
@@ -378,17 +350,11 @@ export default function RoutineDetailScreen({ navigation }: any) {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </RoutineDetailLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
         color: "#FFFFFF",
         fontSize: 30,
@@ -406,28 +372,12 @@ const styles = StyleSheet.create({
         gap: 12,
         paddingBottom: 12,
     },
-    card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
     addCard: {
         backgroundColor: "#102A1A",
         padding: 16,
         borderRadius: 14,
         borderWidth: 1,
         borderColor: "#4CAF50",
-    },
-    cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 17,
-        fontWeight: "700",
-    },
-    cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
     },
     emptyText: {
         color: "#9CA3AF",
@@ -457,28 +407,6 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         textAlign: "center",
         fontSize: 16,
-    },
-    cardActions: {
-        flexDirection: "row",
-        gap: 10,
-        marginTop: 14,
-    },
-    editButton: {
-        flex: 1,
-        backgroundColor: "#2563EB",
-        paddingVertical: 10,
-        borderRadius: 10,
-    },
-    deleteButton: {
-        flex: 1,
-        backgroundColor: "#EF4444",
-        paddingVertical: 10,
-        borderRadius: 10,
-    },
-    actionText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
     },
     modalOverlay: {
         flex: 1,
@@ -524,22 +452,5 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
-    },
-    routineActions: {
-        flexDirection: "row",
-        gap: 10,
-        marginBottom: 16,
-    },
-    editRoutineButton: {
-        flex: 1,
-        backgroundColor: "#2563EB",
-        paddingVertical: 12,
-        borderRadius: 12,
-    },
-    deleteRoutineButton: {
-        flex: 1,
-        backgroundColor: "#EF4444",
-        paddingVertical: 12,
-        borderRadius: 12,
     },
 });
