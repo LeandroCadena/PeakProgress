@@ -5,12 +5,11 @@ import {
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
-import RoutineActions from "../components/routine/RoutineActions";
 import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
 import EditRoutineExerciseModal from "../components/routine/EditRoutineExerciseModal";
-import EditRoutineModal from "../components/routine/EditRoutineModal";
 import AvailableExerciseSection from "../components/routine/AvailableExerciseSection";
 import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
+import RoutineHeader from "../components/routine/RoutineHeader";
 
 type RouteParams = {
     RoutineDetail: {
@@ -37,19 +36,20 @@ export default function RoutineDetailScreen({ navigation }: any) {
         setEditReps,
         setEditWeight,
         setEditRestSeconds,
-        editRoutineVisible,
-        setEditRoutineVisible,
-        editRoutineName,
         editRoutineDescription,
-        setEditRoutineName,
-        setEditRoutineDescription,
         addExerciseToRoutine,
         openEditModal,
         saveEditedExercise,
         deleteRoutineExercise,
         saveRoutineChanges,
-        deleteRoutine,
         startWorkout,
+        isEditingRoutine,
+        draftRoutineName,
+        draftRoutineDescription,
+        setDraftRoutineName,
+        setDraftRoutineDescription,
+        startEditingRoutine,
+        cancelEditingRoutine,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -58,11 +58,15 @@ export default function RoutineDetailScreen({ navigation }: any) {
 
     return (
         <RoutineDetailLayout>
-            <Text style={styles.title}>{routineTitle}</Text>
-
-            <RoutineActions
-                onEdit={() => setEditRoutineVisible(true)}
-                onDelete={deleteRoutine}
+            <RoutineHeader
+                title={isEditingRoutine ? draftRoutineName : routineTitle}
+                description={isEditingRoutine ? draftRoutineDescription : editRoutineDescription}
+                isEditing={isEditingRoutine}
+                onChangeTitle={setDraftRoutineName}
+                onChangeDescription={setDraftRoutineDescription}
+                onStartEdit={startEditingRoutine}
+                onSave={saveRoutineChanges}
+                onCancel={cancelEditingRoutine}
             />
 
             <Pressable style={styles.startButton} onPress={startWorkout}>
@@ -92,16 +96,6 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onChangeRestSeconds={setEditRestSeconds}
                 onSave={saveEditedExercise}
                 onCancel={() => setEditingExercise(null)}
-            />
-
-            <EditRoutineModal
-                visible={editRoutineVisible}
-                name={editRoutineName}
-                description={editRoutineDescription}
-                onChangeName={setEditRoutineName}
-                onChangeDescription={setEditRoutineDescription}
-                onSave={saveRoutineChanges}
-                onCancel={() => setEditRoutineVisible(false)}
             />
         </RoutineDetailLayout>
     );

@@ -44,6 +44,10 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const [editRoutineName, setEditRoutineName] = useState(routineName);
     const [editRoutineDescription, setEditRoutineDescription] = useState("");
 
+    const [isEditingRoutine, setIsEditingRoutine] = useState(false);
+    const [draftRoutineName, setDraftRoutineName] = useState(routineName);
+    const [draftRoutineDescription, setDraftRoutineDescription] = useState("");
+
     async function fetchAvailableExercises() {
         try {
             const data = await getExercises();
@@ -117,7 +121,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     }
 
     async function saveRoutineChanges() {
-        if (!editRoutineName.trim()) {
+        if (!draftRoutineName.trim()) {
             Alert.alert("Validation", "Routine name is required");
             return;
         }
@@ -125,12 +129,13 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         try {
             await updateRoutine({
                 routineId,
-                name: editRoutineName,
-                description: editRoutineDescription,
+                name: draftRoutineName,
+                description: draftRoutineDescription,
             });
 
-            setRoutineTitle(editRoutineName.trim());
-            setEditRoutineVisible(false);
+            setRoutineTitle(draftRoutineName.trim());
+            setEditRoutineDescription(draftRoutineDescription);
+            setIsEditingRoutine(false);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -174,6 +179,18 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
+    }
+
+    function startEditingRoutine() {
+        setDraftRoutineName(routineTitle);
+        setDraftRoutineDescription(editRoutineDescription);
+        setIsEditingRoutine(true);
+    }
+
+    function cancelEditingRoutine() {
+        setDraftRoutineName(routineTitle);
+        setDraftRoutineDescription(editRoutineDescription);
+        setIsEditingRoutine(false);
     }
 
     useEffect(() => {
@@ -220,5 +237,13 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         saveRoutineChanges,
         deleteRoutine,
         startWorkout,
+
+        isEditingRoutine,
+        draftRoutineName,
+        draftRoutineDescription,
+        setDraftRoutineName,
+        setDraftRoutineDescription,
+        startEditingRoutine,
+        cancelEditingRoutine,
     };
 }
