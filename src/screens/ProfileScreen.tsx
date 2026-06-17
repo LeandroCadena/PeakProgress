@@ -20,6 +20,9 @@ import {
     removeWeightLog,
 } from "../services/profileService";
 import { WeightLog } from "../types/profile";
+import ProfileForm from "../components/profile/ProfileForm";
+import WeightLogCard from "../components/profile/WeightLogCard";
+import WeightTrackingSection from "../components/profile/WeightTrackingSection";
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
@@ -120,53 +123,27 @@ export default function ProfileScreen() {
             <Text style={styles.title}>Profile</Text>
             <Text style={styles.subtitle}>{user?.email}</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Full name"
-                placeholderTextColor="#6B7280"
-                value={fullName}
-                onChangeText={setFullName}
+            <ProfileForm
+                fullName={fullName}
+                goal={goal}
+                experienceLevel={experienceLevel}
+                heightCm={heightCm}
+                weightKg={weightKg}
+                onChangeFullName={setFullName}
+                onChangeGoal={setGoal}
+                onChangeExperienceLevel={setExperienceLevel}
+                onChangeHeightCm={setHeightCm}
+                onChangeWeightKg={setWeightKg}
+                onSave={saveProfile}
             />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Goal - e.g. Gain muscle"
-                placeholderTextColor="#6B7280"
-                value={goal}
-                onChangeText={setGoal}
+            <WeightTrackingSection
+                newWeight={newWeight}
+                onChangeWeight={setNewWeight}
+                onAddWeight={addWeightLog}
+                weightLogs={weightLogs}
+                onDeleteWeight={deleteWeightLog}
             />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Experience - Beginner / Intermediate / Advanced"
-                placeholderTextColor="#6B7280"
-                value={experienceLevel}
-                onChangeText={setExperienceLevel}
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Height cm"
-                placeholderTextColor="#6B7280"
-                keyboardType="numeric"
-                value={heightCm}
-                onChangeText={setHeightCm}
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Weight kg"
-                placeholderTextColor="#6B7280"
-                keyboardType="numeric"
-                value={weightKg}
-                onChangeText={setWeightKg}
-            />
-
-            <Pressable style={styles.button} onPress={saveProfile}>
-                <Text style={styles.buttonText}>Save Profile</Text>
-            </Pressable>
-
-            <Text style={styles.sectionTitle}>Weight Tracking</Text>
 
             {weightLogs.length > 0 ? (
                 <LineChart
@@ -200,35 +177,12 @@ export default function ProfileScreen() {
                 />
             ) : null}
 
-            <TextInput
-                style={styles.input}
-                placeholder="New weight kg"
-                placeholderTextColor="#6B7280"
-                keyboardType="numeric"
-                value={newWeight}
-                onChangeText={setNewWeight}
-            />
-
-            <Pressable style={styles.button} onPress={addWeightLog}>
-                <Text style={styles.buttonText}>Add Weight Log</Text>
-            </Pressable>
-
             {weightLogs.map((log) => (
-                <View key={log.id} style={styles.weightLogCard}>
-                    <View>
-                        <Text style={styles.weightValue}>{log.weight_kg} kg</Text>
-                        <Text style={styles.weightDate}>
-                            {new Date(log.logged_at).toLocaleDateString()}
-                        </Text>
-                    </View>
-
-                    <Pressable
-                        style={styles.deleteButton}
-                        onPress={() => deleteWeightLog(log.id)}
-                    >
-                        <Text style={styles.deleteButtonText}>Delete</Text>
-                    </Pressable>
-                </View>
+                <WeightLogCard
+                    key={log.id}
+                    log={log}
+                    onDelete={() => deleteWeightLog(log.id)}
+                />
             ))}
 
             <Pressable style={styles.logoutButton} onPress={signOut}>
@@ -255,21 +209,6 @@ const styles = StyleSheet.create({
         marginTop: 8,
         marginBottom: 24,
     },
-    input: {
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    button: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginTop: 8,
-    },
     logoutButton: {
         backgroundColor: "#EF4444",
         paddingVertical: 14,
@@ -281,43 +220,6 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
-    },
-    sectionTitle: {
-        color: "#FFFFFF",
-        fontSize: 22,
-        fontWeight: "800",
-        marginTop: 28,
-        marginBottom: 14,
-    },
-    weightLogCard: {
-        backgroundColor: "#161B22",
-        padding: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-        marginTop: 10,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
-    weightValue: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "800",
-    },
-    weightDate: {
-        color: "#9CA3AF",
-        marginTop: 4,
-    },
-    deleteButton: {
-        backgroundColor: "#EF4444",
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-    },
-    deleteButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
     },
     chart: {
         borderRadius: 16,
