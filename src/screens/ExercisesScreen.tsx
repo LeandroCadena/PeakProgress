@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import {
     getMuscles,
-    getExercisesByMuscle,
+    getExercisesByFilter
 } from "../services/exerciseService";
 import { Exercise, Muscle } from "../types/exercise";
 
@@ -37,7 +37,11 @@ export default function ExercisesScreen({ navigation }: any) {
 
     async function fetchExercises() {
         try {
-            const data = await getExercisesByMuscle(selectedMuscleId);
+            const data = await getExercisesByFilter({
+                filterMode: "muscle",
+                selectedIds: selectedMuscleId ? [selectedMuscleId] : [],
+            });
+
             setExercises(data);
         } catch (error: any) {
             Alert.alert("Error", error.message);
