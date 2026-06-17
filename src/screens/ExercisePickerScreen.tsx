@@ -17,12 +17,13 @@ type RouteParams = {
     ExercisePicker: {
         routineId: string;
         currentCount: number;
+        currentExerciseIds: string[];
     };
 };
 
 export default function ExercisePickerScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "ExercisePicker">>();
-    const { routineId, currentCount } = route.params;
+    const { routineId, currentCount, currentExerciseIds } = route.params;
 
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
@@ -89,57 +90,85 @@ export default function ExercisePickerScreen({ navigation }: any) {
                 onChangeText={setSearch}
             />
 
-            <FlatList
-                horizontal
-                data={[{ id: "all", name: "All" }, ...muscles]}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.filters}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => {
-                    const isSelected =
-                        item.id === "all"
-                            ? selectedMuscleId === null
-                            : selectedMuscleId === item.id;
+            <View style={styles.filtersWrapper}>
+                <FlatList
+                    horizontal
+                    data={[{ id: "all", name: "All" }, ...muscles]}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.filters}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => {
+                        const isSelected =
+                            item.id === "all"
+                                ? selectedMuscleId === null
+                                : selectedMuscleId === item.id;
 
-                    return (
-                        <Pressable
-                            style={[styles.filterChip, isSelected && styles.filterChipActive]}
-                            onPress={() =>
-                                setSelectedMuscleId(item.id === "all" ? null : item.id)
-                            }
-                        >
-                            <Text
-                                style={[styles.filterText, isSelected && styles.filterTextActive]}
+                        return (
+                            <Pressable
+                                style={[
+                                    styles.filterChip,
+                                    isSelected && styles.filterChipActive,
+                                ]}
+                                onPress={() =>
+                                    setSelectedMuscleId(item.id === "all" ? null : item.id)
+                                }
                             >
-                                {item.name}
-                            </Text>
-                        </Pressable>
-                    );
-                }}
-            />
+                                <Text
+                                    style={[
+                                        styles.filterText,
+                                        isSelected && styles.filterTextActive,
+                                    ]}
+                                >
+                                    {item.name}
+                                </Text>
+                            </Pressable>
+                        );
+                    }}
+                />
+            </View>
 
             <FlatList
                 data={filteredExercises}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.list}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <View>
-                            <Text style={styles.cardTitle}>{item.name}</Text>
-                            <Text style={styles.cardText}>
-                                {item.equipment ?? "No equipment"} ·{" "}
-                                {item.difficulty ?? "No difficulty"}
-                            </Text>
-                        </View>
+                contentContainerStyle={styles.exerciseList}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => {
+                    const alreadyAdded = currentExerciseIds.includes(item.id);
 
-                        <Pressable
-                            style={styles.addButton}
-                            onPress={() => handleAddExercise(item.id)}
+                    return (
+                        <View
+                            style={[
+                                styles.exerciseCard,
+                                alreadyAdded && styles.exerciseCardAdded,
+                            ]}
                         >
-                            <Text style={styles.addButtonText}>Add</Text>
-                        </Pressable>
-                    </View>
-                )}
+                            <View style={styles.exerciseInfo}>
+                                <Text style={styles.exerciseTitle}>{item.name}</Text>
+
+                                <Text style={styles.exerciseText}>
+                                    {item.equipment ?? "No equipment"} ·{" "}
+                                    {item.difficulty ?? "No difficulty"}
+                                </Text>
+
+                                {alreadyAdded ? (
+                                    <Text style={styles.alreadyAddedText}>
+                                        Already in this routine
+                                    </Text>
+                                ) : null}
+                            </View>
+
+                            <Pressable
+                                style={[
+                                    styles.addButton,
+                                    alreadyAdded && styles.addButtonSecondary,
+                                ]}
+                                onPress={() => handleAddExercise(item.id)}
+                            >
+                                <Text style={styles.addButtonText}>Add</Text>
+                            </Pressable>
+                        </View>
+                    );
+                }}
             />
 
             <Pressable style={styles.cancelButton} onPress={() => navigation.goBack()}>
@@ -171,28 +200,98 @@ const styles = StyleSheet.create({
         borderColor: "#30363D",
         marginBottom: 14,
     },
-    filters: {
-        gap: 10,
+    filtersWrapper: {
+        height: 52,
         marginBottom: 16,
     },
+
+    filters: {
+        gap: 10,
+        alignItems: "center",
+    },
+
     filterChip: {
         backgroundColor: "#161B22",
-        paddingVertical: 10,
+        paddingVertical: 9,
         paddingHorizontal: 14,
         borderRadius: 20,
         borderWidth: 1,
         borderColor: "#30363D",
+        height: 38,
+        justifyContent: "center",
     },
+
     filterChipActive: {
         backgroundColor: "#4CAF50",
         borderColor: "#4CAF50",
     },
+
     filterText: {
         color: "#9CA3AF",
         fontWeight: "700",
     },
+
     filterTextActive: {
         color: "#FFFFFF",
+    },
+
+    exerciseList: {
+        gap: 12,
+        paddingBottom: 24,
+    },
+
+    exerciseCard: {
+        backgroundColor: "#161B22",
+        padding: 16,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: "#30363D",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    exerciseCardAdded: {
+        backgroundColor: "#1F2937",
+        borderColor: "#4CAF50",
+    },
+
+    exerciseInfo: {
+        flex: 1,
+        paddingRight: 12,
+    },
+
+    exerciseTitle: {
+        color: "#FFFFFF",
+        fontSize: 17,
+        fontWeight: "700",
+    },
+
+    exerciseText: {
+        color: "#9CA3AF",
+        marginTop: 6,
+    },
+
+    alreadyAddedText: {
+        color: "#4CAF50",
+        marginTop: 6,
+        fontWeight: "700",
+    },
+
+    addButton: {
+        backgroundColor: "#4CAF50",
+        paddingVertical: 9,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+    },
+
+    addButtonSecondary: {
+        backgroundColor: "#2563EB",
+    },
+
+    addButtonText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
     },
     list: {
         gap: 12,
@@ -216,16 +315,6 @@ const styles = StyleSheet.create({
     cardText: {
         color: "#9CA3AF",
         marginTop: 6,
-    },
-    addButton: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 10,
-    },
-    addButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
     },
     cancelButton: {
         backgroundColor: "#374151",

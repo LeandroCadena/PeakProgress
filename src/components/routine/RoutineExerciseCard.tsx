@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { RoutineExercise } from "../../types/workout";
+import { RoutineExercise, RoutineExerciseSet } from "../../types/workout";
+import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 
 type Props = {
     item: RoutineExercise;
@@ -8,6 +9,10 @@ type Props = {
     isEditing: boolean;
     onMoveUp: () => void;
     onMoveDown: () => void;
+    sets: RoutineExerciseSet[];
+    onUpdateSet: (setId: string, field: "weight" | "reps", value: string) => void;
+    onAddSet: () => void;
+    onDeleteSet: (setId: string) => void;
 };
 
 export default function RoutineExerciseCard({
@@ -16,13 +21,40 @@ export default function RoutineExerciseCard({
     onDelete,
     isEditing,
     onMoveUp,
-    onMoveDown
+    onMoveDown,
+    sets,
+    onUpdateSet,
+    onAddSet,
+    onDeleteSet,
 }: Props) {
     return (
         <View style={styles.card}>
             <Text style={styles.cardTitle}>
                 {item.exercise?.name ?? "Exercise"}
             </Text>
+
+            <View style={styles.setHeader}>
+                <Text style={styles.setNumberHeader}>Set</Text>
+                <Text style={styles.setHeaderText}>Weight</Text>
+                <Text style={styles.setHeaderText}>Reps</Text>
+                {isEditing ? <Text style={styles.setHeaderText}></Text> : null}
+            </View>
+
+            {sets.map((set) => (
+                <RoutineExerciseSetRow
+                    key={set.id}
+                    set={set}
+                    isEditing={isEditing}
+                    onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
+                    onDelete={() => onDeleteSet(set.id)}
+                />
+            ))}
+
+            {isEditing ? (
+                <Pressable style={styles.addSetButton} onPress={onAddSet}>
+                    <Text style={styles.addSetText}>+ Add Set</Text>
+                </Pressable>
+            ) : null}
 
             <Text style={styles.cardText}>
                 {item.sets} sets · {item.reps} reps · {item.weight ?? 0} kg ·{" "}
@@ -111,5 +143,38 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontWeight: "800",
         fontSize: 16,
+    },
+    setHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        marginTop: 14,
+        marginBottom: 6,
+    },
+    setNumberHeader: {
+        width: 28,
+        color: "#9CA3AF",
+        fontSize: 12,
+        fontWeight: "700",
+    },
+    setHeaderText: {
+        flex: 1,
+        color: "#9CA3AF",
+        fontSize: 12,
+        fontWeight: "700",
+    },
+    addSetButton: {
+        backgroundColor: "#102A1A",
+        borderWidth: 1,
+        borderColor: "#4CAF50",
+        borderRadius: 10,
+        paddingVertical: 10,
+        marginTop: 10,
+        alignItems: "center",
+    },
+
+    addSetText: {
+        color: "#4CAF50",
+        fontWeight: "700",
     },
 });

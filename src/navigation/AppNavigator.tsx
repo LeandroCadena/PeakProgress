@@ -46,6 +46,7 @@ export type RootStackParamList = {
     ExercisePicker: {
         routineId: string;
         currentCount: number;
+        currentExerciseIds: string[];
     };
 };
 

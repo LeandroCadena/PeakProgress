@@ -48,7 +48,11 @@ export default function RoutineDetailScreen({ navigation }: any) {
         startEditingRoutine,
         cancelEditingRoutine,
         moveRoutineExercise,
-        deleteRoutine
+        deleteRoutine,
+        routineExerciseSets,
+        updateTemplateSet,
+        addTemplateSet,
+        deleteTemplateSet,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -75,11 +79,15 @@ export default function RoutineDetailScreen({ navigation }: any) {
 
             <RoutineExerciseSection
                 routineExercises={routineExercises}
+                routineExerciseSets={routineExerciseSets}
                 isEditing={isEditingRoutine}
                 onEdit={openEditModal}
                 onDelete={deleteRoutineExercise}
                 onMoveUp={(index) => moveRoutineExercise(index, "up")}
                 onMoveDown={(index) => moveRoutineExercise(index, "down")}
+                onUpdateSet={updateTemplateSet}
+                onAddSet={addTemplateSet}
+                onDeleteSet={deleteTemplateSet}
             />
 
             {isEditingRoutine ? (
@@ -89,6 +97,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                         navigation.navigate("ExercisePicker", {
                             routineId,
                             currentCount: routineExercises.length,
+                            currentExerciseIds: routineExercises.map((item) => item.exercise_id),
                         })
                     }
                 >

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { RoutineExercise } from "../../types/workout";
+import { RoutineExercise, RoutineExerciseSet } from "../../types/workout";
 import RoutineExerciseCard from "./RoutineExerciseCard";
 
 type Props = {
@@ -9,6 +9,14 @@ type Props = {
     isEditing: boolean;
     onMoveUp: (index: number) => void;
     onMoveDown: (index: number) => void;
+    routineExerciseSets: Record<string, RoutineExerciseSet[]>;
+    onUpdateSet: (
+        setId: string,
+        field: "weight" | "reps",
+        value: string
+    ) => void;
+    onAddSet: (routineExerciseId: string) => void;
+    onDeleteSet: (setId: string) => void;
 };
 
 export default function RoutineExerciseSection({
@@ -17,7 +25,11 @@ export default function RoutineExerciseSection({
     onDelete,
     isEditing,
     onMoveUp,
-    onMoveDown
+    onMoveDown,
+    routineExerciseSets,
+    onUpdateSet,
+    onAddSet,
+    onDeleteSet,
 }: Props) {
     return (
         <>
@@ -31,11 +43,15 @@ export default function RoutineExerciseSection({
                         <RoutineExerciseCard
                             key={item.id}
                             item={item}
+                            sets={routineExerciseSets[item.id] ?? []}
                             isEditing={isEditing}
                             onEdit={() => onEdit(item)}
                             onDelete={() => onDelete(item.id)}
                             onMoveUp={() => onMoveUp(index)}
                             onMoveDown={() => onMoveDown(index)}
+                            onUpdateSet={onUpdateSet}
+                            onAddSet={() => onAddSet(item.id)}
+                            onDeleteSet={onDeleteSet}
                         />
                     ))}
                 </View>

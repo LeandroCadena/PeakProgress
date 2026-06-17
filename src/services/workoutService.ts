@@ -318,7 +318,59 @@ export async function createWorkoutSetsFromTemplate(params: {
 
     if (!workoutSets.length) return;
 
+    const { data: existingSets, error: existingSetsError } = await supabase
+        .from("workout_sets")
+        .select("id")
+        .eq("workout_session_id", params.sessionId)
+        .limit(1);
+
+    if (existingSetsError) throw existingSetsError;
+
+    if (existingSets && existingSets.length > 0) {
+        return;
+    }
+
     const { error } = await supabase.from("workout_sets").insert(workoutSets);
+
+    if (error) throw error;
+}
+
+export async function updateRoutineExerciseSet(params: {
+    setId: string;
+    field: "weight" | "reps";
+    value: number;
+}) {
+    const { error } = await supabase
+        .from("routine_exercise_sets")
+        .update({
+            [params.field]: params.value,
+        })
+        .eq("id", params.setId);
+
+    if (error) throw error;
+}
+
+export async function createRoutineExerciseSet(params: {
+    routineExerciseId: string;
+    setNumber: number;
+    reps: number;
+    weight: number;
+}) {
+    const { error } = await supabase.from("routine_exercise_sets").insert({
+        routine_exercise_id: params.routineExerciseId,
+        set_number: params.setNumber,
+        reps: params.reps,
+        weight: params.weight,
+    });
+
+    if (error) throw error;
+}
+
+export async function deleteRoutineExerciseSet(setId: string) {
+    const { error } = await supabase
+        .from("routine_exercise_sets")
+        .delete()
+        .eq("id", setId);
 
     if (error) throw error;
 }

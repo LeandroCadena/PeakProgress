@@ -1,13 +1,17 @@
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import { RoutineExercise } from "../types/workout";
+import { RoutineExercise, RoutineExerciseSet } from "../types/workout";
 import {
     getRoutineExercises,
     deleteRoutineExercise as deleteRoutineExerciseService,
     updateRoutineExerciseConfig,
     getOrCreateActiveWorkoutSession,
     updateRoutineExercisePosition,
+    getRoutineExerciseSets,
+    updateRoutineExerciseSet,
+    createRoutineExerciseSet,
+    deleteRoutineExerciseSet,
 } from "../services/workoutService";
 import {
     updateRoutine,
@@ -36,15 +40,27 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const [editRoutineVisible, setEditRoutineVisible] = useState(false);
     const [editRoutineName, setEditRoutineName] = useState(routineName);
     const [editRoutineDescription, setEditRoutineDescription] = useState("");
+    const [routineExerciseSets, setRoutineExerciseSets] = useState<
+        Record<string, RoutineExerciseSet[]>
+    >({});
 
     const [isEditingRoutine, setIsEditingRoutine] = useState(false);
     const [draftRoutineName, setDraftRoutineName] = useState(routineName);
     const [draftRoutineDescription, setDraftRoutineDescription] = useState("");
 
+    useFocusEffect(
+        useCallback(() => {
+            fetchRoutineExercises();
+        }, [routineId])
+    );
+
     async function fetchRoutineExercises() {
         try {
             const data = await getRoutineExercises(routineId);
             setRoutineExercises(data);
+
+            const setGroups = await getRoutineExerciseSets(data.map((item) => item.id));
+            setRoutineExerciseSets(setGroups);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -184,11 +200,57 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         }
     }
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchRoutineExercises();
-        }, [routineId])
-    );
+    async function updateTemplateSet(
+        setId: string,
+        field: "weight" | "reps",
+        value: string
+    ) {
+        const numericValue = Number(value);
+
+        if (Number.isNaN(numericValue)) {
+            Alert.alert("Validation", "Please enter a valid number");
+            return;
+        }
+
+        try {
+            await updateRoutineExerciseSet({
+                setId,
+                field,
+                value: numericValue,
+            });
+
+            await fetchRoutineExercises();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
+    async function addTemplateSet(routineExerciseId: string) {
+        const currentSets = routineExerciseSets[routineExerciseId] ?? [];
+        const setNumber = currentSets.length + 1;
+
+        try {
+            await createRoutineExerciseSet({
+                routineExerciseId,
+                setNumber,
+                reps: 10,
+                weight: 0,
+            });
+
+            await fetchRoutineExercises();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
+    async function deleteTemplateSet(setId: string) {
+        try {
+            await deleteRoutineExerciseSet(setId);
+            await fetchRoutineExercises();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
 
     return {
         routineTitle,
@@ -227,5 +289,10 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         setDraftRoutineDescription,
         startEditingRoutine,
         cancelEditingRoutine,
+
+        routineExerciseSets,
+        updateTemplateSet,
+        addTemplateSet,
+        deleteTemplateSet,
     };
 }
