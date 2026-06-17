@@ -1,25 +1,13 @@
-import { useCallback, useState } from "react";
 import {
-    View,
     Text,
     StyleSheet,
-    TextInput,
     Pressable,
-    Alert,
     ScrollView,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import {
-    getProfile,
-    upsertProfile,
-    getWeightLogs,
-    createWeightLog,
-    removeWeightLog,
-} from "../services/profileService";
-import { WeightLog } from "../types/profile";
+import { useProfile } from "../hooks/useProfile";
 import ProfileForm from "../components/profile/ProfileForm";
 import WeightLogCard from "../components/profile/WeightLogCard";
 import WeightTrackingSection from "../components/profile/WeightTrackingSection";
@@ -27,96 +15,24 @@ import WeightTrackingSection from "../components/profile/WeightTrackingSection";
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
 
-    const [fullName, setFullName] = useState("");
-    const [goal, setGoal] = useState("");
-    const [experienceLevel, setExperienceLevel] = useState("");
-    const [heightCm, setHeightCm] = useState("");
-    const [weightKg, setWeightKg] = useState("");
-    const [newWeight, setNewWeight] = useState("");
-    const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
-
-    useFocusEffect(
-        useCallback(() => {
-            fetchProfile();
-            fetchWeightLogs();
-        }, [user?.id])
-    );
-
-    async function fetchProfile() {
-        if (!user?.id) return;
-
-        try {
-            const data = await getProfile(user.id);
-
-            if (!data) return;
-
-            setFullName(data.full_name ?? "");
-            setGoal(data.goal ?? "");
-            setExperienceLevel(data.experience_level ?? "");
-            setHeightCm(data.height_cm ? String(data.height_cm) : "");
-            setWeightKg(data.weight_kg ? String(data.weight_kg) : "");
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function saveProfile() {
-        if (!user?.id) return;
-
-        try {
-            await upsertProfile({
-                userId: user.id,
-                fullName,
-                goal,
-                experienceLevel,
-                heightCm,
-                weightKg,
-            });
-
-            Alert.alert("Saved", "Profile updated successfully.");
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function fetchWeightLogs() {
-        try {
-            const data = await getWeightLogs();
-            setWeightLogs(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function addWeightLog() {
-        if (!user?.id) return;
-
-        if (!newWeight.trim()) {
-            Alert.alert("Validation", "Weight is required");
-            return;
-        }
-
-        try {
-            await createWeightLog({
-                userId: user.id,
-                weightKg: Number(newWeight),
-            });
-
-            setNewWeight("");
-            await fetchWeightLogs();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function deleteWeightLog(id: string) {
-        try {
-            await removeWeightLog(id);
-            await fetchWeightLogs();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
+    const {
+        fullName,
+        setFullName,
+        goal,
+        setGoal,
+        experienceLevel,
+        setExperienceLevel,
+        heightCm,
+        setHeightCm,
+        weightKg,
+        setWeightKg,
+        newWeight,
+        setNewWeight,
+        weightLogs,
+        saveProfile,
+        addWeightLog,
+        deleteWeightLog,
+    } = useProfile();
 
     return (
         <ScrollView style={styles.container}>

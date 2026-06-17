@@ -93,12 +93,16 @@ export function useWorkoutSession({ sessionId, routineId, onFinish }: Params) {
 
             await fetchSavedSets();
 
-            if (!set.is_completed) {
+            const isBeingCompleted = !set.is_completed;
+
+            if (isBeingCompleted) {
                 const routineExercise = routineExercises.find(
                     (item) => item.exercise_id === set.exercise_id
                 );
 
-                setTimer(routineExercise?.rest_seconds ?? 90);
+                const restSeconds = routineExercise?.rest_seconds ?? 90;
+
+                setTimer(restSeconds);
                 setTimerRunning(true);
             }
         } catch (error: any) {
@@ -151,7 +155,11 @@ export function useWorkoutSession({ sessionId, routineId, onFinish }: Params) {
         }));
     }
 
-    function startTimer() {
+    function startTimer(seconds?: number) {
+        if (seconds) {
+            setTimer(seconds);
+        }
+
         setTimerRunning(true);
     }
 
@@ -174,27 +182,30 @@ export function useWorkoutSession({ sessionId, routineId, onFinish }: Params) {
     useEffect(() => {
         if (!timerRunning || timer <= 0) return;
 
-        const interval = setInterval(() => {
-            setTimer((prev) => {
-                if (prev <= 1) {
+        const intervalId = setInterval(() => {
+            setTimer((currentTimer) => {
+                if (currentTimer <= 1) {
                     setTimerRunning(false);
                     return 0;
                 }
 
-                return prev - 1;
+                return currentTimer - 1;
             });
         }, 1000);
 
-        return () => clearInterval(interval);
+        return () => clearInterval(intervalId);
     }, [timerRunning, timer]);
 
     return {
         routineExercises,
         savedSets,
         timer,
+        timerRunning,
+
         startTimer,
         pauseTimer,
         resetTimer,
+
         addEmptySet,
         updateSetValue,
         toggleSetCompleted,

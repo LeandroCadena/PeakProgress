@@ -46,7 +46,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
 
             <RestTimerCard
                 timer={timer}
-                onStart={startTimer}
+                onStart={() => startTimer()}
                 onPause={pauseTimer}
                 onReset={resetTimer}
             />
