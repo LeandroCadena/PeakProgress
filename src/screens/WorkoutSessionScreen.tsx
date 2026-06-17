@@ -25,6 +25,7 @@ import {
     finishWorkoutSession,
 } from "../services/workoutService";
 import RestTimerCard from "../components/workout/RestTimerCard";
+import WorkoutSetRow from "../components/workout/WorkoutSetRow";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -229,51 +230,38 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                             </View>
 
                             {savedSets[item.exercise_id]?.map((set) => (
-                                <View key={set.id} style={styles.setTableRow}>
-                                    <TextInput
-                                        style={[styles.setInput, set.is_completed && styles.disabledInput]}
-                                        keyboardType="numeric"
-                                        value={getSetInputValue(set.id, "weight", set.weight)}
-                                        editable={!set.is_completed}
-                                        onChangeText={(value) =>
-                                            updateLocalSetValue(set.id, "weight", value)
-                                        }
-                                        onEndEditing={(event) =>
-                                            updateSetValue(set.id, "weight", event.nativeEvent.text)
-                                        }
-                                    />
-                                    <TextInput
-                                        style={[styles.setInput, set.is_completed && styles.disabledInput]}
-                                        keyboardType="numeric"
-                                        value={getSetInputValue(set.id, "reps", set.reps)}
-                                        editable={!set.is_completed}
-                                        onChangeText={(value) =>
-                                            updateLocalSetValue(set.id, "reps", value)
-                                        }
-                                        onEndEditing={(event) =>
-                                            updateSetValue(set.id, "reps", event.nativeEvent.text)
-                                        }
-                                    />
-
-                                    <Pressable
-                                        style={[
-                                            styles.checkbox,
-                                            set.is_completed && styles.checkboxChecked,
-                                        ]}
-                                        onPress={() => toggleSetCompleted(set)}
-                                    >
-                                        <Text style={styles.checkboxText}>
-                                            {set.is_completed ? "✓" : ""}
-                                        </Text>
-                                    </Pressable>
-
-                                    <Pressable
-                                        style={styles.deleteSetButton}
-                                        onPress={() => deleteSet(set.id)}
-                                    >
-                                        <Text style={styles.deleteSetText}>X</Text>
-                                    </Pressable>
-                                </View>
+                                <WorkoutSetRow
+                                    key={set.id}
+                                    set={set}
+                                    weightValue={getSetInputValue(
+                                        set.id,
+                                        "weight",
+                                        set.weight
+                                    )}
+                                    repsValue={getSetInputValue(
+                                        set.id,
+                                        "reps",
+                                        set.reps
+                                    )}
+                                    onWeightChange={(value) =>
+                                        updateLocalSetValue(set.id, "weight", value)
+                                    }
+                                    onRepsChange={(value) =>
+                                        updateLocalSetValue(set.id, "reps", value)
+                                    }
+                                    onWeightBlur={(value) =>
+                                        updateSetValue(set.id, "weight", value)
+                                    }
+                                    onRepsBlur={(value) =>
+                                        updateSetValue(set.id, "reps", value)
+                                    }
+                                    onToggleCompleted={() =>
+                                        toggleSetCompleted(set)
+                                    }
+                                    onDelete={() =>
+                                        deleteSet(set.id)
+                                    }
+                                />
                             ))}
 
                             <Pressable
@@ -378,17 +366,6 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "600",
     },
-    deleteSetButton: {
-        backgroundColor: "#EF4444",
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        borderRadius: 8,
-    },
-    deleteSetText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        fontSize: 12,
-    },
     cancelButton: {
         backgroundColor: "#374151",
         paddingVertical: 14,
@@ -407,41 +384,6 @@ const styles = StyleSheet.create({
         color: "#9CA3AF",
         fontWeight: "700",
         fontSize: 12,
-    },
-    setTableRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        marginBottom: 8,
-    },
-    setInput: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        color: "#FFFFFF",
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    disabledInput: {
-        opacity: 0.5,
-    },
-    checkbox: {
-        flex: 1,
-        height: 42,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#4CAF50",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    checkboxChecked: {
-        backgroundColor: "#4CAF50",
-    },
-    checkboxText: {
-        color: "#FFFFFF",
-        fontWeight: "800",
     },
     addSetRow: {
         backgroundColor: "#102A1A",
