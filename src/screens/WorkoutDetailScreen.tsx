@@ -11,6 +11,7 @@ type RouteParams = {
 };
 
 type WorkoutSet = {
+    exercise_name_snapshot: string;
     id: string;
     set_number: number;
     reps: number;
@@ -52,7 +53,10 @@ export default function WorkoutDetailScreen() {
                     <Text style={styles.emptyText}>No sets saved for this workout.</Text>
                 }
                 renderItem={({ item }) => {
-                    const exerciseName = item.exercises?.[0]?.name ?? "Exercise";
+                    const exerciseName =
+                        item.exercise_name_snapshot ??
+                        item.exercises?.[0]?.name ??
+                        "Exercise";
 
                     return (
                         <View style={styles.card}>

@@ -11,6 +11,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { getCompletedWorkoutSessions } from "../services/historyService";
 
 type WorkoutSession = {
+    routine_name_snapshot: string;
     id: string;
     started_at: string;
     completed_at: string | null;
@@ -63,7 +64,10 @@ export default function HistoryScreen({ navigation }: any) {
                     <Text style={styles.emptyText}>No completed workouts yet.</Text>
                 }
                 renderItem={({ item }) => {
-                    const routineName = item.routines?.[0]?.name ?? "Routine";
+                    const routineName =
+                        item.routine_name_snapshot ??
+                        item.routines?.[0]?.name ??
+                        "Routine";
 
                     return (
                         <Pressable

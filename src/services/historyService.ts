@@ -7,6 +7,10 @@ export async function getCompletedWorkoutSessions() {
       id,
       started_at,
       completed_at,
+      routine_name_snapshot,
+      total_sets,
+      total_volume,
+      duration_minutes,
       routines (
         name
       )
@@ -27,6 +31,7 @@ export async function getWorkoutSets(sessionId: string) {
       set_number,
       reps,
       weight,
+      exercise_name_snapshot,
       exercises (
         name
       )
@@ -40,34 +45,17 @@ export async function getWorkoutSets(sessionId: string) {
 }
 
 export async function getWorkoutSummary(sessionId: string) {
-    const { data: session, error: sessionError } = await supabase
+    const { data, error } = await supabase
         .from("workout_sessions")
-        .select("started_at, completed_at")
+        .select("duration_minutes, total_sets, total_volume")
         .eq("id", sessionId)
         .single();
 
-    if (sessionError) throw sessionError;
-
-    const { data: sets, error: setsError } = await supabase
-        .from("workout_sets")
-        .select("reps, weight")
-        .eq("workout_session_id", sessionId);
-
-    if (setsError) throw setsError;
-
-    const totalSets = sets?.length ?? 0;
-
-    const totalVolume =
-        sets?.reduce((sum, set) => {
-            return sum + Number(set.weight ?? 0) * Number(set.reps ?? 0);
-        }, 0) ?? 0;
-
-    const start = new Date(session.started_at).getTime();
-    const end = new Date(session.completed_at ?? new Date()).getTime();
+    if (error) throw error;
 
     return {
-        durationMinutes: Math.max(1, Math.round((end - start) / 60000)),
-        totalSets,
-        totalVolume,
+        durationMinutes: data.duration_minutes ?? 0,
+        totalSets: data.total_sets ?? 0,
+        totalVolume: data.total_volume ?? 0,
     };
 }
