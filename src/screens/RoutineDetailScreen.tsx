@@ -27,6 +27,8 @@ import RoutineActions from "../components/routine/RoutineActions";
 import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
 import EditRoutineExerciseModal from "../components/routine/EditRoutineExerciseModal";
 import EditRoutineModal from "../components/routine/EditRoutineModal";
+import AvailableExerciseSection from "../components/routine/AvailableExerciseSection";
+import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
 
 type RouteParams = {
     RoutineDetail: {
@@ -220,34 +222,16 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 <Text style={styles.startButtonText}>Start Workout</Text>
             </Pressable>
 
-            <Text style={styles.sectionTitle}>Current exercises</Text>
+            <RoutineExerciseSection
+                routineExercises={routineExercises}
+                onEdit={openEditModal}
+                onDelete={deleteRoutineExercise}
+            />
 
-            {routineExercises.length === 0 ? (
-                <Text style={styles.emptyText}>No exercises added yet.</Text>
-            ) : (
-                <View style={styles.list}>
-                    {routineExercises.map((item) => (
-                        <RoutineExerciseCard
-                            key={item.id}
-                            item={item}
-                            onEdit={() => openEditModal(item)}
-                            onDelete={() => deleteRoutineExercise(item.id)}
-                        />
-                    ))}
-                </View>
-            )}
-
-            <Text style={styles.sectionTitle}>Add exercise</Text>
-
-            <View style={styles.list}>
-                {availableExercises.map((item) => (
-                    <AvailableExerciseCard
-                        key={item.id}
-                        exercise={item}
-                        onPress={() => addExerciseToRoutine(item.id)}
-                    />
-                ))}
-            </View>
+            <AvailableExerciseSection
+                exercises={availableExercises}
+                onAddExercise={addExerciseToRoutine}
+            />
 
             <EditRoutineExerciseModal
                 visible={!!editingExercise}
@@ -283,26 +267,12 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         marginBottom: 20,
     },
-    sectionTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
-        marginTop: 16,
-        marginBottom: 12,
-    },
-    list: {
-        gap: 12,
-        paddingBottom: 12,
-    },
     addCard: {
         backgroundColor: "#102A1A",
         padding: 16,
         borderRadius: 14,
         borderWidth: 1,
         borderColor: "#4CAF50",
-    },
-    emptyText: {
-        color: "#9CA3AF",
     },
     row: {
         flexDirection: "row",
