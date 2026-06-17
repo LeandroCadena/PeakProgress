@@ -11,7 +11,9 @@ import { useExercisePicker } from "../hooks/useExercisePicker";
 
 type RouteParams = {
     ExercisePicker: {
-        routineId: string;
+        mode: "routine" | "session";
+        routineId?: string;
+        sessionId?: string;
         currentCount: number;
         currentExerciseIds: string[];
     };
@@ -19,7 +21,8 @@ type RouteParams = {
 
 export default function ExercisePickerScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "ExercisePicker">>();
-    const { routineId, currentCount, currentExerciseIds } = route.params;
+    const { mode, routineId, sessionId, currentCount, currentExerciseIds } =
+        route.params;
 
     const {
         search,
@@ -32,7 +35,9 @@ export default function ExercisePickerScreen({ navigation }: any) {
         selectedFilterIds,
         toggleFilterId,
     } = useExercisePicker({
+        mode,
         routineId,
+        sessionId,
         currentCount,
         onExerciseAdded: () => navigation.goBack(),
     });

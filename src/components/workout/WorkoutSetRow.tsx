@@ -1,8 +1,8 @@
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
-import { SavedSet } from "../../types/workout";
+import { WorkoutSessionSet } from "../../types/workout";
 
 type WorkoutSetRowProps = {
-    set: SavedSet;
+    set: WorkoutSessionSet;
     weightValue: string;
     repsValue: string;
     onWeightChange: (value: string) => void;

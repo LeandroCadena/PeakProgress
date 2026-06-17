@@ -1,10 +1,10 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { RoutineExercise, SavedSet } from "../../types/workout";
+import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import WorkoutSetRow from "./WorkoutSetRow";
 
 type WorkoutExerciseCardProps = {
-    exercise: RoutineExercise;
-    savedSets: SavedSet[];
+    exercise: WorkoutSessionExercise;
+    savedSets: WorkoutSessionSet[];
     getSetInputValue: (
         setId: string,
         field: "weight" | "reps",
@@ -20,9 +20,10 @@ type WorkoutExerciseCardProps = {
         field: "weight" | "reps",
         value: string
     ) => void;
-    toggleSetCompleted: (set: SavedSet) => void;
+    toggleSetCompleted: (set: WorkoutSessionSet) => void;
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
+    onDeleteExercise: () => void;
 };
 
 export default function WorkoutExerciseCard({
@@ -34,20 +35,20 @@ export default function WorkoutExerciseCard({
     toggleSetCompleted,
     deleteSet,
     addEmptySet,
+    onDeleteExercise
 }: WorkoutExerciseCardProps) {
-    const exerciseName = exercise.exercise?.name ?? "Exercise";
+    const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
     return (
         <View style={styles.card}>
             <Text style={styles.cardTitle}>{exerciseName}</Text>
 
             <Text style={styles.cardText}>
-                Target: {exercise.sets} sets · {exercise.reps} reps ·{" "}
-                {exercise.rest_seconds}s rest
+                Rest: {exercise.rest_seconds}s
             </Text>
 
             <Text style={styles.cardText}>
-                Saved sets: {savedSets.length}/{exercise.sets}
+                Saved sets: {savedSets.length}
             </Text>
 
             <View style={styles.setTableHeader}>
@@ -82,9 +83,13 @@ export default function WorkoutExerciseCard({
 
             <Pressable
                 style={styles.addSetRow}
-                onPress={() => addEmptySet(exercise.exercise_id)}
+                onPress={() => addEmptySet(exercise.id)}
             >
                 <Text style={styles.addSetText}>+ Add Set</Text>
+            </Pressable>
+
+            <Pressable style={styles.deleteExerciseButton} onPress={onDeleteExercise}>
+                <Text style={styles.deleteExerciseText}>Remove Exercise</Text>
             </Pressable>
         </View>
     );
@@ -133,5 +138,16 @@ const styles = StyleSheet.create({
     addSetText: {
         color: "#4CAF50",
         fontWeight: "800",
+    },
+    deleteExerciseButton: {
+        backgroundColor: "#EF4444",
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: "center",
+        marginTop: 12,
+    },
+    deleteExerciseText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
     },
 });

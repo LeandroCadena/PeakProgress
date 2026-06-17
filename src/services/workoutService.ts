@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { RoutineExercise, RoutineExerciseSet, SavedSet } from "../types/workout";
+import { RoutineExercise, RoutineExerciseSet, WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 
 export async function getRoutineExercises(
     routineId: string
@@ -58,25 +58,31 @@ export async function getRoutineExerciseSets(
 
 export async function getSavedSets(
     sessionId: string
-): Promise<Record<string, SavedSet[]>> {
+): Promise<Record<string, WorkoutSessionSet[]>> {
     const { data, error } = await supabase
         .from("workout_sets")
-        .select("id, exercise_id, set_number, reps, weight, is_completed")
+        .select(`
+      id,
+      workout_session_exercise_id,
+      exercise_id,
+      set_number,
+      reps,
+      weight,
+      is_completed
+    `)
         .eq("workout_session_id", sessionId)
         .order("set_number", { ascending: true });
 
-    if (error) {
-        throw error;
-    }
+    if (error) throw error;
 
-    const grouped: Record<string, SavedSet[]> = {};
+    const grouped: Record<string, WorkoutSessionSet[]> = {};
 
     data?.forEach((set) => {
-        if (!grouped[set.exercise_id]) {
-            grouped[set.exercise_id] = [];
-        }
+        const groupKey = set.workout_session_exercise_id ?? set.exercise_id;
+        if (!groupKey) return;
 
-        grouped[set.exercise_id].push(set as SavedSet);
+        if (!grouped[groupKey]) grouped[groupKey] = [];
+        grouped[groupKey].push(set as WorkoutSessionSet);
     });
 
     return grouped;
@@ -146,7 +152,8 @@ export async function deleteWorkoutSet(setId: string) {
 
 export async function createEmptyWorkoutSet(params: {
     sessionId: string;
-    exerciseId: string;
+    workoutSessionExerciseId: string;
+    exerciseId: string | null;
     exerciseName: string;
     setNumber: number;
     reps: number;
@@ -154,6 +161,7 @@ export async function createEmptyWorkoutSet(params: {
 }) {
     const { error } = await supabase.from("workout_sets").insert({
         workout_session_id: params.sessionId,
+        workout_session_exercise_id: params.workoutSessionExerciseId,
         exercise_id: params.exerciseId,
         exercise_name_snapshot: params.exerciseName,
         set_number: params.setNumber,
@@ -275,7 +283,7 @@ export async function getOrCreateActiveWorkoutSession(params: {
 
     if (error) throw error;
 
-    await createWorkoutSetsFromTemplate({
+    await createWorkoutSessionExercisesFromRoutine({
         sessionId: data.id,
         routineId: params.routineId,
     });
@@ -403,6 +411,202 @@ export async function updateRoutineExercisePosition(params: {
             position: params.position,
         })
         .eq("id", params.routineExerciseId);
+
+    if (error) throw error;
+}
+
+export async function addExerciseToWorkoutSession(params: {
+    sessionId: string;
+    exerciseId: string;
+    exerciseName: string;
+    position: number;
+}) {
+    const { data: sessionExercise, error: sessionExerciseError } =
+        await supabase
+            .from("workout_session_exercises")
+            .insert({
+                workout_session_id: params.sessionId,
+                exercise_id: params.exerciseId,
+                exercise_name_snapshot: params.exerciseName,
+                position: params.position,
+                rest_seconds: 90,
+            })
+            .select("id")
+            .single();
+
+    if (sessionExerciseError) throw sessionExerciseError;
+
+    const { error: setError } = await supabase.from("workout_sets").insert({
+        workout_session_id: params.sessionId,
+        workout_session_exercise_id: sessionExercise.id,
+        exercise_id: params.exerciseId,
+        exercise_name_snapshot: params.exerciseName,
+        set_number: 1,
+        reps: 0,
+        weight: 0,
+        is_completed: false,
+    });
+
+    if (setError) throw setError;
+}
+
+export async function syncWorkoutSessionToRoutine(params: {
+    sessionId: string;
+    routineId: string;
+}) {
+    const { data: workoutSets, error } = await supabase
+        .from("workout_sets")
+        .select("exercise_id, exercise_name_snapshot, set_number, reps, weight")
+        .eq("workout_session_id", params.sessionId)
+        .order("set_number", { ascending: true });
+
+    if (error) throw error;
+
+    if (!workoutSets?.length) return;
+
+    const { data: routineExercises, error: routineExercisesError } =
+        await supabase
+            .from("routine_exercises")
+            .select("id, exercise_id")
+            .eq("routine_id", params.routineId);
+
+    if (routineExercisesError) throw routineExercisesError;
+
+    for (const workoutSet of workoutSets) {
+        if (!workoutSet.exercise_id) continue;
+
+        let routineExercise = routineExercises?.find(
+            (item) => item.exercise_id === workoutSet.exercise_id
+        );
+
+        if (!routineExercise) {
+            const { data: newRoutineExercise, error: insertError } = await supabase
+                .from("routine_exercises")
+                .insert({
+                    routine_id: params.routineId,
+                    exercise_id: workoutSet.exercise_id,
+                    sets: 0,
+                    reps: workoutSet.reps,
+                    weight: workoutSet.weight,
+                    rest_seconds: 90,
+                    position: routineExercises?.length ?? 0,
+                })
+                .select("id, exercise_id")
+                .single();
+
+            if (insertError) throw insertError;
+
+            routineExercise = newRoutineExercise;
+        }
+
+        const { error: upsertError } = await supabase
+            .from("routine_exercise_sets")
+            .upsert(
+                {
+                    routine_exercise_id: routineExercise.id,
+                    set_number: workoutSet.set_number,
+                    reps: workoutSet.reps,
+                    weight: workoutSet.weight,
+                },
+                {
+                    onConflict: "routine_exercise_id,set_number",
+                }
+            );
+
+        if (upsertError) throw upsertError;
+    }
+}
+
+export async function getWorkoutSessionExercises(
+    sessionId: string
+): Promise<WorkoutSessionExercise[]> {
+    const { data, error } = await supabase
+        .from("workout_session_exercises")
+        .select(`
+      id,
+      workout_session_id,
+      exercise_id,
+      exercise_name_snapshot,
+      position,
+      rest_seconds
+    `)
+        .eq("workout_session_id", sessionId)
+        .order("position", { ascending: true });
+
+    if (error) throw error;
+
+    return data ?? [];
+}
+
+export async function deleteExerciseFromWorkoutSession(params: {
+    sessionId: string;
+    exerciseId: string;
+}) {
+    const { error } = await supabase
+        .from("workout_sets")
+        .delete()
+        .eq("workout_session_id", params.sessionId)
+        .eq("exercise_id", params.exerciseId);
+
+    if (error) throw error;
+}
+
+export async function createWorkoutSessionExercisesFromRoutine(params: {
+    sessionId: string;
+    routineId: string;
+}) {
+    const routineExercises = await getRoutineExercises(params.routineId);
+
+    const routineExerciseSets = await getRoutineExerciseSets(
+        routineExercises.map((item) => item.id)
+    );
+
+    for (const routineExercise of routineExercises) {
+        const { data: sessionExercise, error: sessionExerciseError } =
+            await supabase
+                .from("workout_session_exercises")
+                .insert({
+                    workout_session_id: params.sessionId,
+                    exercise_id: routineExercise.exercise_id,
+                    exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
+                    position: routineExercise.position ?? 0,
+                    rest_seconds: routineExercise.rest_seconds ?? 90,
+                })
+                .select("id")
+                .single();
+
+        if (sessionExerciseError) throw sessionExerciseError;
+
+        const templateSets = routineExerciseSets[routineExercise.id] ?? [];
+
+        if (!templateSets.length) continue;
+
+        const workoutSets = templateSets.map((set) => ({
+            workout_session_id: params.sessionId,
+            workout_session_exercise_id: sessionExercise.id,
+            exercise_id: routineExercise.exercise_id,
+            exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
+            set_number: set.set_number,
+            reps: set.reps,
+            weight: set.weight ?? 0,
+            is_completed: false,
+        }));
+
+        const { error: setsError } = await supabase
+            .from("workout_sets")
+            .insert(workoutSets);
+
+        if (setsError) throw setsError;
+    }
+}
+
+export async function deleteWorkoutSessionExercise(
+    workoutSessionExerciseId: string
+) {
+    const { error } = await supabase
+        .from("workout_session_exercises")
+        .delete()
+        .eq("id", workoutSessionExerciseId);
 
     if (error) throw error;
 }

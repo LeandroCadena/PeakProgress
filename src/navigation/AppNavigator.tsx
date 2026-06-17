@@ -44,7 +44,9 @@ export type RootStackParamList = {
         exerciseName: string;
     };
     ExercisePicker: {
-        routineId: string;
+        mode: "routine" | "session";
+        routineId?: string;
+        sessionId?: string;
         currentCount: number;
         currentExerciseIds: string[];
     };

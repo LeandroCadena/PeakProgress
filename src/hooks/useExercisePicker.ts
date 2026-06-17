@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
-import { addExerciseToRoutine } from "../services/workoutService";
+import { addExerciseToRoutine, addExerciseToWorkoutSession } from "../services/workoutService";
 
 type Params = {
-    routineId: string;
+    mode: "routine" | "session";
+    routineId?: string;
+    sessionId?: string;
     currentCount: number;
     onExerciseAdded: () => void;
 };
@@ -14,6 +16,8 @@ export function useExercisePicker({
     routineId,
     currentCount,
     onExerciseAdded,
+    mode,
+    sessionId,
 }: Params) {
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
@@ -60,15 +64,28 @@ export function useExercisePicker({
 
     async function handleAddExercise(exerciseId: string) {
         try {
-            await addExerciseToRoutine({
-                routineId,
-                exerciseId,
-                sets: 3,
-                reps: 10,
-                weight: 0,
-                restSeconds: 90,
-                position: currentCount,
-            });
+            if (mode === "routine") {
+                await addExerciseToRoutine({
+                    routineId: routineId!,
+                    exerciseId,
+                    sets: 0,
+                    reps: 0,
+                    weight: 0,
+                    restSeconds: 90,
+                    position: currentCount,
+                });
+            } else {
+                const exercise = exercises.find(
+                    (item) => item.id === exerciseId
+                );
+
+                await addExerciseToWorkoutSession({
+                    sessionId: sessionId!,
+                    exerciseId,
+                    exerciseName: exercise?.name ?? "Exercise",
+                    position: currentCount,
+                });
+            }
 
             onExerciseAdded();
         } catch (error: any) {

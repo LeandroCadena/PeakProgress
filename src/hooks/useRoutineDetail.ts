@@ -72,9 +72,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
     function openEditModal(item: RoutineExercise) {
         setEditingExercise(item);
-        setEditSets(String(item.sets));
-        setEditReps(String(item.reps));
-        setEditWeight(String(item.weight ?? 0));
         setEditRestSeconds(String(item.rest_seconds));
     }
 

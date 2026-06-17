@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { RoutineExercise, SavedSet } from "../types/workout";
+import { RoutineExercise, WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import {
-    getRoutineExercises,
     getSavedSets,
     createEmptyWorkoutSet,
     updateWorkoutSetValue,
     toggleWorkoutSetCompleted,
     deleteWorkoutSet,
     finishWorkoutSession,
+    syncWorkoutSessionToRoutine,
+    getWorkoutSessionExercises,
+    deleteWorkoutSessionExercise,
 } from "../services/workoutService";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Params = {
     sessionId: string;
@@ -20,15 +23,42 @@ type Params = {
 
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
-    const [savedSets, setSavedSets] = useState<Record<string, SavedSet[]>>({});
+    const [sessionExercises, setSessionExercises] = useState<WorkoutSessionExercise[]>([]);
+    const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
 
-    async function fetchRoutineExercises() {
+    useFocusEffect(
+        useCallback(() => {
+            if (!sessionId || !routineId) return;
+
+            fetchSessionExercises();
+            fetchSavedSets();
+        }, [sessionId, routineId])
+    );
+
+    useEffect(() => {
+        if (!timerRunning || timer <= 0) return;
+
+        const intervalId = setInterval(() => {
+            setTimer((currentTimer) => {
+                if (currentTimer <= 1) {
+                    setTimerRunning(false);
+                    return 0;
+                }
+
+                return currentTimer - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [timerRunning, timer]);
+
+    async function fetchSessionExercises() {
         try {
-            const data = await getRoutineExercises(routineId);
-            setRoutineExercises(data);
+            const data = await getWorkoutSessionExercises(sessionId);
+            setSessionExercises(data);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -43,11 +73,14 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    async function addEmptySet(exerciseId: string) {
-        const currentSets = savedSets[exerciseId] ?? [];
+    async function addEmptySet(workoutSessionExerciseId: string) {
+        const currentSets = savedSets[workoutSessionExerciseId] ?? [];
         const lastSet = currentSets[currentSets.length - 1];
-
         const setNumber = currentSets.length + 1;
+
+        const sessionExercise = sessionExercises.find(
+            (item) => item.id === workoutSessionExerciseId
+        );
 
         const lastWeight = lastSet
             ? editingValues[`${lastSet.id}-weight`] ?? String(lastSet.weight ?? 0)
@@ -60,10 +93,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         try {
             await createEmptyWorkoutSet({
                 sessionId,
-                exerciseId,
-                exerciseName:
-                    routineExercises.find((item) => item.exercise_id === exerciseId)
-                        ?.exercise?.name ?? "Exercise",
+                workoutSessionExerciseId,
+                exerciseId: sessionExercise?.exercise_id ?? null,
+                exerciseName: sessionExercise?.exercise_name_snapshot ?? "Exercise",
                 setNumber,
                 reps: Number(lastReps),
                 weight: Number(lastWeight),
@@ -100,7 +132,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    async function toggleSetCompleted(set: SavedSet) {
+    async function toggleSetCompleted(set: WorkoutSessionSet) {
         try {
             await toggleWorkoutSetCompleted({
                 setId: set.id,
@@ -135,17 +167,20 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    async function finishWorkout() {
-        if (!sessionId) {
-            Alert.alert("Error", "Missing session id");
-            return;
-        }
-
+    async function finishWorkout(shouldSyncRoutine = false) {
         try {
+            if (shouldSyncRoutine) {
+                await syncWorkoutSessionToRoutine({
+                    sessionId,
+                    routineId,
+                });
+            }
+
             await finishWorkoutSession({
                 sessionId,
                 routineName,
             });
+
             onFinish();
         } catch (error: any) {
             Alert.alert("Error finishing workout", error.message);
@@ -191,32 +226,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         setTimerRunning(false);
     }
 
-    useEffect(() => {
-        if (!sessionId || !routineId) return;
-
-        fetchRoutineExercises();
-        fetchSavedSets();
-    }, [sessionId, routineId]);
-
-    useEffect(() => {
-        if (!timerRunning || timer <= 0) return;
-
-        const intervalId = setInterval(() => {
-            setTimer((currentTimer) => {
-                if (currentTimer <= 1) {
-                    setTimerRunning(false);
-                    return 0;
-                }
-
-                return currentTimer - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(intervalId);
-    }, [timerRunning, timer]);
+    async function deleteSessionExercise(workoutSessionExerciseId: string) {
+        try {
+            await deleteWorkoutSessionExercise(workoutSessionExerciseId);
+            await fetchSessionExercises();
+            await fetchSavedSets();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
 
     return {
-        routineExercises,
+        sessionExercises,
         savedSets,
         timer,
         timerRunning,
@@ -232,5 +253,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         finishWorkout,
         getSetInputValue,
         updateLocalSetValue,
+        deleteSessionExercise,
     };
 }

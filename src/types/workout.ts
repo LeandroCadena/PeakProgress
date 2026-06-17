@@ -8,23 +8,13 @@ export type WorkoutSessionRouteParams = {
 
 export type RoutineExercise = {
     id: string;
+    routine_id: string;
     exercise_id: string;
-    sets: number;
-    reps: number;
-    weight: number | null;
+    position: number;
     rest_seconds: number;
     exercise: {
         name: string;
     } | null;
-};
-
-export type SavedSet = {
-    id: string;
-    exercise_id: string;
-    set_number: number;
-    reps: number;
-    weight: number | null;
-    is_completed: boolean;
 };
 
 export type RoutineExerciseSet = {
@@ -33,4 +23,23 @@ export type RoutineExerciseSet = {
     set_number: number;
     reps: number;
     weight: number | null;
+};
+
+export type WorkoutSessionExercise = {
+    id: string;
+    workout_session_id: string;
+    exercise_id: string | null;
+    exercise_name_snapshot: string;
+    position: number;
+    rest_seconds: number;
+};
+
+export type WorkoutSessionSet = {
+    id: string;
+    workout_session_exercise_id: string | null;
+    exercise_id: string | null;
+    set_number: number;
+    reps: number;
+    weight: number | null;
+    is_completed: boolean;
 };

@@ -97,6 +97,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                     style={styles.addExerciseButton}
                     onPress={() =>
                         navigation.navigate("ExercisePicker", {
+                            mode: "routine",
                             routineId,
                             currentCount: routineExercises.length,
                             currentExerciseIds: routineExercises.map((item) => item.exercise_id),
@@ -105,7 +106,8 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 >
                     <Text style={styles.addExerciseButtonText}>+ Add Exercise</Text>
                 </Pressable>
-            ) : null}
+            ) : null
+            }
 
             <EditRoutineExerciseModal
                 visible={!!editingExercise}
@@ -120,7 +122,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onSave={saveEditedExercise}
                 onCancel={() => setEditingExercise(null)}
             />
-        </RoutineDetailLayout>
+        </RoutineDetailLayout >
     );
 }
 

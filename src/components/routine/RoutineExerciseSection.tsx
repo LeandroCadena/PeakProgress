@@ -51,14 +51,14 @@ export default function RoutineExerciseSection({
                             item={item}
                             sets={routineExerciseSets[item.id] ?? []}
                             isEditing={isEditing}
+                            onAddSet={() => onAddSet(item.id)}
+                            onUpdateSet={onUpdateSet}
+                            onDeleteSet={onDeleteSet}
+                            updateLocalTemplateSetValue={updateLocalTemplateSetValue}
                             onEdit={() => onEdit(item)}
                             onDelete={() => onDelete(item.id)}
                             onMoveUp={() => onMoveUp(index)}
                             onMoveDown={() => onMoveDown(index)}
-                            onUpdateSet={onUpdateSet}
-                            onAddSet={() => onAddSet(item.id)}
-                            onDeleteSet={onDeleteSet}
-                            updateLocalTemplateSetValue={updateLocalTemplateSetValue}
                         />
                     ))}
                 </View>

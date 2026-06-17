@@ -16,7 +16,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     const { sessionId, routineId, routineName } = route.params;
 
     const {
-        routineExercises,
+        sessionExercises,
         savedSets,
         timer,
         startTimer,
@@ -29,6 +29,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         finishWorkout,
         getSetInputValue,
         updateLocalSetValue,
+        deleteSessionExercise,
     } = useWorkoutSession({
         sessionId,
         routineId,
@@ -53,25 +54,50 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             />
 
             <FlatList
-                data={routineExercises}
+                data={sessionExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 renderItem={({ item }) => (
                     <WorkoutExerciseCard
                         exercise={item}
-                        savedSets={savedSets[item.exercise_id] ?? []}
+                        savedSets={savedSets[item.id] ?? []}
                         getSetInputValue={getSetInputValue}
                         updateLocalSetValue={updateLocalSetValue}
                         updateSetValue={updateSetValue}
                         toggleSetCompleted={toggleSetCompleted}
                         deleteSet={deleteSet}
                         addEmptySet={addEmptySet}
+                        onDeleteExercise={() => deleteSessionExercise(item.id)}
                     />
                 )}
             />
 
-            <Pressable style={styles.finishButton} onPress={finishWorkout}>
-                <Text style={styles.buttonText}>Finish Workout</Text>
+            <Pressable
+                style={styles.addExerciseButton}
+                onPress={() =>
+                    navigation.navigate("ExercisePicker", {
+                        mode: "session",
+                        sessionId,
+                        currentCount: sessionExercises.length,
+                        currentExerciseIds: sessionExercises.map((item) => item.exercise_id),
+                    })
+                }
+            >
+                <Text style={styles.addExerciseButtonText}>+ Add Exercise</Text>
+            </Pressable>
+
+            <Pressable
+                style={styles.finishButton}
+                onPress={() => finishWorkout(true)}
+            >
+                <Text style={styles.buttonText}>Finish & Update Routine</Text>
+            </Pressable>
+
+            <Pressable
+                style={styles.finishSecondaryButton}
+                onPress={() => finishWorkout(false)}
+            >
+                <Text style={styles.buttonText}>Finish Only</Text>
             </Pressable>
         </View>
     );
@@ -108,5 +134,27 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
+    },
+    addExerciseButton: {
+        backgroundColor: "#102A1A",
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#4CAF50",
+        alignItems: "center",
+        marginBottom: 12,
+    },
+    addExerciseButtonText: {
+        color: "#4CAF50",
+        fontWeight: "800",
+    },
+    finishSecondaryButton: {
+        backgroundColor: "#1F2937",
+        borderWidth: 1,
+        borderColor: "#374151",
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: "center",
+        marginTop: 10,
     },
 });

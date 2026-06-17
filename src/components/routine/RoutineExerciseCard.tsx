@@ -65,11 +65,6 @@ export default function RoutineExerciseCard({
                 </Pressable>
             ) : null}
 
-            <Text style={styles.cardText}>
-                {item.sets} sets · {item.reps} reps · {item.weight ?? 0} kg ·{" "}
-                {item.rest_seconds}s rest
-            </Text>
-
             {isEditing ? (
                 <>
                     <View style={styles.cardActions}>
