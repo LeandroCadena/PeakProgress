@@ -29,26 +29,28 @@ export default function RoutineExerciseCard({
                 {item.rest_seconds}s rest
             </Text>
 
-            <View style={styles.cardActions}>
-                <Pressable style={styles.editButton} onPress={onEdit}>
-                    <Text style={styles.actionText}>Edit</Text>
-                </Pressable>
-
-                <Pressable style={styles.deleteButton} onPress={onDelete}>
-                    <Text style={styles.actionText}>Delete</Text>
-                </Pressable>
-            </View>
-
             {isEditing ? (
-                <View style={styles.moveActions}>
-                    <Pressable style={styles.moveButton} onPress={onMoveUp}>
-                        <Text style={styles.moveText}>↑</Text>
-                    </Pressable>
+                <>
+                    <View style={styles.cardActions}>
+                        <Pressable style={styles.editButton} onPress={onEdit}>
+                            <Text style={styles.actionText}>Edit</Text>
+                        </Pressable>
 
-                    <Pressable style={styles.moveButton} onPress={onMoveDown}>
-                        <Text style={styles.moveText}>↓</Text>
-                    </Pressable>
-                </View>
+                        <Pressable style={styles.deleteButton} onPress={onDelete}>
+                            <Text style={styles.actionText}>Delete</Text>
+                        </Pressable>
+                    </View>
+
+                    <View style={styles.moveActions}>
+                        <Pressable style={styles.moveButton} onPress={onMoveUp}>
+                            <Text style={styles.moveText}>↑</Text>
+                        </Pressable>
+
+                        <Pressable style={styles.moveButton} onPress={onMoveDown}>
+                            <Text style={styles.moveText}>↓</Text>
+                        </Pressable>
+                    </View>
+                </>
             ) : null}
         </View>
     );

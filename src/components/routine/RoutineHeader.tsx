@@ -10,6 +10,7 @@ type Props = {
     onStartEdit: () => void;
     onSave: () => void;
     onCancel: () => void;
+    onDelete: () => void;
 };
 
 export default function RoutineHeader({
@@ -21,6 +22,7 @@ export default function RoutineHeader({
     onStartEdit,
     onSave,
     onCancel,
+    onDelete
 }: Props) {
     return (
         <View style={styles.container}>
@@ -45,6 +47,9 @@ export default function RoutineHeader({
 
                         <Pressable style={styles.cancelButton} onPress={onCancel}>
                             <Ionicons name="close-outline" size={22} color="#FFFFFF" />
+                        </Pressable>
+                        <Pressable style={styles.deleteButton} onPress={onDelete}>
+                            <Text style={styles.deleteButtonText}>Delete Routine</Text>
                         </Pressable>
                     </View>
                 ) : (
@@ -131,5 +136,16 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: "center",
         justifyContent: "center",
+    },
+    deleteButton: {
+        backgroundColor: "#EF4444",
+        paddingVertical: 12,
+        borderRadius: 12,
+        marginTop: 12,
+    },
+    deleteButtonText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        textAlign: "center",
     },
 });

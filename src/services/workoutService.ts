@@ -121,11 +121,13 @@ export async function deleteWorkoutSet(setId: string) {
 export async function createEmptyWorkoutSet(params: {
     sessionId: string;
     exerciseId: string;
+    exerciseName: string;
     setNumber: number;
 }) {
     const { error } = await supabase.from("workout_sets").insert({
         workout_session_id: params.sessionId,
         exercise_id: params.exerciseId,
+        exercise_name_snapshot: params.exerciseName,
         set_number: params.setNumber,
         reps: 10,
         weight: 0,
@@ -135,13 +137,49 @@ export async function createEmptyWorkoutSet(params: {
     if (error) throw error;
 }
 
-export async function finishWorkoutSession(sessionId: string) {
+export async function finishWorkoutSession(params: {
+    sessionId: string;
+    routineName: string;
+}) {
     const completedAt = new Date().toISOString();
+
+    const { data: session, error: sessionError } = await supabase
+        .from("workout_sessions")
+        .select("started_at")
+        .eq("id", params.sessionId)
+        .single();
+
+    if (sessionError) throw sessionError;
+
+    const { data: sets, error: setsError } = await supabase
+        .from("workout_sets")
+        .select("reps, weight")
+        .eq("workout_session_id", params.sessionId);
+
+    if (setsError) throw setsError;
+
+    const totalSets = sets?.length ?? 0;
+
+    const totalVolume =
+        sets?.reduce((sum, set) => {
+            return sum + Number(set.weight ?? 0) * Number(set.reps ?? 0);
+        }, 0) ?? 0;
+
+    const start = new Date(session.started_at).getTime();
+    const end = new Date(completedAt).getTime();
+
+    const durationMinutes = Math.max(1, Math.round((end - start) / 60000));
 
     const { data, error } = await supabase
         .from("workout_sessions")
-        .update({ completed_at: completedAt })
-        .eq("id", sessionId)
+        .update({
+            completed_at: completedAt,
+            routine_name_snapshot: params.routineName,
+            total_sets: totalSets,
+            total_volume: totalVolume,
+            duration_minutes: durationMinutes,
+        })
+        .eq("id", params.sessionId)
         .select("id, completed_at")
         .single();
 

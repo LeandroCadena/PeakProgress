@@ -48,6 +48,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
         startEditingRoutine,
         cancelEditingRoutine,
         moveRoutineExercise,
+        deleteRoutine
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -65,6 +66,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onStartEdit={startEditingRoutine}
                 onSave={saveRoutineChanges}
                 onCancel={cancelEditingRoutine}
+                onDelete={deleteRoutine}
             />
 
             <Pressable style={styles.startButton} onPress={startWorkout}>

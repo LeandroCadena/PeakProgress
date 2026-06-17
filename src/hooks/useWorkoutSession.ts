@@ -14,10 +14,11 @@ import {
 type Params = {
     sessionId: string;
     routineId: string;
+    routineName: string;
     onFinish: () => void;
 };
 
-export function useWorkoutSession({ sessionId, routineId, onFinish }: Params) {
+export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
     const [savedSets, setSavedSets] = useState<Record<string, SavedSet[]>>({});
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
@@ -46,10 +47,15 @@ export function useWorkoutSession({ sessionId, routineId, onFinish }: Params) {
         const currentSets = savedSets[exerciseId] ?? [];
         const setNumber = currentSets.length + 1;
 
+        const routineExercise = routineExercises.find(
+            (item) => item.exercise_id === exerciseId
+        );
+
         try {
             await createEmptyWorkoutSet({
                 sessionId,
                 exerciseId,
+                exerciseName: routineExercise?.exercise?.name ?? "Exercise",
                 setNumber,
             });
 
@@ -126,7 +132,10 @@ export function useWorkoutSession({ sessionId, routineId, onFinish }: Params) {
         }
 
         try {
-            await finishWorkoutSession(sessionId);
+            await finishWorkoutSession({
+                sessionId,
+                routineName,
+            });
             onFinish();
         } catch (error: any) {
             Alert.alert("Error finishing workout", error.message);

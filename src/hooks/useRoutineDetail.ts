@@ -108,21 +108,12 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     }
 
     async function deleteRoutine() {
-        Alert.alert("Delete routine", "Are you sure?", [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Delete",
-                style: "destructive",
-                onPress: async () => {
-                    try {
-                        await deleteRoutineById(routineId);
-                        navigation.goBack();
-                    } catch (error: any) {
-                        Alert.alert("Error", error.message);
-                    }
-                },
-            },
-        ]);
+        try {
+            await deleteRoutineById(routineId);
+            navigation.goBack();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
     }
 
     async function startWorkout() {

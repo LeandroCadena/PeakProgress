@@ -32,6 +32,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     } = useWorkoutSession({
         sessionId,
         routineId,
+        routineName,
         onFinish: () =>
             navigation.navigate("WorkoutSummary", {
                 sessionId,
