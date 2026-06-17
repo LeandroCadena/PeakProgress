@@ -167,14 +167,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    async function finishWorkout(shouldSyncRoutine = false) {
+    async function finishWorkout() {
         try {
-            if (shouldSyncRoutine) {
-                await syncWorkoutSessionToRoutine({
-                    sessionId,
-                    routineId,
-                });
-            }
+            await syncWorkoutSessionToRoutine({
+                sessionId,
+                routineId,
+            });
 
             await finishWorkoutSession({
                 sessionId,

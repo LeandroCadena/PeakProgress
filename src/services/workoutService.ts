@@ -454,66 +454,77 @@ export async function syncWorkoutSessionToRoutine(params: {
     sessionId: string;
     routineId: string;
 }) {
-    const { data: workoutSets, error } = await supabase
+    const sessionExercises = await getWorkoutSessionExercises(params.sessionId);
+
+    const { data: workoutSets, error: workoutSetsError } = await supabase
         .from("workout_sets")
-        .select("exercise_id, exercise_name_snapshot, set_number, reps, weight")
+        .select(`
+      workout_session_exercise_id,
+      exercise_id,
+      set_number,
+      reps,
+      weight
+    `)
         .eq("workout_session_id", params.sessionId)
         .order("set_number", { ascending: true });
 
-    if (error) throw error;
+    if (workoutSetsError) throw workoutSetsError;
 
-    if (!workoutSets?.length) return;
+    await supabase
+        .from("routine_exercises")
+        .delete()
+        .eq("routine_id", params.routineId);
 
-    const { data: routineExercises, error: routineExercisesError } =
-        await supabase
-            .from("routine_exercises")
-            .select("id, exercise_id")
-            .eq("routine_id", params.routineId);
+    for (const sessionExercise of sessionExercises) {
+        if (!sessionExercise.exercise_id) continue;
 
-    if (routineExercisesError) throw routineExercisesError;
-
-    for (const workoutSet of workoutSets) {
-        if (!workoutSet.exercise_id) continue;
-
-        let routineExercise = routineExercises?.find(
-            (item) => item.exercise_id === workoutSet.exercise_id
-        );
-
-        if (!routineExercise) {
-            const { data: newRoutineExercise, error: insertError } = await supabase
+        const { data: newRoutineExercise, error: routineExerciseError } =
+            await supabase
                 .from("routine_exercises")
                 .insert({
                     routine_id: params.routineId,
-                    exercise_id: workoutSet.exercise_id,
+                    exercise_id: sessionExercise.exercise_id,
+                    position: sessionExercise.position,
+                    rest_seconds: sessionExercise.rest_seconds,
                     sets: 0,
-                    reps: workoutSet.reps,
-                    weight: workoutSet.weight,
-                    rest_seconds: 90,
-                    position: routineExercises?.length ?? 0,
+                    reps: 0,
+                    weight: 0,
                 })
-                .select("id, exercise_id")
+                .select("id")
                 .single();
 
-            if (insertError) throw insertError;
+        if (routineExerciseError) throw routineExerciseError;
 
-            routineExercise = newRoutineExercise;
+        const relatedSets =
+            workoutSets?.filter(
+                (set) => set.workout_session_exercise_id === sessionExercise.id
+            ) ?? [];
+
+        if (relatedSets.length > 0) {
+            const routineSets = relatedSets.map((set) => ({
+                routine_exercise_id: newRoutineExercise.id,
+                set_number: set.set_number,
+                reps: set.reps,
+                weight: set.weight ?? 0,
+            }));
+
+            const { error: routineSetsError } = await supabase
+                .from("routine_exercise_sets")
+                .insert(routineSets);
+
+            if (routineSetsError) throw routineSetsError;
         }
 
-        const { error: upsertError } = await supabase
-            .from("routine_exercise_sets")
-            .upsert(
-                {
-                    routine_exercise_id: routineExercise.id,
-                    set_number: workoutSet.set_number,
-                    reps: workoutSet.reps,
-                    weight: workoutSet.weight,
-                },
-                {
-                    onConflict: "routine_exercise_id,set_number",
-                }
-            );
+        const firstSet = relatedSets[0];
 
-        if (upsertError) throw upsertError;
+        await supabase
+            .from("routine_exercises")
+            .update({
+                sets: relatedSets.length,
+                reps: firstSet?.reps ?? 0,
+                weight: firstSet?.weight ?? 0,
+            })
+            .eq("id", newRoutineExercise.id);
     }
 }
 

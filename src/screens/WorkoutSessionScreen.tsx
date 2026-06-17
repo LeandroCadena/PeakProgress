@@ -86,18 +86,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 <Text style={styles.addExerciseButtonText}>+ Add Exercise</Text>
             </Pressable>
 
-            <Pressable
-                style={styles.finishButton}
-                onPress={() => finishWorkout(true)}
-            >
-                <Text style={styles.buttonText}>Finish & Update Routine</Text>
-            </Pressable>
-
-            <Pressable
-                style={styles.finishSecondaryButton}
-                onPress={() => finishWorkout(false)}
-            >
-                <Text style={styles.buttonText}>Finish Only</Text>
+            <Pressable style={styles.finishButton} onPress={finishWorkout}>
+                <Text style={styles.buttonText}>Finish Workout</Text>
             </Pressable>
         </View>
     );
@@ -147,14 +137,5 @@ const styles = StyleSheet.create({
     addExerciseButtonText: {
         color: "#4CAF50",
         fontWeight: "800",
-    },
-    finishSecondaryButton: {
-        backgroundColor: "#1F2937",
-        borderWidth: 1,
-        borderColor: "#374151",
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: "center",
-        marginTop: 10,
     },
 });
