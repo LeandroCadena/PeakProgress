@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import { Exercise } from "../types/exercise";
 import { RoutineExercise } from "../types/workout";
-import { getExercises } from "../services/exerciseService";
 import {
     getRoutineExercises,
-    addExerciseToRoutine as addExerciseToRoutineService,
     deleteRoutineExercise as deleteRoutineExerciseService,
     updateRoutineExerciseConfig,
     getOrCreateActiveWorkoutSession,
@@ -15,6 +12,7 @@ import {
     updateRoutine,
     deleteRoutineById,
 } from "../services/routineService";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Params = {
     routineId: string;
@@ -26,13 +24,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const { user } = useAuth();
 
     const [routineTitle, setRoutineTitle] = useState(routineName);
-    const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
-
-    const [sets, setSets] = useState("3");
-    const [reps, setReps] = useState("10");
-    const [weight, setWeight] = useState("0");
-    const [restSeconds, setRestSeconds] = useState("90");
 
     const [editingExercise, setEditingExercise] = useState<RoutineExercise | null>(null);
     const [editSets, setEditSets] = useState("");
@@ -48,37 +40,10 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const [draftRoutineName, setDraftRoutineName] = useState(routineName);
     const [draftRoutineDescription, setDraftRoutineDescription] = useState("");
 
-    async function fetchAvailableExercises() {
-        try {
-            const data = await getExercises();
-            setAvailableExercises(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
     async function fetchRoutineExercises() {
         try {
             const data = await getRoutineExercises(routineId);
             setRoutineExercises(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function addExerciseToRoutine(exerciseId: string) {
-        try {
-            await addExerciseToRoutineService({
-                routineId,
-                exerciseId,
-                sets: Number(sets),
-                reps: Number(reps),
-                weight: Number(weight),
-                restSeconds: Number(restSeconds),
-                position: routineExercises.length,
-            });
-
-            await fetchRoutineExercises();
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -193,24 +158,15 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         setIsEditingRoutine(false);
     }
 
-    useEffect(() => {
-        fetchAvailableExercises();
-        fetchRoutineExercises();
-    }, [routineId]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchRoutineExercises();
+        }, [routineId])
+    );
 
     return {
         routineTitle,
-        availableExercises,
         routineExercises,
-
-        sets,
-        reps,
-        weight,
-        restSeconds,
-        setSets,
-        setReps,
-        setWeight,
-        setRestSeconds,
 
         editingExercise,
         setEditingExercise,
@@ -230,7 +186,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         setEditRoutineName,
         setEditRoutineDescription,
 
-        addExerciseToRoutine,
         openEditModal,
         saveEditedExercise,
         deleteRoutineExercise,

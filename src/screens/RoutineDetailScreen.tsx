@@ -7,7 +7,6 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
 import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
 import EditRoutineExerciseModal from "../components/routine/EditRoutineExerciseModal";
-import AvailableExerciseSection from "../components/routine/AvailableExerciseSection";
 import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
 import RoutineHeader from "../components/routine/RoutineHeader";
 
@@ -24,7 +23,6 @@ export default function RoutineDetailScreen({ navigation }: any) {
 
     const {
         routineTitle,
-        availableExercises,
         routineExercises,
         editingExercise,
         setEditingExercise,
@@ -37,7 +35,6 @@ export default function RoutineDetailScreen({ navigation }: any) {
         setEditWeight,
         setEditRestSeconds,
         editRoutineDescription,
-        addExerciseToRoutine,
         openEditModal,
         saveEditedExercise,
         deleteRoutineExercise,
