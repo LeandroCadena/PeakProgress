@@ -230,14 +230,19 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         const currentSets = routineExerciseSets[routineExerciseId] ?? [];
         const lastSet = currentSets[currentSets.length - 1];
 
-        const setNumber = currentSets.length + 1;
+        const setNumber =
+            currentSets.length > 0
+                ? Math.max(...currentSets.map((set) => set.set_number)) + 1
+                : 1;
 
         const lastWeight = lastSet
-            ? getTemplateSetInputValue(lastSet.id, "weight", lastSet.weight)
+            ? templateSetDraftValues[`${lastSet.id}-weight`] ??
+            String(lastSet.weight ?? 0)
             : "0";
 
         const lastReps = lastSet
-            ? getTemplateSetInputValue(lastSet.id, "reps", lastSet.reps)
+            ? templateSetDraftValues[`${lastSet.id}-reps`] ??
+            String(lastSet.reps ?? 0)
             : "0";
 
         try {
@@ -250,7 +255,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
             await updateRoutineExerciseSetCount({
                 routineExerciseId,
-                sets: setNumber,
+                sets: currentSets.length + 1,
             });
 
             await fetchRoutineExercises();
