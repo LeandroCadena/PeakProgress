@@ -26,3 +26,11 @@ export type SavedSet = {
     weight: number | null;
     is_completed: boolean;
 };
+
+export type RoutineExerciseSet = {
+    id: string;
+    routine_exercise_id: string;
+    set_number: number;
+    reps: number;
+    weight: number | null;
+};

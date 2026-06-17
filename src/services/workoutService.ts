@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { RoutineExercise, SavedSet } from "../types/workout";
+import { RoutineExercise, RoutineExerciseSet, SavedSet } from "../types/workout";
 
 export async function getRoutineExercises(
     routineId: string
@@ -28,6 +28,32 @@ export async function getRoutineExercises(
         ...item,
         exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
     })) as RoutineExercise[];
+}
+
+export async function getRoutineExerciseSets(
+    routineExerciseIds: string[]
+): Promise<Record<string, RoutineExerciseSet[]>> {
+    if (!routineExerciseIds.length) return {};
+
+    const { data, error } = await supabase
+        .from("routine_exercise_sets")
+        .select("id, routine_exercise_id, set_number, reps, weight")
+        .in("routine_exercise_id", routineExerciseIds)
+        .order("set_number", { ascending: true });
+
+    if (error) throw error;
+
+    const grouped: Record<string, RoutineExerciseSet[]> = {};
+
+    data?.forEach((set) => {
+        if (!grouped[set.routine_exercise_id]) {
+            grouped[set.routine_exercise_id] = [];
+        }
+
+        grouped[set.routine_exercise_id].push(set as RoutineExerciseSet);
+    });
+
+    return grouped;
 }
 
 export async function getSavedSets(
@@ -197,17 +223,36 @@ export async function addExerciseToRoutine(params: {
     restSeconds: number;
     position: number;
 }) {
-    const { error } = await supabase.from("routine_exercises").insert({
-        routine_id: params.routineId,
-        exercise_id: params.exerciseId,
-        sets: params.sets,
-        reps: params.reps,
-        weight: params.weight,
-        rest_seconds: params.restSeconds,
-        position: params.position,
-    });
+    const { data, error } = await supabase
+        .from("routine_exercises")
+        .insert({
+            routine_id: params.routineId,
+            exercise_id: params.exerciseId,
+            sets: params.sets,
+            reps: params.reps,
+            weight: params.weight,
+            rest_seconds: params.restSeconds,
+            position: params.position,
+        })
+        .select("id")
+        .single();
 
     if (error) throw error;
+
+    const templateSets = Array.from({ length: params.sets }, (_, index) => ({
+        routine_exercise_id: data.id,
+        set_number: index + 1,
+        reps: params.reps,
+        weight: params.weight,
+    }));
+
+    const { error: setsError } = await supabase
+        .from("routine_exercise_sets")
+        .insert(templateSets);
+
+    if (setsError) throw setsError;
+
+    return data;
 }
 
 export async function getOrCreateActiveWorkoutSession(params: {
@@ -241,7 +286,41 @@ export async function getOrCreateActiveWorkoutSession(params: {
 
     if (error) throw error;
 
+    await createWorkoutSetsFromTemplate({
+        sessionId: data.id,
+        routineId: params.routineId,
+    });
+
     return data;
+}
+
+export async function createWorkoutSetsFromTemplate(params: {
+    sessionId: string;
+    routineId: string;
+}) {
+    const routineExercises = await getRoutineExercises(params.routineId);
+    const routineExerciseIds = routineExercises.map((item) => item.id);
+    const templateSetsByExercise = await getRoutineExerciseSets(routineExerciseIds);
+
+    const workoutSets = routineExercises.flatMap((routineExercise) => {
+        const templateSets = templateSetsByExercise[routineExercise.id] ?? [];
+
+        return templateSets.map((templateSet) => ({
+            workout_session_id: params.sessionId,
+            exercise_id: routineExercise.exercise_id,
+            exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
+            set_number: templateSet.set_number,
+            reps: templateSet.reps,
+            weight: templateSet.weight ?? 0,
+            is_completed: false,
+        }));
+    });
+
+    if (!workoutSets.length) return;
+
+    const { error } = await supabase.from("workout_sets").insert(workoutSets);
+
+    if (error) throw error;
 }
 
 export async function deleteRoutineExercise(routineExerciseId: string) {
