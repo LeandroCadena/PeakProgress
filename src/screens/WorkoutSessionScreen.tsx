@@ -4,7 +4,6 @@ import {
     Text,
     StyleSheet,
     FlatList,
-    TextInput,
     Pressable,
     Alert,
 } from "react-native";
@@ -17,7 +16,6 @@ import {
 import {
     getRoutineExercises,
     getSavedSets,
-    createWorkoutSet,
     updateWorkoutSetValue,
     toggleWorkoutSetCompleted,
     deleteWorkoutSet,
@@ -26,6 +24,7 @@ import {
 } from "../services/workoutService";
 import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutSetRow from "../components/workout/WorkoutSetRow";
+import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -208,72 +207,18 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 data={routineExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
-                renderItem={({ item }) => {
-                    const exerciseName = item.exercise?.name ?? "Exercise";
-
-                    return (
-                        <View style={styles.card}>
-                            <Text style={styles.cardTitle}>{exerciseName}</Text>
-
-                            <Text style={styles.cardText}>
-                                Target: {item.sets} sets · {item.reps} reps · {item.rest_seconds}s rest
-                            </Text>
-                            <Text style={styles.cardText}>
-                                Saved sets: {savedSets[item.exercise_id]?.length ?? 0}/{item.sets}
-                            </Text>
-
-                            <View style={styles.setTableHeader}>
-                                <Text style={styles.setHeaderText}>weights</Text>
-                                <Text style={styles.setHeaderText}>reps</Text>
-                                <Text style={styles.setHeaderText}>Done</Text>
-                                <Text style={styles.setHeaderText}></Text>
-                            </View>
-
-                            {savedSets[item.exercise_id]?.map((set) => (
-                                <WorkoutSetRow
-                                    key={set.id}
-                                    set={set}
-                                    weightValue={getSetInputValue(
-                                        set.id,
-                                        "weight",
-                                        set.weight
-                                    )}
-                                    repsValue={getSetInputValue(
-                                        set.id,
-                                        "reps",
-                                        set.reps
-                                    )}
-                                    onWeightChange={(value) =>
-                                        updateLocalSetValue(set.id, "weight", value)
-                                    }
-                                    onRepsChange={(value) =>
-                                        updateLocalSetValue(set.id, "reps", value)
-                                    }
-                                    onWeightBlur={(value) =>
-                                        updateSetValue(set.id, "weight", value)
-                                    }
-                                    onRepsBlur={(value) =>
-                                        updateSetValue(set.id, "reps", value)
-                                    }
-                                    onToggleCompleted={() =>
-                                        toggleSetCompleted(set)
-                                    }
-                                    onDelete={() =>
-                                        deleteSet(set.id)
-                                    }
-                                />
-                            ))}
-
-                            <Pressable
-                                style={styles.addSetRow}
-                                onPress={() => addEmptySet(item.exercise_id)}
-                            >
-                                <Text style={styles.addSetText}>+ Add Set</Text>
-                            </Pressable>
-                        </View>
-
-                    );
-                }}
+                renderItem={({ item }) => (
+                    <WorkoutExerciseCard
+                        exercise={item}
+                        savedSets={savedSets[item.exercise_id] ?? []}
+                        getSetInputValue={getSetInputValue}
+                        updateLocalSetValue={updateLocalSetValue}
+                        updateSetValue={updateSetValue}
+                        toggleSetCompleted={toggleSetCompleted}
+                        deleteSet={deleteSet}
+                        addEmptySet={addEmptySet}
+                    />
+                )}
             />
 
             <Pressable style={styles.finishButton} onPress={finishWorkout}>
@@ -303,23 +248,6 @@ const styles = StyleSheet.create({
     list: {
         gap: 14,
         paddingBottom: 24,
-    },
-    card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
-    },
-    cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
-        marginBottom: 14,
     },
     row: {
         flexDirection: "row",
@@ -371,31 +299,5 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         borderRadius: 12,
         marginTop: 12,
-    },
-    setTableHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 12,
-        marginBottom: 8,
-        gap: 8,
-    },
-    setHeaderText: {
-        flex: 1,
-        color: "#9CA3AF",
-        fontWeight: "700",
-        fontSize: 12,
-    },
-    addSetRow: {
-        backgroundColor: "#102A1A",
-        paddingVertical: 12,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#4CAF50",
-        alignItems: "center",
-        marginTop: 6,
-    },
-    addSetText: {
-        color: "#4CAF50",
-        fontWeight: "800",
     },
 });
