@@ -6,12 +6,18 @@ type Props = {
     routineExercises: RoutineExercise[];
     onEdit: (item: RoutineExercise) => void;
     onDelete: (routineExerciseId: string) => void;
+    isEditing: boolean;
+    onMoveUp: (index: number) => void;
+    onMoveDown: (index: number) => void;
 };
 
 export default function RoutineExerciseSection({
     routineExercises,
     onEdit,
     onDelete,
+    isEditing,
+    onMoveUp,
+    onMoveDown
 }: Props) {
     return (
         <>
@@ -21,12 +27,15 @@ export default function RoutineExerciseSection({
                 <Text style={styles.emptyText}>No exercises added yet.</Text>
             ) : (
                 <View style={styles.list}>
-                    {routineExercises.map((item) => (
+                    {routineExercises.map((item, index) => (
                         <RoutineExerciseCard
                             key={item.id}
                             item={item}
+                            isEditing={isEditing}
                             onEdit={() => onEdit(item)}
                             onDelete={() => onDelete(item.id)}
+                            onMoveUp={() => onMoveUp(index)}
+                            onMoveDown={() => onMoveDown(index)}
                         />
                     ))}
                 </View>

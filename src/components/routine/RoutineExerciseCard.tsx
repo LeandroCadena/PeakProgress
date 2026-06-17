@@ -5,9 +5,19 @@ type Props = {
     item: RoutineExercise;
     onEdit: () => void;
     onDelete: () => void;
+    isEditing: boolean;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
 };
 
-export default function RoutineExerciseCard({ item, onEdit, onDelete }: Props) {
+export default function RoutineExerciseCard({
+    item,
+    onEdit,
+    onDelete,
+    isEditing,
+    onMoveUp,
+    onMoveDown
+}: Props) {
     return (
         <View style={styles.card}>
             <Text style={styles.cardTitle}>
@@ -28,6 +38,18 @@ export default function RoutineExerciseCard({ item, onEdit, onDelete }: Props) {
                     <Text style={styles.actionText}>Delete</Text>
                 </Pressable>
             </View>
+
+            {isEditing ? (
+                <View style={styles.moveActions}>
+                    <Pressable style={styles.moveButton} onPress={onMoveUp}>
+                        <Text style={styles.moveText}>↑</Text>
+                    </Pressable>
+
+                    <Pressable style={styles.moveButton} onPress={onMoveDown}>
+                        <Text style={styles.moveText}>↓</Text>
+                    </Pressable>
+                </View>
+            ) : null}
         </View>
     );
 }
@@ -70,5 +92,22 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
+    },
+    moveActions: {
+        flexDirection: "row",
+        gap: 8,
+        marginTop: 12,
+    },
+    moveButton: {
+        flex: 1,
+        backgroundColor: "#374151",
+        paddingVertical: 10,
+        borderRadius: 10,
+    },
+    moveText: {
+        color: "#FFFFFF",
+        textAlign: "center",
+        fontWeight: "800",
+        fontSize: 16,
     },
 });

@@ -7,6 +7,7 @@ import {
     deleteRoutineExercise as deleteRoutineExerciseService,
     updateRoutineExerciseConfig,
     getOrCreateActiveWorkoutSession,
+    updateRoutineExercisePosition,
 } from "../services/workoutService";
 import {
     updateRoutine,
@@ -158,6 +159,40 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         setIsEditingRoutine(false);
     }
 
+    async function moveRoutineExercise(index: number, direction: "up" | "down") {
+        const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+        if (targetIndex < 0 || targetIndex >= routineExercises.length) return;
+
+        const current = routineExercises[index];
+        const target = routineExercises[targetIndex];
+
+        const updated = [...routineExercises];
+
+        updated[index] = target;
+        updated[targetIndex] = current;
+
+        setRoutineExercises(updated);
+
+        try {
+            await Promise.all([
+                updateRoutineExercisePosition({
+                    routineExerciseId: current.id,
+                    position: targetIndex,
+                }),
+                updateRoutineExercisePosition({
+                    routineExerciseId: target.id,
+                    position: index,
+                }),
+            ]);
+
+            await fetchRoutineExercises();
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+            await fetchRoutineExercises();
+        }
+    }
+
     useFocusEffect(
         useCallback(() => {
             fetchRoutineExercises();
@@ -167,6 +202,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     return {
         routineTitle,
         routineExercises,
+        moveRoutineExercise,
 
         editingExercise,
         setEditingExercise,

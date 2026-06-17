@@ -47,6 +47,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
         setDraftRoutineDescription,
         startEditingRoutine,
         cancelEditingRoutine,
+        moveRoutineExercise,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -72,8 +73,11 @@ export default function RoutineDetailScreen({ navigation }: any) {
 
             <RoutineExerciseSection
                 routineExercises={routineExercises}
+                isEditing={isEditingRoutine}
                 onEdit={openEditModal}
                 onDelete={deleteRoutineExercise}
+                onMoveUp={(index) => moveRoutineExercise(index, "up")}
+                onMoveDown={(index) => moveRoutineExercise(index, "down")}
             />
 
             {isEditingRoutine ? (

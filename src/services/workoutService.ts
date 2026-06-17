@@ -234,3 +234,17 @@ export async function updateRoutineExerciseConfig(params: {
 
     if (error) throw error;
 }
+
+export async function updateRoutineExercisePosition(params: {
+    routineExerciseId: string;
+    position: number;
+}) {
+    const { error } = await supabase
+        .from("routine_exercises")
+        .update({
+            position: params.position,
+        })
+        .eq("id", params.routineExerciseId);
+
+    if (error) throw error;
+}
