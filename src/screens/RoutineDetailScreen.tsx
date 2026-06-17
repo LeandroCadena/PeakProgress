@@ -3,12 +3,8 @@ import {
     View,
     Text,
     StyleSheet,
-    FlatList,
     Alert,
     Pressable,
-    TextInput,
-    Modal,
-    ScrollView,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
@@ -29,6 +25,8 @@ import RoutineExerciseCard from "../components/routine/RoutineExerciseCard";
 import AvailableExerciseCard from "../components/routine/AvailableExerciseCard";
 import RoutineActions from "../components/routine/RoutineActions";
 import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
+import EditRoutineExerciseModal from "../components/routine/EditRoutineExerciseModal";
+import EditRoutineModal from "../components/routine/EditRoutineModal";
 
 type RouteParams = {
     RoutineDetail: {
@@ -251,105 +249,29 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 ))}
             </View>
 
-            <Modal
+            <EditRoutineExerciseModal
                 visible={!!editingExercise}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setEditingExercise(null)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Edit Exercise</Text>
+                sets={editSets}
+                reps={editReps}
+                weight={editWeight}
+                restSeconds={editRestSeconds}
+                onChangeSets={setEditSets}
+                onChangeReps={setEditReps}
+                onChangeWeight={setEditWeight}
+                onChangeRestSeconds={setEditRestSeconds}
+                onSave={saveEditedExercise}
+                onCancel={() => setEditingExercise(null)}
+            />
 
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Sets"
-                            placeholderTextColor="#6B7280"
-                            keyboardType="numeric"
-                            value={editSets}
-                            onChangeText={setEditSets}
-                        />
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Reps"
-                            placeholderTextColor="#6B7280"
-                            keyboardType="numeric"
-                            value={editReps}
-                            onChangeText={setEditReps}
-                        />
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Weight"
-                            placeholderTextColor="#6B7280"
-                            keyboardType="numeric"
-                            value={editWeight}
-                            onChangeText={setEditWeight}
-                        />
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Rest seconds"
-                            placeholderTextColor="#6B7280"
-                            keyboardType="numeric"
-                            value={editRestSeconds}
-                            onChangeText={setEditRestSeconds}
-                        />
-
-                        <Pressable style={styles.button} onPress={saveEditedExercise}>
-                            <Text style={styles.buttonText}>Save Changes</Text>
-                        </Pressable>
-
-                        <Pressable
-                            style={styles.cancelButton}
-                            onPress={() => setEditingExercise(null)}
-                        >
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            </Modal>
-
-            <Modal
+            <EditRoutineModal
                 visible={editRoutineVisible}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setEditRoutineVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Edit Routine</Text>
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Routine name"
-                            placeholderTextColor="#6B7280"
-                            value={editRoutineName}
-                            onChangeText={setEditRoutineName}
-                        />
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Description"
-                            placeholderTextColor="#6B7280"
-                            value={editRoutineDescription}
-                            onChangeText={setEditRoutineDescription}
-                        />
-
-                        <Pressable style={styles.button} onPress={saveRoutineChanges}>
-                            <Text style={styles.buttonText}>Save Changes</Text>
-                        </Pressable>
-
-                        <Pressable
-                            style={styles.cancelButton}
-                            onPress={() => setEditRoutineVisible(false)}
-                        >
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            </Modal>
+                name={editRoutineName}
+                description={editRoutineDescription}
+                onChangeName={setEditRoutineName}
+                onChangeDescription={setEditRoutineDescription}
+                onSave={saveRoutineChanges}
+                onCancel={() => setEditRoutineVisible(false)}
+            />
         </RoutineDetailLayout>
     );
 }
@@ -407,50 +329,5 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         textAlign: "center",
         fontSize: 16,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.7)",
-        justifyContent: "center",
-        padding: 24,
-    },
-    modalContent: {
-        backgroundColor: "#161B22",
-        padding: 20,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    modalTitle: {
-        color: "#FFFFFF",
-        fontSize: 22,
-        fontWeight: "800",
-        marginBottom: 16,
-    },
-    cancelButton: {
-        backgroundColor: "#374151",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginTop: 12,
-    },
-    input: {
-        backgroundColor: "#0B0F14",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    button: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginTop: 8,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
     },
 });
