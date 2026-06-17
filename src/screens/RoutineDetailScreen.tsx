@@ -79,10 +79,19 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onDelete={deleteRoutineExercise}
             />
 
-            <AvailableExerciseSection
-                exercises={availableExercises}
-                onAddExercise={addExerciseToRoutine}
-            />
+            {isEditingRoutine ? (
+                <Pressable
+                    style={styles.addExerciseButton}
+                    onPress={() =>
+                        navigation.navigate("ExercisePicker", {
+                            routineId,
+                            currentCount: routineExercises.length,
+                        })
+                    }
+                >
+                    <Text style={styles.addExerciseButtonText}>+ Add Exercise</Text>
+                </Pressable>
+            ) : null}
 
             <EditRoutineExerciseModal
                 visible={!!editingExercise}
@@ -119,5 +128,18 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         textAlign: "center",
         fontSize: 16,
+    },
+    addExerciseButton: {
+        backgroundColor: "#102A1A",
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#4CAF50",
+        alignItems: "center",
+        marginTop: 12,
+    },
+    addExerciseButtonText: {
+        color: "#4CAF50",
+        fontWeight: "800",
     },
 });
