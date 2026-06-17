@@ -45,18 +45,28 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
     async function addEmptySet(exerciseId: string) {
         const currentSets = savedSets[exerciseId] ?? [];
+        const lastSet = currentSets[currentSets.length - 1];
+
         const setNumber = currentSets.length + 1;
 
-        const routineExercise = routineExercises.find(
-            (item) => item.exercise_id === exerciseId
-        );
+        const lastWeight = lastSet
+            ? editingValues[`${lastSet.id}-weight`] ?? String(lastSet.weight ?? 0)
+            : "0";
+
+        const lastReps = lastSet
+            ? editingValues[`${lastSet.id}-reps`] ?? String(lastSet.reps ?? 0)
+            : "0";
 
         try {
             await createEmptyWorkoutSet({
                 sessionId,
                 exerciseId,
-                exerciseName: routineExercise?.exercise?.name ?? "Exercise",
+                exerciseName:
+                    routineExercises.find((item) => item.exercise_id === exerciseId)
+                        ?.exercise?.name ?? "Exercise",
                 setNumber,
+                reps: Number(lastReps),
+                weight: Number(lastWeight),
             });
 
             await fetchSavedSets();

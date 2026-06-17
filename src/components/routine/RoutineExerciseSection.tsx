@@ -16,7 +16,12 @@ type Props = {
         value: string
     ) => void;
     onAddSet: (routineExerciseId: string) => void;
-    onDeleteSet: (setId: string) => void;
+    onDeleteSet: (routineExerciseId: string, setId: string) => void;
+    updateLocalTemplateSetValue: (
+        setId: string,
+        field: "weight" | "reps",
+        value: string
+    ) => void;
 };
 
 export default function RoutineExerciseSection({
@@ -30,6 +35,7 @@ export default function RoutineExerciseSection({
     onUpdateSet,
     onAddSet,
     onDeleteSet,
+    updateLocalTemplateSetValue,
 }: Props) {
     return (
         <>
@@ -52,6 +58,7 @@ export default function RoutineExerciseSection({
                             onUpdateSet={onUpdateSet}
                             onAddSet={() => onAddSet(item.id)}
                             onDeleteSet={onDeleteSet}
+                            updateLocalTemplateSetValue={updateLocalTemplateSetValue}
                         />
                     ))}
                 </View>

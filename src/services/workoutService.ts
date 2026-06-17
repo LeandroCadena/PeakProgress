@@ -149,14 +149,16 @@ export async function createEmptyWorkoutSet(params: {
     exerciseId: string;
     exerciseName: string;
     setNumber: number;
+    reps: number;
+    weight: number;
 }) {
     const { error } = await supabase.from("workout_sets").insert({
         workout_session_id: params.sessionId,
         exercise_id: params.exerciseId,
         exercise_name_snapshot: params.exerciseName,
         set_number: params.setNumber,
-        reps: 10,
-        weight: 0,
+        reps: params.reps,
+        weight: params.weight,
         is_completed: false,
     });
 
@@ -228,7 +230,7 @@ export async function addExerciseToRoutine(params: {
         .insert({
             routine_id: params.routineId,
             exercise_id: params.exerciseId,
-            sets: params.sets,
+            sets: 0,
             reps: params.reps,
             weight: params.weight,
             rest_seconds: params.restSeconds,
@@ -238,19 +240,6 @@ export async function addExerciseToRoutine(params: {
         .single();
 
     if (error) throw error;
-
-    const templateSets = Array.from({ length: params.sets }, (_, index) => ({
-        routine_exercise_id: data.id,
-        set_number: index + 1,
-        reps: params.reps,
-        weight: params.weight,
-    }));
-
-    const { error: setsError } = await supabase
-        .from("routine_exercise_sets")
-        .insert(templateSets);
-
-    if (setsError) throw setsError;
 
     return data;
 }

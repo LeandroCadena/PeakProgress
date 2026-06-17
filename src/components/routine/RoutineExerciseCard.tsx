@@ -12,7 +12,12 @@ type Props = {
     sets: RoutineExerciseSet[];
     onUpdateSet: (setId: string, field: "weight" | "reps", value: string) => void;
     onAddSet: () => void;
-    onDeleteSet: (setId: string) => void;
+    onDeleteSet: (routineExerciseId: string, setId: string) => void;
+    updateLocalTemplateSetValue: (
+        setId: string,
+        field: "weight" | "reps",
+        value: string
+    ) => void;
 };
 
 export default function RoutineExerciseCard({
@@ -26,6 +31,7 @@ export default function RoutineExerciseCard({
     onUpdateSet,
     onAddSet,
     onDeleteSet,
+    updateLocalTemplateSetValue,
 }: Props) {
     return (
         <View style={styles.card}>
@@ -45,8 +51,11 @@ export default function RoutineExerciseCard({
                     key={set.id}
                     set={set}
                     isEditing={isEditing}
+                    onDraftChange={(field, value) =>
+                        updateLocalTemplateSetValue(set.id, field, value)
+                    }
                     onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
-                    onDelete={() => onDeleteSet(set.id)}
+                    onDelete={() => onDeleteSet(item.id, set.id)}
                 />
             ))}
 

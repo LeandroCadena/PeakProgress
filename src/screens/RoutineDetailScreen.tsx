@@ -53,6 +53,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
         updateTemplateSet,
         addTemplateSet,
         deleteTemplateSet,
+        updateLocalTemplateSetValue,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -88,6 +89,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onUpdateSet={updateTemplateSet}
                 onAddSet={addTemplateSet}
                 onDeleteSet={deleteTemplateSet}
+                updateLocalTemplateSetValue={updateLocalTemplateSetValue}
             />
 
             {isEditingRoutine ? (

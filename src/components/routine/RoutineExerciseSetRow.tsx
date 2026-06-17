@@ -5,6 +5,7 @@ import { RoutineExerciseSet } from "../../types/workout";
 type Props = {
     set: RoutineExerciseSet;
     isEditing: boolean;
+    onDraftChange: (field: "weight" | "reps", value: string) => void;
     onUpdate: (field: "weight" | "reps", value: string) => void;
     onDelete: () => void;
 };
@@ -12,16 +13,27 @@ type Props = {
 export default function RoutineExerciseSetRow({
     set,
     isEditing,
+    onDraftChange,
     onUpdate,
     onDelete,
 }: Props) {
     const [weightValue, setWeightValue] = useState(String(set.weight ?? 0));
-    const [repsValue, setRepsValue] = useState(String(set.reps));
+    const [repsValue, setRepsValue] = useState(String(set.reps ?? 0));
 
     useEffect(() => {
         setWeightValue(String(set.weight ?? 0));
-        setRepsValue(String(set.reps));
-    }, [set.weight, set.reps]);
+        setRepsValue(String(set.reps ?? 0));
+    }, [set.id, set.weight, set.reps]);
+
+    function handleWeightChange(value: string) {
+        setWeightValue(value);
+        onDraftChange("weight", value);
+    }
+
+    function handleRepsChange(value: string) {
+        setRepsValue(value);
+        onDraftChange("reps", value);
+    }
 
     return (
         <View style={styles.row}>
@@ -32,7 +44,7 @@ export default function RoutineExerciseSetRow({
                 value={weightValue}
                 editable={isEditing}
                 keyboardType="numeric"
-                onChangeText={setWeightValue}
+                onChangeText={handleWeightChange}
                 onEndEditing={() => onUpdate("weight", weightValue)}
             />
 
@@ -41,7 +53,7 @@ export default function RoutineExerciseSetRow({
                 value={repsValue}
                 editable={isEditing}
                 keyboardType="numeric"
-                onChangeText={setRepsValue}
+                onChangeText={handleRepsChange}
                 onEndEditing={() => onUpdate("reps", repsValue)}
             />
 
@@ -53,7 +65,6 @@ export default function RoutineExerciseSetRow({
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     row: {
         flexDirection: "row",

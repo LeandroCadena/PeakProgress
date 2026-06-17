@@ -18,6 +18,7 @@ import {
     deleteRoutineById,
 } from "../services/routineService";
 import { useFocusEffect } from "@react-navigation/native";
+import { updateRoutineExerciseSetCount } from "../services/exerciseService";
 
 type Params = {
     routineId: string;
@@ -36,6 +37,9 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const [editReps, setEditReps] = useState("");
     const [editWeight, setEditWeight] = useState("");
     const [editRestSeconds, setEditRestSeconds] = useState("");
+    const [templateSetDraftValues, setTemplateSetDraftValues] = useState<
+        Record<string, string>
+    >({});
 
     const [editRoutineVisible, setEditRoutineVisible] = useState(false);
     const [editRoutineName, setEditRoutineName] = useState(routineName);
@@ -227,14 +231,29 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
     async function addTemplateSet(routineExerciseId: string) {
         const currentSets = routineExerciseSets[routineExerciseId] ?? [];
+        const lastSet = currentSets[currentSets.length - 1];
+
         const setNumber = currentSets.length + 1;
+
+        const lastWeight = lastSet
+            ? getTemplateSetInputValue(lastSet.id, "weight", lastSet.weight)
+            : "0";
+
+        const lastReps = lastSet
+            ? getTemplateSetInputValue(lastSet.id, "reps", lastSet.reps)
+            : "0";
 
         try {
             await createRoutineExerciseSet({
                 routineExerciseId,
                 setNumber,
-                reps: 10,
-                weight: 0,
+                reps: Number(lastReps),
+                weight: Number(lastWeight),
+            });
+
+            await updateRoutineExerciseSetCount({
+                routineExerciseId,
+                sets: setNumber,
             });
 
             await fetchRoutineExercises();
@@ -243,13 +262,43 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         }
     }
 
-    async function deleteTemplateSet(setId: string) {
+    async function deleteTemplateSet(routineExerciseId: string, setId: string) {
+        const currentSets = routineExerciseSets[routineExerciseId] ?? [];
+
         try {
             await deleteRoutineExerciseSet(setId);
+
+            await updateRoutineExerciseSetCount({
+                routineExerciseId,
+                sets: Math.max(0, currentSets.length - 1),
+            });
+
             await fetchRoutineExercises();
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
+    }
+
+    function getTemplateSetInputValue(
+        setId: string,
+        field: "weight" | "reps",
+        value: number | null
+    ) {
+        const key = `${setId}-${field}`;
+        return templateSetDraftValues[key] ?? String(value ?? 0);
+    }
+
+    function updateLocalTemplateSetValue(
+        setId: string,
+        field: "weight" | "reps",
+        value: string
+    ) {
+        const key = `${setId}-${field}`;
+
+        setTemplateSetDraftValues((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
     }
 
     return {
@@ -294,5 +343,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         updateTemplateSet,
         addTemplateSet,
         deleteTemplateSet,
+
+        templateSetDraftValues,
+        updateLocalTemplateSetValue,
     };
 }

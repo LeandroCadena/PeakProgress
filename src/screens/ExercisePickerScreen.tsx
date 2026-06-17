@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -6,12 +5,9 @@ import {
     TextInput,
     Pressable,
     FlatList,
-    Alert,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { getMuscles, getExercisesByMuscle } from "../services/exerciseService";
-import { addExerciseToRoutine } from "../services/workoutService";
-import { Exercise, Muscle } from "../types/exercise";
+import { useExercisePicker } from "../hooks/useExercisePicker";
 
 type RouteParams = {
     ExercisePicker: {
@@ -25,83 +21,56 @@ export default function ExercisePickerScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "ExercisePicker">>();
     const { routineId, currentCount, currentExerciseIds } = route.params;
 
-    const [search, setSearch] = useState("");
-    const [muscles, setMuscles] = useState<Muscle[]>([]);
-    const [selectedMuscleId, setSelectedMuscleId] = useState<string | null>(null);
-    const [exercises, setExercises] = useState<Exercise[]>([]);
-
-    async function fetchMuscles() {
-        try {
-            const data = await getMuscles();
-            setMuscles(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function fetchExercises() {
-        try {
-            const data = await getExercisesByMuscle(selectedMuscleId);
-            setExercises(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function handleAddExercise(exerciseId: string) {
-        try {
-            await addExerciseToRoutine({
-                routineId,
-                exerciseId,
-                sets: 3,
-                reps: 10,
-                weight: 0,
-                restSeconds: 90,
-                position: currentCount,
-            });
-
-            navigation.goBack();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    useEffect(() => {
-        fetchMuscles();
-    }, []);
-
-    useEffect(() => {
-        fetchExercises();
-    }, [selectedMuscleId]);
-
-    const filteredExercises = exercises.filter((exercise) =>
-        exercise.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const {
+        search,
+        setSearch,
+        filteredExercises,
+        handleAddExercise,
+        filterMode,
+        changeFilterMode,
+        filterOptions,
+        selectedFilterIds,
+        toggleFilterId,
+    } = useExercisePicker({
+        routineId,
+        currentCount,
+        onExerciseAdded: () => navigation.goBack(),
+    });
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Add Exercise</Text>
 
-            <TextInput
-                style={styles.searchInput}
-                placeholder="Search exercise"
-                placeholderTextColor="#6B7280"
-                value={search}
-                onChangeText={setSearch}
-            />
+            <View style={styles.searchRow}>
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search exercise"
+                    placeholderTextColor="#6B7280"
+                    value={search}
+                    onChangeText={setSearch}
+                />
+
+                <Pressable
+                    style={styles.filterModeButton}
+                    onPress={() =>
+                        changeFilterMode(filterMode === "muscle" ? "region" : "muscle")
+                    }
+                >
+                    <Text style={styles.filterModeText}>
+                        {filterMode === "muscle" ? "Muscle" : "Region"}
+                    </Text>
+                </Pressable>
+            </View>
 
             <View style={styles.filtersWrapper}>
                 <FlatList
                     horizontal
-                    data={[{ id: "all", name: "All" }, ...muscles]}
+                    data={filterOptions}
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={styles.filters}
                     showsHorizontalScrollIndicator={false}
                     renderItem={({ item }) => {
-                        const isSelected =
-                            item.id === "all"
-                                ? selectedMuscleId === null
-                                : selectedMuscleId === item.id;
+                        const isSelected = selectedFilterIds.includes(item.id);
 
                         return (
                             <Pressable
@@ -109,9 +78,7 @@ export default function ExercisePickerScreen({ navigation }: any) {
                                     styles.filterChip,
                                     isSelected && styles.filterChipActive,
                                 ]}
-                                onPress={() =>
-                                    setSelectedMuscleId(item.id === "all" ? null : item.id)
-                                }
+                                onPress={() => toggleFilterId(item.id)}
                             >
                                 <Text
                                     style={[
@@ -169,6 +136,9 @@ export default function ExercisePickerScreen({ navigation }: any) {
                         </View>
                     );
                 }}
+                ListEmptyComponent={
+                    <Text style={styles.emptyText}>No exercises found.</Text>
+                }
             />
 
             <Pressable style={styles.cancelButton} onPress={() => navigation.goBack()}>
@@ -190,15 +160,6 @@ const styles = StyleSheet.create({
         fontSize: 30,
         fontWeight: "800",
         marginBottom: 20,
-    },
-    searchInput: {
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-        marginBottom: 14,
     },
     filtersWrapper: {
         height: 52,
@@ -326,5 +287,39 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
+    },
+    emptyText: {
+        color: "#9CA3AF",
+        textAlign: "center",
+        marginTop: 24,
+    },
+    searchRow: {
+        flexDirection: "row",
+        gap: 10,
+        marginBottom: 14,
+    },
+
+    searchInput: {
+        flex: 1,
+        backgroundColor: "#161B22",
+        color: "#FFFFFF",
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+
+    filterModeButton: {
+        backgroundColor: "#161B22",
+        borderWidth: 1,
+        borderColor: "#30363D",
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        justifyContent: "center",
+    },
+
+    filterModeText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
     },
 });
