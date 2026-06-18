@@ -77,7 +77,7 @@ export async function getExerciseDetail(exerciseId: string) {
       equipment,
       difficulty,
       image_url,
-      video_url,
+      animation_url,
       exercise_muscles (
         role,
         muscles (

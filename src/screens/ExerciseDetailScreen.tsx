@@ -92,13 +92,14 @@ export default function ExerciseDetailScreen() {
                 </>
             ) : null}
 
-            {exercise.video_url ? (
-                <Pressable
-                    style={styles.videoButton}
-                    onPress={() => Linking.openURL(exercise.video_url)}
-                >
-                    <Text style={styles.videoButtonText}>Watch Video</Text>
-                </Pressable>
+            {exercise.animation_url ? (
+                <>
+                    <Text style={styles.sectionTitle}>Execution</Text>
+                    <Image
+                        source={{ uri: exercise.animation_url }}
+                        style={styles.animation}
+                    />
+                </>
             ) : null}
         </ScrollView>
     );
@@ -169,5 +170,12 @@ const styles = StyleSheet.create({
     videoButtonText: {
         color: "#FFFFFF",
         fontWeight: "800",
+    },
+    animation: {
+        width: "100%",
+        height: 220,
+        borderRadius: 16,
+        marginTop: 8,
+        backgroundColor: "#161B22",
     },
 });

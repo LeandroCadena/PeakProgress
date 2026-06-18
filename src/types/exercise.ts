@@ -6,7 +6,7 @@ export type Exercise = {
     equipment: string | null;
     difficulty: string | null;
     image_url?: string | null;
-    video_url?: string | null;
+    animation_url?: string | null;
     description?: string | null;
     instructions?: string | null;
     tips?: string | null;
