@@ -3,6 +3,8 @@ import { ExerciseProgress } from "../types/progress";
 
 export type WorkoutSetProgress = {
     id: string;
+    exercise_id: string | null;
+    exercise_name_snapshot: string | null;
     weight: number | null;
     reps: number;
     exercise: {
@@ -16,6 +18,8 @@ export async function getExerciseProgress(): Promise<ExerciseProgress[]> {
         .from("workout_sets")
         .select(`
       id,
+      exercise_id,
+      exercise_name_snapshot,
       weight,
       reps,
       exercise:exercises (
@@ -34,14 +38,19 @@ export async function getExerciseProgress(): Promise<ExerciseProgress[]> {
     const progressByExercise: Record<string, ExerciseProgress> = {};
 
     sets.forEach((set) => {
-        const exerciseId = set.exercise?.id ?? "";
-        const exerciseName = set.exercise?.name ?? "Exercise";
+        const exerciseId = set.exercise_id ?? set.exercise?.id ?? set.id;
+
+        const exerciseName =
+            set.exercise_name_snapshot ??
+            set.exercise?.name ??
+            "Unknown Exercise";
+
         const weight = Number(set.weight ?? 0);
         const reps = Number(set.reps ?? 0);
         const volume = weight * reps;
 
-        if (!progressByExercise[exerciseName]) {
-            progressByExercise[exerciseName] = {
+        if (!progressByExercise[exerciseId]) {
+            progressByExercise[exerciseId] = {
                 exerciseId,
                 exerciseName,
                 bestWeight: weight,
@@ -52,7 +61,7 @@ export async function getExerciseProgress(): Promise<ExerciseProgress[]> {
             return;
         }
 
-        const current = progressByExercise[exerciseName];
+        const current = progressByExercise[exerciseId];
 
         current.totalVolume += volume;
         current.totalSets += 1;

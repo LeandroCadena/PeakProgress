@@ -41,7 +41,7 @@ export default function ProgressScreen({ navigation }: any) {
 
             <FlatList
                 data={records}
-                keyExtractor={(item) => item.exerciseName}
+                keyExtractor={(item, index) => `${item.exerciseId}-${index}`}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
                     <Text style={styles.emptyText}>No records yet. Complete a workout first.</Text>

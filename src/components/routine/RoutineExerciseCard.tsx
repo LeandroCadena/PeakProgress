@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/workout";
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 
@@ -35,6 +35,13 @@ export default function RoutineExerciseCard({
 }: Props) {
     return (
         <View style={styles.card}>
+            {item.exercise?.image_url ? (
+                <Image
+                    source={{ uri: item.exercise.image_url }}
+                    style={styles.exerciseImage}
+                />
+            ) : null}
+
             <Text style={styles.cardTitle}>
                 {item.exercise?.name ?? "Exercise"}
             </Text>
@@ -180,5 +187,12 @@ const styles = StyleSheet.create({
     addSetText: {
         color: "#4CAF50",
         fontWeight: "700",
+    },
+    exerciseImage: {
+        width: "100%",
+        height: 130,
+        borderRadius: 12,
+        marginBottom: 12,
+        backgroundColor: "#0B0F14",
     },
 });

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import WorkoutSetRow from "./WorkoutSetRow";
 
@@ -42,6 +42,13 @@ export default function WorkoutExerciseCard({
     return (
         <View style={styles.card}>
             <Text style={styles.cardTitle}>{exerciseName}</Text>
+
+            {exercise.exercise_image_url_snapshot ? (
+                <Image
+                    source={{ uri: exercise.exercise_image_url_snapshot }}
+                    style={styles.exerciseImage}
+                />
+            ) : null}
 
             <Text style={styles.cardText}>
                 Rest: {exercise.rest_seconds}s
@@ -149,5 +156,12 @@ const styles = StyleSheet.create({
     deleteExerciseText: {
         color: "#FFFFFF",
         fontWeight: "700",
+    },
+    exerciseImage: {
+        width: "100%",
+        height: 130,
+        borderRadius: 12,
+        marginBottom: 12,
+        backgroundColor: "#0B0F14",
     },
 });

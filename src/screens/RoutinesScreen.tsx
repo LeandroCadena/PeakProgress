@@ -16,6 +16,7 @@ import {
     createRoutine as createRoutineService,
 } from "../services/routineService";
 import { Routine } from "../types/routine";
+import { getOrCreateActiveWorkoutSession } from "../services/workoutService";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -65,6 +66,28 @@ export default function RoutinesScreen({ navigation }: any) {
         }
     }
 
+    async function startWorkout(routine: Routine) {
+        if (!user) {
+            Alert.alert("Error", "User not found");
+            return;
+        }
+
+        try {
+            const session = await getOrCreateActiveWorkoutSession({
+                userId: user.id,
+                routineId: routine.id,
+            });
+
+            navigation.navigate("WorkoutSession", {
+                sessionId: session.id,
+                routineId: routine.id,
+                routineName: routine.name,
+            });
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>My Routines</Text>
@@ -109,6 +132,12 @@ export default function RoutinesScreen({ navigation }: any) {
                         {item.description ? (
                             <Text style={styles.cardDescription}>{item.description}</Text>
                         ) : null}
+                        <Pressable
+                            style={styles.startButton}
+                            onPress={() => startWorkout(item)}
+                        >
+                            <Text style={styles.startButtonText}>Start Workout</Text>
+                        </Pressable>
                     </Pressable>
                 )}
             />
@@ -168,5 +197,17 @@ const styles = StyleSheet.create({
     cardDescription: {
         color: "#9CA3AF",
         marginTop: 6,
+    },
+    startButton: {
+        backgroundColor: "#4CAF50",
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: "center",
+        marginTop: 12,
+    },
+
+    startButtonText: {
+        color: "#FFFFFF",
+        fontWeight: "800",
     },
 });

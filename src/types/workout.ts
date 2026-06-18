@@ -14,6 +14,7 @@ export type RoutineExercise = {
     rest_seconds: number;
     exercise: {
         name: string;
+        image_url?: string | null;
     } | null;
 };
 
@@ -30,6 +31,7 @@ export type WorkoutSessionExercise = {
     workout_session_id: string;
     exercise_id: string | null;
     exercise_name_snapshot: string;
+    exercise_image_url_snapshot?: string | null;
     position: number;
     rest_seconds: number;
 };

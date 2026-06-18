@@ -83,6 +83,7 @@ export function useExercisePicker({
                     sessionId: sessionId!,
                     exerciseId,
                     exerciseName: exercise?.name ?? "Exercise",
+                    exerciseImageUrl: exercise?.image_url ?? null,
                     position: currentCount,
                 });
             }

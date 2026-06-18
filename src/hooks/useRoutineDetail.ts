@@ -12,6 +12,8 @@ import {
     updateRoutineExerciseSet,
     createRoutineExerciseSet,
     deleteRoutineExerciseSet,
+    createRoutineExerciseSets,
+    deleteRoutineExerciseSetsByRoutineExerciseId,
 } from "../services/workoutService";
 import {
     updateRoutine,
@@ -133,13 +135,9 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
                     name: draftRoutineName,
                     description: draftRoutineDescription,
                 });
-
                 setRoutineTitle(draftRoutineName.trim());
                 setEditRoutineDescription(draftRoutineDescription);
             }
-
-            await fetchRoutineExercises();
-
             setIsEditingRoutine(false);
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -147,24 +145,58 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     async function persistRoutineChanges() {
-        const updates = Object.entries(templateSetDraftValues);
+        for (const routineExercise of routineExercises) {
+            const currentSets = routineExerciseSets[routineExercise.id] ?? [];
 
-        for (const [key, value] of updates) {
-            const [setId, field] = key.split("-");
+            await deleteRoutineExerciseSetsByRoutineExerciseId(routineExercise.id);
 
-            if (field !== "weight" && field !== "reps") continue;
+            if (!currentSets.length) {
+                await updateRoutineExerciseSetCount({
+                    routineExerciseId: routineExercise.id,
+                    sets: 0,
+                });
 
-            const numericValue = value.trim() === "" ? 0 : Number(value);
+                continue;
+            }
 
-            if (Number.isNaN(numericValue)) continue;
+            const setsToInsert = currentSets.map((set, index) => {
+                const weightDraft = templateSetDraftValues[`weight:${set.id}`];
+                const repsDraft = templateSetDraftValues[`reps:${set.id}`];
 
-            await updateRoutineExerciseSet({
-                setId,
-                field,
-                value: numericValue,
+                return {
+                    routine_exercise_id: routineExercise.id,
+                    set_number: index + 1,
+                    reps:
+                        repsDraft !== undefined && repsDraft.trim() !== ""
+                            ? Number(repsDraft)
+                            : Number(set.reps ?? 0),
+                    weight:
+                        weightDraft !== undefined && weightDraft.trim() !== ""
+                            ? Number(weightDraft)
+                            : Number(set.weight ?? 0),
+                };
             });
-        }
 
+            await createRoutineExerciseSets(setsToInsert);
+
+            const firstSet = setsToInsert[0];
+
+            await updateRoutineExerciseSetCount({
+                routineExerciseId: routineExercise.id,
+                sets: setsToInsert.length,
+            });
+
+            await updateRoutineExerciseConfig({
+                routineExerciseId: routineExercise.id,
+                sets: setsToInsert.length,
+                reps: firstSet?.reps ?? 0,
+                weight: firstSet?.weight ?? 0,
+                restSeconds: routineExercise.rest_seconds ?? 90,
+            });
+
+            console.log("Persisting routine exercise:", routineExercise.id);
+            console.log("Sets to insert:", setsToInsert);
+        }
         setTemplateSetDraftValues({});
     }
 
@@ -326,21 +358,12 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         }
     }
 
-    function getTemplateSetInputValue(
-        setId: string,
-        field: "weight" | "reps",
-        value: number | null
-    ) {
-        const key = `${setId}-${field}`;
-        return templateSetDraftValues[key] ?? String(value ?? 0);
-    }
-
     function updateLocalTemplateSetValue(
         setId: string,
         field: "weight" | "reps",
         value: string
     ) {
-        const key = `${setId}-${field}`;
+        const key = `${field}:${setId}`;
 
         setTemplateSetDraftValues((prev) => ({
             ...prev,
