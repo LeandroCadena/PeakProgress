@@ -100,6 +100,7 @@ export default function RoutinesScreen({ navigation }: any) {
                             navigation.navigate("RoutineDetail", {
                                 routineId: item.id,
                                 routineName: item.name,
+                                routineDescription: item.description ?? "",
                             })
                         }
                     >

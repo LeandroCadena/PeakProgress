@@ -1,5 +1,6 @@
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
 import { WorkoutSessionSet } from "../../types/workout";
+import { sanitizeIntegerInput } from "../../utils/numberInput";
 
 type WorkoutSetRowProps = {
     set: WorkoutSessionSet;
@@ -34,7 +35,7 @@ export default function WorkoutSetRow({
                 keyboardType="numeric"
                 value={weightValue}
                 editable={!set.is_completed}
-                onChangeText={onWeightChange}
+                onChangeText={(value) => onWeightChange(sanitizeIntegerInput(value))}
                 onEndEditing={(event) =>
                     onWeightBlur(event.nativeEvent.text)
                 }
@@ -48,7 +49,7 @@ export default function WorkoutSetRow({
                 keyboardType="numeric"
                 value={repsValue}
                 editable={!set.is_completed}
-                onChangeText={onRepsChange}
+                onChangeText={(value) => onRepsChange(sanitizeIntegerInput(value))}
                 onEndEditing={(event) =>
                     onRepsBlur(event.nativeEvent.text)
                 }

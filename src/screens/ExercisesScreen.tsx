@@ -93,18 +93,14 @@ export default function ExercisesScreen({ navigation }: any) {
                 contentContainerStyle={styles.list}
                 renderItem={({ item }) => (
                     <Pressable
-                        style={styles.card}
+                        style={styles.infoButton}
                         onPress={() =>
                             navigation.navigate("ExerciseDetail", {
                                 exerciseId: item.id,
-                                exerciseName: item.name,
                             })
                         }
                     >
-                        <Text style={styles.cardTitle}>{item.name}</Text>
-                        <Text style={styles.cardText}>
-                            {item.equipment ?? "No equipment"} · {item.difficulty ?? "No difficulty"}
-                        </Text>
+                        <Text style={styles.infoButtonText}>More Info</Text>
                     </Pressable>
                 )}
             />
@@ -167,5 +163,16 @@ const styles = StyleSheet.create({
     },
     filterTextActive: {
         color: "#FFFFFF",
+    },
+    infoButton: {
+        backgroundColor: "#1F2937",
+        paddingVertical: 9,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        marginTop: 8,
+    },
+    infoButtonText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
     },
 });

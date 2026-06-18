@@ -13,6 +13,7 @@ import WorkoutSummaryScreen from "../screens/WorkoutSummaryScreen";
 import ExerciseProgressScreen from "../screens/ExerciseProgressScreen";
 import ExerciseDetailScreen from "../screens/ExerciseDetailScreen";
 import ExercisePickerScreen from "../screens/ExercisePickerScreen";
+import ExercisesScreen from "../screens/ExercisesScreen";
 
 export type RootStackParamList = {
     Login: undefined;
@@ -21,6 +22,7 @@ export type RootStackParamList = {
     RoutineDetail: {
         routineId: string;
         routineName: string;
+        routineDescription: string;
     };
     WorkoutSession: {
         sessionId: string;
@@ -39,9 +41,9 @@ export type RootStackParamList = {
         exerciseId: string;
         exerciseName: string;
     };
+    Exercises: undefined;
     ExerciseDetail: {
         exerciseId: string;
-        exerciseName: string;
     };
     ExercisePicker: {
         mode: "routine" | "session";
@@ -81,6 +83,7 @@ export default function AppNavigator() {
                         <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
                         <Stack.Screen name="WorkoutSummary" component={WorkoutSummaryScreen} />
                         <Stack.Screen name="ExerciseProgress" component={ExerciseProgressScreen} />
+                        <Stack.Screen name="Exercises" component={ExercisesScreen} />
                         <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
                         <Stack.Screen name="ExercisePicker" component={ExercisePickerScreen} />
                     </>

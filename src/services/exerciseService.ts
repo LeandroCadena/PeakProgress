@@ -35,6 +35,7 @@ export async function getExercisesByFilter(params: {
       name,
       equipment,
       difficulty,
+      image_url,
       exercise_muscles (
         muscle_id,
         muscles (
@@ -46,9 +47,7 @@ export async function getExercisesByFilter(params: {
 
     if (error) throw error;
 
-    if (!params.selectedIds.length) {
-        return data ?? [];
-    }
+    if (!params.selectedIds.length) return data ?? [];
 
     return (data ?? []).filter((exercise: any) => {
         const relations = exercise.exercise_muscles ?? [];
@@ -74,12 +73,16 @@ export async function getExerciseDetail(exerciseId: string) {
       name,
       description,
       instructions,
+      tips,
       equipment,
       difficulty,
+      image_url,
+      video_url,
       exercise_muscles (
         role,
         muscles (
-          name
+          name,
+          region_id
         )
       )
     `)

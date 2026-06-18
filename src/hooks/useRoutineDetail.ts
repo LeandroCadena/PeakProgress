@@ -23,10 +23,11 @@ import { updateRoutineExerciseSetCount } from "../services/exerciseService";
 type Params = {
     routineId: string;
     routineName: string;
+    routineDescription: string;
     navigation: any;
 };
 
-export function useRoutineDetail({ routineId, routineName, navigation }: Params) {
+export function useRoutineDetail({ routineId, routineName, routineDescription, navigation }: Params) {
     const { user } = useAuth();
 
     const [routineTitle, setRoutineTitle] = useState(routineName);
@@ -43,14 +44,14 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
     const [editRoutineVisible, setEditRoutineVisible] = useState(false);
     const [editRoutineName, setEditRoutineName] = useState(routineName);
-    const [editRoutineDescription, setEditRoutineDescription] = useState("");
+    const [editRoutineDescription, setEditRoutineDescription] = useState(routineDescription);
     const [routineExerciseSets, setRoutineExerciseSets] = useState<
         Record<string, RoutineExerciseSet[]>
     >({});
 
     const [isEditingRoutine, setIsEditingRoutine] = useState(false);
     const [draftRoutineName, setDraftRoutineName] = useState(routineName);
-    const [draftRoutineDescription, setDraftRoutineDescription] = useState("");
+    const [draftRoutineDescription, setDraftRoutineDescription] = useState(routineDescription);
 
     useFocusEffect(
         useCallback(() => {
@@ -109,19 +110,62 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             return;
         }
 
-        try {
-            await updateRoutine({
-                routineId,
-                name: draftRoutineName,
-                description: draftRoutineDescription,
-            });
+        const routineInfoChanged =
+            draftRoutineName.trim() !== routineTitle ||
+            draftRoutineDescription.trim() !== editRoutineDescription.trim();
 
-            setRoutineTitle(draftRoutineName.trim());
-            setEditRoutineDescription(draftRoutineDescription);
+        const routineSetsChanged =
+            Object.keys(templateSetDraftValues).length > 0;
+
+        if (!routineInfoChanged && !routineSetsChanged) {
+            setIsEditingRoutine(false);
+            return;
+        }
+
+        try {
+            if (routineSetsChanged) {
+                await persistRoutineChanges();
+            }
+
+            if (routineInfoChanged) {
+                await updateRoutine({
+                    routineId,
+                    name: draftRoutineName,
+                    description: draftRoutineDescription,
+                });
+
+                setRoutineTitle(draftRoutineName.trim());
+                setEditRoutineDescription(draftRoutineDescription);
+            }
+
+            await fetchRoutineExercises();
+
             setIsEditingRoutine(false);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
+    }
+
+    async function persistRoutineChanges() {
+        const updates = Object.entries(templateSetDraftValues);
+
+        for (const [key, value] of updates) {
+            const [setId, field] = key.split("-");
+
+            if (field !== "weight" && field !== "reps") continue;
+
+            const numericValue = value.trim() === "" ? 0 : Number(value);
+
+            if (Number.isNaN(numericValue)) continue;
+
+            await updateRoutineExerciseSet({
+                setId,
+                field,
+                value: numericValue,
+            });
+        }
+
+        setTemplateSetDraftValues({});
     }
 
     async function deleteRoutine() {
@@ -162,6 +206,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     }
 
     function cancelEditingRoutine() {
+        setTemplateSetDraftValues({});
         setDraftRoutineName(routineTitle);
         setDraftRoutineDescription(editRoutineDescription);
         setIsEditingRoutine(false);
@@ -206,7 +251,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         field: "weight" | "reps",
         value: string
     ) {
-        const numericValue = Number(value);
+        const numericValue = value.trim() === "" ? 0 : Number(value);
 
         if (Number.isNaN(numericValue)) {
             Alert.alert("Validation", "Please enter a valid number");

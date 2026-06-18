@@ -5,6 +5,7 @@ import {
     TextInput,
     Pressable,
     FlatList,
+    Image,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useExercisePicker } from "../hooks/useExercisePicker";
@@ -137,6 +138,25 @@ export default function ExercisePickerScreen({ navigation }: any) {
                                 onPress={() => handleAddExercise(item.id)}
                             >
                                 <Text style={styles.addButtonText}>Add</Text>
+                            </Pressable>
+
+                            {item.image_url ? (
+                                <Image source={{ uri: item.image_url }} style={styles.exerciseImage} />
+                            ) : (
+                                <View style={styles.imagePlaceholder}>
+                                    <Text style={styles.placeholderText}>No image</Text>
+                                </View>
+                            )}
+
+                            <Pressable
+                                style={styles.infoButton}
+                                onPress={() =>
+                                    navigation.navigate("ExerciseDetail", {
+                                        exerciseId: item.id,
+                                    })
+                                }
+                            >
+                                <Text style={styles.infoButtonText}>More Info</Text>
                             </Pressable>
                         </View>
                     );
@@ -324,6 +344,34 @@ const styles = StyleSheet.create({
     },
 
     filterModeText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+    },
+    exerciseImage: {
+        width: "100%",
+        height: 140,
+        borderRadius: 12,
+        marginBottom: 12,
+    },
+    imagePlaceholder: {
+        height: 140,
+        borderRadius: 12,
+        backgroundColor: "#0B0F14",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 12,
+    },
+    placeholderText: {
+        color: "#9CA3AF",
+    },
+    infoButton: {
+        backgroundColor: "#1F2937",
+        paddingVertical: 9,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        marginTop: 8,
+    },
+    infoButtonText: {
         color: "#FFFFFF",
         fontWeight: "700",
     },

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import { RoutineExerciseSet } from "../../types/workout";
+import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 
 type Props = {
     set: RoutineExerciseSet;
@@ -17,22 +18,29 @@ export default function RoutineExerciseSetRow({
     onUpdate,
     onDelete,
 }: Props) {
-    const [weightValue, setWeightValue] = useState(String(set.weight ?? 0));
-    const [repsValue, setRepsValue] = useState(String(set.reps ?? 0));
+    const [weightValue, setWeightValue] = useState(
+        displayZeroAsEmpty(set.weight)
+    );
+
+    const [repsValue, setRepsValue] = useState(
+        displayZeroAsEmpty(set.reps)
+    );
 
     useEffect(() => {
-        setWeightValue(String(set.weight ?? 0));
-        setRepsValue(String(set.reps ?? 0));
+        setWeightValue(displayZeroAsEmpty(set.weight));
+        setRepsValue(displayZeroAsEmpty(set.reps));
     }, [set.id, set.weight, set.reps]);
 
     function handleWeightChange(value: string) {
-        setWeightValue(value);
-        onDraftChange("weight", value);
+        const sanitizedValue = sanitizeIntegerInput(value);
+        setWeightValue(sanitizedValue);
+        onDraftChange("weight", sanitizedValue);
     }
 
     function handleRepsChange(value: string) {
-        setRepsValue(value);
-        onDraftChange("reps", value);
+        const sanitizedValue = sanitizeIntegerInput(value);
+        setRepsValue(sanitizedValue);
+        onDraftChange("reps", sanitizedValue);
     }
 
     return (

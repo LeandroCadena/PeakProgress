@@ -14,12 +14,13 @@ type RouteParams = {
     RoutineDetail: {
         routineId: string;
         routineName: string;
+        routineDescription: string;
     };
 };
 
 export default function RoutineDetailScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "RoutineDetail">>();
-    const { routineId, routineName } = route.params;
+    const { routineId, routineName, routineDescription } = route.params;
 
     const {
         routineTitle,
@@ -57,6 +58,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
     } = useRoutineDetail({
         routineId,
         routineName,
+        routineDescription,
         navigation,
     });
 
