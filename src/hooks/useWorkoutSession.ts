@@ -4,7 +4,6 @@ import { RoutineExercise, WorkoutSessionSet, WorkoutSessionExercise } from "../t
 import {
     getSavedSets,
     createEmptyWorkoutSet,
-    updateWorkoutSetValue,
     toggleWorkoutSetCompleted,
     deleteWorkoutSet,
     finishWorkoutSession,
@@ -107,29 +106,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    async function updateSetValue(
+    function updateSetValue(
         setId: string,
         field: "weight" | "reps",
         value: string
     ) {
-        const numericValue = Number(value);
-
-        if (Number.isNaN(numericValue)) {
-            Alert.alert("Validation", "Please enter a valid number");
-            return;
-        }
-
-        try {
-            await updateWorkoutSetValue({
-                setId,
-                field,
-                value: numericValue,
-            });
-
-            await fetchSavedSets();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
+        updateLocalSetValue(setId, field, value);
     }
 
     async function toggleSetCompleted(set: WorkoutSessionSet) {
@@ -170,8 +152,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     async function finishWorkout() {
         try {
             await syncWorkoutSessionToRoutine({
-                sessionId,
                 routineId,
+                sessionExercises,
+                savedSets,
+                editingValues,
             });
 
             await finishWorkoutSession({
