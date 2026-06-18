@@ -81,8 +81,7 @@ export async function getExerciseDetail(exerciseId: string) {
       exercise_muscles (
         role,
         muscles (
-          name,
-          region_id
+          name
         )
       )
     `)
