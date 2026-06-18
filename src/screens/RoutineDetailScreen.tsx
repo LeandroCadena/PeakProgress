@@ -76,8 +76,24 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onDelete={deleteRoutine}
             />
 
-            <Pressable style={styles.startButton} onPress={startWorkout}>
-                <Text style={styles.startButtonText}>Start Workout</Text>
+            <Pressable
+                style={[
+                    styles.startButton,
+                    isEditingRoutine && styles.startButtonDisabled,
+                ]}
+                disabled={isEditingRoutine}
+                onPress={startWorkout}
+            >
+                <Text
+                    style={[
+                        styles.startButtonText,
+                        isEditingRoutine && styles.startButtonTextDisabled,
+                    ]}
+                >
+                    {isEditingRoutine
+                        ? "Save Changes First"
+                        : "Start Workout"}
+                </Text>
             </Pressable>
 
             <RoutineExerciseSection
@@ -159,5 +175,13 @@ const styles = StyleSheet.create({
     addExerciseButtonText: {
         color: "#4CAF50",
         fontWeight: "800",
+    },
+    startButtonDisabled: {
+        backgroundColor: "#374151",
+        opacity: 0.7,
+    },
+
+    startButtonTextDisabled: {
+        color: "#9CA3AF",
     },
 });

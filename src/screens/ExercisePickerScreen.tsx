@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useExercisePicker } from "../hooks/useExercisePicker";
+import ExerciseListCard from "../components/exercise/ExerciseListCard";
 
 type RouteParams = {
     ExercisePicker: {
@@ -109,64 +110,17 @@ export default function ExercisePickerScreen({ navigation }: any) {
                     const alreadyAdded = currentExerciseIds.includes(item.id);
 
                     return (
-                        <View
-                            style={[
-                                styles.exerciseCard,
-                                alreadyAdded && styles.exerciseCardAdded,
-                            ]}
-                        >
-                            <View style={styles.exerciseInfo}>
-                                <Text style={styles.exerciseTitle}>{item.name}</Text>
-
-                                <Text style={styles.exerciseText}>
-                                    {item.equipment ?? "No equipment"} ·{" "}
-                                    {item.difficulty ?? "No difficulty"}
-                                </Text>
-
-                                {alreadyAdded ? (
-                                    <Text style={styles.alreadyAddedText}>
-                                        Already in this routine
-                                    </Text>
-                                ) : null}
-                            </View>
-
-                            {item.image_url ? (
-                                <Image source={{ uri: item.image_url }} style={styles.exerciseImage} />
-                            ) : (
-                                <View style={styles.imagePlaceholder}>
-                                    <Text style={styles.placeholderText}>No image</Text>
-                                </View>
-                            )}
-
-                            <Pressable
-                                style={styles.infoButton}
-                                onPress={() =>
-                                    navigation.navigate("ExerciseDetail", {
-                                        exerciseId: item.id,
-                                    })
-                                }
-                            >
-                                <Text style={styles.infoButtonText}>More Info</Text>
-                            </Pressable>
-
-                            <Pressable
-                                style={[
-                                    styles.addButton,
-                                    alreadyAdded && styles.addButtonDisabled,
-                                ]}
-                                disabled={alreadyAdded}
-                                onPress={() => handleAddExercise(item.id)}
-                            >
-                                <Text
-                                    style={[
-                                        styles.addButtonText,
-                                        alreadyAdded && styles.addButtonTextDisabled,
-                                    ]}
-                                >
-                                    {alreadyAdded ? "Added" : "Add"}
-                                </Text>
-                            </Pressable>
-                        </View>
+                        <ExerciseListCard
+                            exercise={item}
+                            alreadyAdded={currentExerciseIds.includes(item.id)}
+                            showAddButton
+                            onAdd={() => handleAddExercise(item.id)}
+                            onMoreInfo={() =>
+                                navigation.navigate("ExerciseDetail", {
+                                    exerciseId: item.id,
+                                })
+                            }
+                        />
                     );
                 }}
                 ListEmptyComponent={
@@ -331,7 +285,6 @@ const styles = StyleSheet.create({
         gap: 10,
         marginBottom: 14,
     },
-
     searchInput: {
         flex: 1,
         backgroundColor: "#161B22",

@@ -5,26 +5,33 @@ import {
     StyleSheet,
     FlatList,
     Alert,
-    Pressable
+    Pressable,
+    Image,
+    TextInput
 } from "react-native";
 import {
     getMuscles,
-    getExercisesByFilter
+    getExercisesByFilter,
+    getMuscleRegions
 } from "../services/exerciseService";
-import { Exercise, Muscle } from "../types/exercise";
+import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
+import ExerciseListCard from "../components/exercise/ExerciseListCard";
 
 export default function ExercisesScreen({ navigation }: any) {
-    const [exercises, setExercises] = useState<Exercise[]>([]);
+    const [search, setSearch] = useState("");
+    const [filterMode, setFilterMode] = useState<FilterMode>("muscle");
+    const [selectedFilterIds, setSelectedFilterIds] = useState<string[]>([]);
     const [muscles, setMuscles] = useState<Muscle[]>([]);
-    const [selectedMuscleId, setSelectedMuscleId] = useState<string | null>(null);
+    const [regions, setRegions] = useState<MuscleRegion[]>([]);
+    const [exercises, setExercises] = useState<Exercise[]>([]);
 
     useEffect(() => {
-        fetchMuscles();
+        fetchFilters();
     }, []);
 
     useEffect(() => {
         fetchExercises();
-    }, [selectedMuscleId]);
+    }, [filterMode, selectedFilterIds]);
 
     async function fetchMuscles() {
         try {
@@ -35,11 +42,44 @@ export default function ExercisesScreen({ navigation }: any) {
         }
     }
 
+    const filterOptions = filterMode === "muscle" ? muscles : regions;
+
+    const filteredExercises = exercises.filter((exercise) =>
+        exercise.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    function toggleFilterId(id: string) {
+        setSelectedFilterIds((prev) =>
+            prev.includes(id)
+                ? prev.filter((item) => item !== id)
+                : [...prev, id]
+        );
+    }
+
+    function changeFilterMode(mode: FilterMode) {
+        setFilterMode(mode);
+        setSelectedFilterIds([]);
+    }
+
+    async function fetchFilters() {
+        try {
+            const [musclesData, regionsData] = await Promise.all([
+                getMuscles(),
+                getMuscleRegions(),
+            ]);
+
+            setMuscles(musclesData);
+            setRegions(regionsData);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
     async function fetchExercises() {
         try {
             const data = await getExercisesByFilter({
-                filterMode: "muscle",
-                selectedIds: selectedMuscleId ? [selectedMuscleId] : [],
+                filterMode,
+                selectedIds: selectedFilterIds,
             });
 
             setExercises(data);
@@ -52,56 +92,76 @@ export default function ExercisesScreen({ navigation }: any) {
         <View style={styles.container}>
             <Text style={styles.title}>Exercises</Text>
 
-            <FlatList
-                horizontal
-                data={[{ id: "all", name: "All" }, ...muscles]}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.filters}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => {
-                    const isSelected =
-                        item.id === "all"
-                            ? selectedMuscleId === null
-                            : selectedMuscleId === item.id;
+            <View style={styles.searchRow}>
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search exercise"
+                    placeholderTextColor="#6B7280"
+                    value={search}
+                    onChangeText={setSearch}
+                />
 
-                    return (
-                        <Pressable
-                            style={[
-                                styles.filterChip,
-                                isSelected && styles.filterChipActive,
-                            ]}
-                            onPress={() =>
-                                setSelectedMuscleId(item.id === "all" ? null : item.id)
-                            }
-                        >
-                            <Text
+                <Pressable
+                    style={styles.filterModeButton}
+                    onPress={() =>
+                        changeFilterMode(filterMode === "muscle" ? "region" : "muscle")
+                    }
+                >
+                    <Text style={styles.filterModeText}>
+                        {filterMode === "muscle" ? "Muscle" : "Region"}
+                    </Text>
+                </Pressable>
+            </View>
+
+            <View style={styles.filtersWrapper}>
+                <FlatList
+                    horizontal
+                    data={filterOptions}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.filters}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => {
+                        const isSelected = selectedFilterIds.includes(item.id);
+
+                        return (
+                            <Pressable
                                 style={[
-                                    styles.filterText,
-                                    isSelected && styles.filterTextActive,
+                                    styles.filterChip,
+                                    isSelected && styles.filterChipActive,
                                 ]}
+                                onPress={() => toggleFilterId(item.id)}
                             >
-                                {item.name}
-                            </Text>
-                        </Pressable>
-                    );
-                }}
-            />
+                                <Text
+                                    style={[
+                                        styles.filterText,
+                                        isSelected && styles.filterTextActive,
+                                    ]}
+                                >
+                                    {item.name}
+                                </Text>
+                            </Pressable>
+                        );
+                    }}
+                />
+            </View>
 
             <FlatList
-                data={exercises}
+                data={filteredExercises}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.exerciseList}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                    <Text style={styles.emptyText}>No exercises found.</Text>
+                }
                 renderItem={({ item }) => (
-                    <Pressable
-                        style={styles.infoButton}
-                        onPress={() =>
+                    <ExerciseListCard
+                        exercise={item}
+                        onMoreInfo={() =>
                             navigation.navigate("ExerciseDetail", {
                                 exerciseId: item.id,
                             })
                         }
-                    >
-                        <Text style={styles.infoButtonText}>More Info</Text>
-                    </Pressable>
+                    />
                 )}
             />
         </View>
@@ -174,5 +234,44 @@ const styles = StyleSheet.create({
     infoButtonText: {
         color: "#FFFFFF",
         fontWeight: "700",
+    },
+    exerciseList: {
+        gap: 12,
+        paddingBottom: 24,
+    },
+    emptyText: {
+        color: "#9CA3AF",
+        textAlign: "center",
+        marginTop: 24,
+    },
+    searchRow: {
+        flexDirection: "row",
+        gap: 10,
+        marginBottom: 14,
+    },
+    searchInput: {
+        flex: 1,
+        backgroundColor: "#161B22",
+        color: "#FFFFFF",
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+    filterModeButton: {
+        backgroundColor: "#161B22",
+        borderWidth: 1,
+        borderColor: "#30363D",
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        justifyContent: "center",
+    },
+    filterModeText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+    },
+    filtersWrapper: {
+        height: 52,
+        marginBottom: 16,
     },
 });
