@@ -130,16 +130,6 @@ export default function ExercisePickerScreen({ navigation }: any) {
                                 ) : null}
                             </View>
 
-                            <Pressable
-                                style={[
-                                    styles.addButton,
-                                    alreadyAdded && styles.addButtonSecondary,
-                                ]}
-                                onPress={() => handleAddExercise(item.id)}
-                            >
-                                <Text style={styles.addButtonText}>Add</Text>
-                            </Pressable>
-
                             {item.image_url ? (
                                 <Image source={{ uri: item.image_url }} style={styles.exerciseImage} />
                             ) : (
@@ -157,6 +147,24 @@ export default function ExercisePickerScreen({ navigation }: any) {
                                 }
                             >
                                 <Text style={styles.infoButtonText}>More Info</Text>
+                            </Pressable>
+
+                            <Pressable
+                                style={[
+                                    styles.addButton,
+                                    alreadyAdded && styles.addButtonDisabled,
+                                ]}
+                                disabled={alreadyAdded}
+                                onPress={() => handleAddExercise(item.id)}
+                            >
+                                <Text
+                                    style={[
+                                        styles.addButtonText,
+                                        alreadyAdded && styles.addButtonTextDisabled,
+                                    ]}
+                                >
+                                    {alreadyAdded ? "Added" : "Add"}
+                                </Text>
                             </Pressable>
                         </View>
                     );
@@ -374,5 +382,13 @@ const styles = StyleSheet.create({
     infoButtonText: {
         color: "#FFFFFF",
         fontWeight: "700",
+    },
+    addButtonDisabled: {
+        backgroundColor: "#374151",
+        opacity: 0.7,
+    },
+
+    addButtonTextDisabled: {
+        color: "#9CA3AF",
     },
 });
