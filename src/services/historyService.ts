@@ -16,6 +16,7 @@ export async function getCompletedWorkoutSessions() {
       )
     `)
         .not("completed_at", "is", null)
+        .is("discarded_at", null)
         .order("started_at", { ascending: false });
 
     if (error) throw error;

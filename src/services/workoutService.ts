@@ -660,6 +660,7 @@ export async function getActiveWorkoutSession(userId: string) {
     `)
         .eq("user_id", userId)
         .is("completed_at", null)
+        .is("discarded_at", null)
         .order("started_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -667,4 +668,15 @@ export async function getActiveWorkoutSession(userId: string) {
     if (error) throw error;
 
     return data;
+}
+
+export async function discardWorkoutSession(sessionId: string) {
+    const { error } = await supabase
+        .from("workout_sessions")
+        .update({
+            discarded_at: new Date().toISOString(),
+        })
+        .eq("id", sessionId);
+
+    if (error) throw error;
 }

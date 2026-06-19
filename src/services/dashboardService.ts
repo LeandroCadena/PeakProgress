@@ -37,7 +37,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const { count: completedWorkouts, error: workoutsError } = await supabase
         .from("workout_sessions")
         .select("*", { count: "exact", head: true })
-        .not("completed_at", "is", null);
+        .not("completed_at", "is", null)
+        .is("discarded_at", null);
 
     if (workoutsError) throw workoutsError;
 
@@ -57,6 +58,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       )
     `)
         .not("completed_at", "is", null)
+        .is("discarded_at", null)
         .order("started_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -66,7 +68,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const { data: completedSessions, error: streakError } = await supabase
         .from("workout_sessions")
         .select("completed_at")
-        .not("completed_at", "is", null);
+        .not("completed_at", "is", null)
+        .is("discarded_at", null);
 
     if (streakError) throw streakError;
 
