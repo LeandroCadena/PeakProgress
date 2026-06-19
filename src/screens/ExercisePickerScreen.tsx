@@ -285,6 +285,7 @@ const styles = StyleSheet.create({
         gap: 10,
         marginBottom: 14,
     },
+
     searchInput: {
         flex: 1,
         backgroundColor: "#161B22",

@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import WorkoutSetRow from "./WorkoutSetRow";
+import RestTimeEditor from "./RestTimeEditor";
 
 type WorkoutExerciseCardProps = {
     exercise: WorkoutSessionExercise;
@@ -27,6 +28,10 @@ type WorkoutExerciseCardProps = {
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
     onDeleteExercise: () => void;
+    onUpdateSetRest: (
+        workoutSessionExerciseId: string,
+        value: number
+    ) => void;
 };
 
 export default function WorkoutExerciseCard({
@@ -38,7 +43,8 @@ export default function WorkoutExerciseCard({
     toggleSetCompleted,
     deleteSet,
     addEmptySet,
-    onDeleteExercise
+    onDeleteExercise,
+    onUpdateSetRest,
 }: WorkoutExerciseCardProps) {
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
@@ -52,6 +58,13 @@ export default function WorkoutExerciseCard({
                     style={styles.exerciseImage}
                 />
             ) : null}
+
+            <RestTimeEditor
+                label="Rest between sets"
+                value={exercise.rest_seconds ?? 90}
+                editable
+                onChange={(value) => onUpdateSetRest(exercise.id, value)}
+            />
 
             <Text style={styles.cardText}>
                 Rest: {exercise.rest_seconds}s

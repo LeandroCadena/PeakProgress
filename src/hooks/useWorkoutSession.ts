@@ -250,6 +250,32 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         return 0;
     }
 
+    function updateWorkoutSetRest(
+        workoutSessionExerciseId: string,
+        value: number
+    ) {
+        setSessionExercises((prev) =>
+            prev.map((exercise) =>
+                exercise.id === workoutSessionExerciseId
+                    ? { ...exercise, rest_seconds: value }
+                    : exercise
+            )
+        );
+    }
+
+    function updateWorkoutExerciseRest(
+        workoutSessionExerciseId: string,
+        value: number
+    ) {
+        setSessionExercises((prev) =>
+            prev.map((exercise) =>
+                exercise.id === workoutSessionExerciseId
+                    ? { ...exercise, exercise_rest_seconds: value }
+                    : exercise
+            )
+        );
+    }
+
     return {
         sessionExercises,
         savedSets,
@@ -268,6 +294,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         getSetInputValue,
         updateLocalSetValue,
         deleteSessionExercise,
-        getRestSecondsAfterSet
+
+        getRestSecondsAfterSet,
+        updateWorkoutSetRest,
+        updateWorkoutExerciseRest,
     };
 }

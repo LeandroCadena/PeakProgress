@@ -10,6 +10,7 @@ import { WorkoutSessionRouteParams } from "../types/workout";
 import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
+import RestTimeEditor from "../components/workout/RestTimeEditor";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -30,6 +31,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         getSetInputValue,
         updateLocalSetValue,
         deleteSessionExercise,
+        updateWorkoutSetRest,
+        updateWorkoutExerciseRest,
     } = useWorkoutSession({
         sessionId,
         routineId,
@@ -57,18 +60,30 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 data={sessionExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
-                renderItem={({ item }) => (
-                    <WorkoutExerciseCard
-                        exercise={item}
-                        savedSets={savedSets[item.id] ?? []}
-                        getSetInputValue={getSetInputValue}
-                        updateLocalSetValue={updateLocalSetValue}
-                        updateSetValue={updateSetValue}
-                        toggleSetCompleted={toggleSetCompleted}
-                        deleteSet={deleteSet}
-                        addEmptySet={addEmptySet}
-                        onDeleteExercise={() => deleteSessionExercise(item.id)}
-                    />
+                renderItem={({ item, index }) => (
+                    <View>
+                        <WorkoutExerciseCard
+                            exercise={item}
+                            savedSets={savedSets[item.id] ?? []}
+                            getSetInputValue={getSetInputValue}
+                            updateLocalSetValue={updateLocalSetValue}
+                            updateSetValue={updateSetValue}
+                            toggleSetCompleted={toggleSetCompleted}
+                            deleteSet={deleteSet}
+                            addEmptySet={addEmptySet}
+                            onDeleteExercise={() => deleteSessionExercise(item.id)}
+                            onUpdateSetRest={updateWorkoutSetRest}
+                        />
+
+                        {index < sessionExercises.length - 1 ? (
+                            <RestTimeEditor
+                                label="Rest before next exercise"
+                                value={item.exercise_rest_seconds ?? 120}
+                                editable
+                                onChange={(value) => updateWorkoutExerciseRest(item.id, value)}
+                            />
+                        ) : null}
+                    </View>
                 )}
             />
 

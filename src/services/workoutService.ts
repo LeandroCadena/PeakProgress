@@ -485,6 +485,7 @@ export async function syncWorkoutSessionToRoutine(params: {
                     exercise_id: sessionExercise.exercise_id,
                     position: index,
                     rest_seconds: sessionExercise.rest_seconds ?? 90,
+                    exercise_rest_seconds: sessionExercise.exercise_rest_seconds ?? 120,
                     sets: sets.length,
                     reps: firstSet
                         ? Number(
