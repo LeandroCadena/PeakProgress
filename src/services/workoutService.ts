@@ -646,3 +646,25 @@ export async function createRoutineExerciseSets(
 
     if (error) throw error;
 }
+
+export async function getActiveWorkoutSession(userId: string) {
+    const { data, error } = await supabase
+        .from("workout_sessions")
+        .select(`
+      id,
+      routine_id,
+      started_at,
+      routines (
+        name
+      )
+    `)
+        .eq("user_id", userId)
+        .is("completed_at", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data;
+}

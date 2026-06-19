@@ -16,10 +16,12 @@ import {
     createRoutine as createRoutineService,
 } from "../services/routineService";
 import { Routine } from "../types/routine";
-import { getOrCreateActiveWorkoutSession } from "../services/workoutService";
+import { getActiveWorkoutSession, getOrCreateActiveWorkoutSession } from "../services/workoutService";
+import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
+    const [activeSession, setActiveSession] = useState<any>(null);
 
     const [routines, setRoutines] = useState<Routine[]>([]);
     const [name, setName] = useState("");
@@ -28,6 +30,7 @@ export default function RoutinesScreen({ navigation }: any) {
     useFocusEffect(
         useCallback(() => {
             fetchRoutines();
+            fetchActiveSession();
         }, [])
     );
 
@@ -88,8 +91,43 @@ export default function RoutinesScreen({ navigation }: any) {
         }
     }
 
+    async function fetchActiveSession() {
+        if (!user) return;
+
+        try {
+            const data = await getActiveWorkoutSession(user.id);
+            setActiveSession(data);
+        } catch (error) {
+            console.log("Active workout error:", error);
+        }
+    }
+
+    function getElapsedText(startedAt: string) {
+        const diffMs = Date.now() - new Date(startedAt).getTime();
+        const minutes = Math.floor(diffMs / 60000);
+        const hours = Math.floor(minutes / 60);
+        const restMinutes = minutes % 60;
+
+        if (hours > 0) return `${hours}h ${restMinutes}m`;
+        return `${minutes}m`;
+    }
+
     return (
         <View style={styles.container}>
+            {activeSession ? (
+                <ActiveWorkoutBanner
+                    routineName={activeSession.routines?.name ?? "Workout"}
+                    elapsedText={getElapsedText(activeSession.started_at)}
+                    onPress={() =>
+                        navigation.navigate("WorkoutSession", {
+                            sessionId: activeSession.id,
+                            routineId: activeSession.routine_id,
+                            routineName: activeSession.routines?.name ?? "Workout",
+                        })
+                    }
+                />
+            ) : null}
+
             <Text style={styles.title}>My Routines</Text>
 
             <TextInput

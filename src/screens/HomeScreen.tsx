@@ -6,9 +6,12 @@ import {
     getDashboardStats,
 } from "../services/dashboardService";
 import { DashboardStats } from "../types/dashboard";
+import { getActiveWorkoutSession } from "../services/workoutService";
+import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
+    const [activeSession, setActiveSession] = useState<any>(null);
 
     const [stats, setStats] = useState<DashboardStats>({
         routinesCount: 0,
@@ -22,6 +25,7 @@ export default function HomeScreen({ navigation }: any) {
     useFocusEffect(
         useCallback(() => {
             fetchDashboardStats();
+            fetchActiveSession();
         }, [user?.id])
     );
 
@@ -64,8 +68,42 @@ export default function HomeScreen({ navigation }: any) {
         return streak;
     }
 
+    function getElapsedText(startedAt: string) {
+        const diffMs = Date.now() - new Date(startedAt).getTime();
+        const minutes = Math.floor(diffMs / 60000);
+        const hours = Math.floor(minutes / 60);
+        const restMinutes = minutes % 60;
+
+        if (hours > 0) return `${hours}h ${restMinutes}m`;
+        return `${minutes}m`;
+    }
+
+    async function fetchActiveSession() {
+        if (!user) return;
+
+        try {
+            const data = await getActiveWorkoutSession(user.id);
+            setActiveSession(data);
+        } catch (error) {
+            console.log("Active workout error:", error);
+        }
+    }
+
     return (
         <View style={styles.container}>
+            {activeSession ? (
+                <ActiveWorkoutBanner
+                    routineName={activeSession.routines?.name ?? "Workout"}
+                    elapsedText={getElapsedText(activeSession.started_at)}
+                    onPress={() =>
+                        navigation.navigate("WorkoutSession", {
+                            sessionId: activeSession.id,
+                            routineId: activeSession.routine_id,
+                            routineName: activeSession.routines?.name ?? "Workout",
+                        })
+                    }
+                />
+            ) : null}
             <Text style={styles.title}>PeakProgress</Text>
             <Text style={styles.subtitle}>Welcome back, {user?.email}</Text>
 
