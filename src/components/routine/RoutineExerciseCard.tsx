@@ -1,10 +1,10 @@
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/workout";
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
+import RestTimeEditor from "../workout/RestTimeEditor";
 
 type Props = {
     item: RoutineExercise;
-    onEdit: () => void;
     onDelete: () => void;
     isEditing: boolean;
     onMoveUp: () => void;
@@ -13,6 +13,7 @@ type Props = {
     onUpdateSet: (setId: string, field: "weight" | "reps", value: string) => void;
     onAddSet: () => void;
     onDeleteSet: (routineExerciseId: string, setId: string) => void;
+    onUpdateSetRest: (routineExerciseId: string, value: number) => void;
     updateLocalTemplateSetValue: (
         setId: string,
         field: "weight" | "reps",
@@ -22,7 +23,6 @@ type Props = {
 
 export default function RoutineExerciseCard({
     item,
-    onEdit,
     onDelete,
     isEditing,
     onMoveUp,
@@ -32,6 +32,7 @@ export default function RoutineExerciseCard({
     onAddSet,
     onDeleteSet,
     updateLocalTemplateSetValue,
+    onUpdateSetRest,
 }: Props) {
     return (
         <View style={styles.card}>
@@ -52,6 +53,13 @@ export default function RoutineExerciseCard({
                 <Text style={styles.setHeaderText}>Reps</Text>
                 {isEditing ? <Text style={styles.setHeaderText}></Text> : null}
             </View>
+
+            <RestTimeEditor
+                label="Rest between sets"
+                value={item.rest_seconds ?? 90}
+                editable={isEditing}
+                onChange={(value) => onUpdateSetRest(item.id, value)}
+            />
 
             {sets.map((set) => (
                 <RoutineExerciseSetRow
@@ -75,10 +83,6 @@ export default function RoutineExerciseCard({
             {isEditing ? (
                 <>
                     <View style={styles.cardActions}>
-                        <Pressable style={styles.editButton} onPress={onEdit}>
-                            <Text style={styles.actionText}>Edit</Text>
-                        </Pressable>
-
                         <Pressable style={styles.deleteButton} onPress={onDelete}>
                             <Text style={styles.actionText}>Delete</Text>
                         </Pressable>

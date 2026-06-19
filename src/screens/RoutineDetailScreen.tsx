@@ -6,7 +6,6 @@ import {
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
 import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
-import EditRoutineExerciseModal from "../components/routine/EditRoutineExerciseModal";
 import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
 import RoutineHeader from "../components/routine/RoutineHeader";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
@@ -26,19 +25,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
     const {
         routineTitle,
         routineExercises,
-        editingExercise,
-        setEditingExercise,
-        editSets,
-        editReps,
-        editWeight,
-        editRestSeconds,
-        setEditSets,
-        setEditReps,
-        setEditWeight,
-        setEditRestSeconds,
         editRoutineDescription,
-        openEditModal,
-        saveEditedExercise,
         deleteRoutineExercise,
         saveRoutineChanges,
         startWorkout,
@@ -62,6 +49,8 @@ export default function RoutineDetailScreen({ navigation }: any) {
         resumeActiveWorkout,
         discardAndStartWorkout,
         setActiveWorkoutModalVisible,
+        updateSetRest,
+        updateExerciseRest,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -107,7 +96,6 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 routineExercises={routineExercises}
                 routineExerciseSets={routineExerciseSets}
                 isEditing={isEditingRoutine}
-                onEdit={openEditModal}
                 onDelete={deleteRoutineExercise}
                 onMoveUp={(index) => moveRoutineExercise(index, "up")}
                 onMoveDown={(index) => moveRoutineExercise(index, "down")}
@@ -115,6 +103,8 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onAddSet={addTemplateSet}
                 onDeleteSet={deleteTemplateSet}
                 updateLocalTemplateSetValue={updateLocalTemplateSetValue}
+                onUpdateSetRest={updateSetRest}
+                onUpdateExerciseRest={updateExerciseRest}
             />
 
             {isEditingRoutine ? (
@@ -133,20 +123,6 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 </Pressable>
             ) : null
             }
-
-            <EditRoutineExerciseModal
-                visible={!!editingExercise}
-                sets={editSets}
-                reps={editReps}
-                weight={editWeight}
-                restSeconds={editRestSeconds}
-                onChangeSets={setEditSets}
-                onChangeReps={setEditReps}
-                onChangeWeight={setEditWeight}
-                onChangeRestSeconds={setEditRestSeconds}
-                onSave={saveEditedExercise}
-                onCancel={() => setEditingExercise(null)}
-            />
 
             <ActiveWorkoutModal
                 visible={activeWorkoutModalVisible}

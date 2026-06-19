@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet } from "react-native";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/workout";
 import RoutineExerciseCard from "./RoutineExerciseCard";
+import RestTimeEditor from "../workout/RestTimeEditor";
 
 type Props = {
     routineExercises: RoutineExercise[];
-    onEdit: (item: RoutineExercise) => void;
     onDelete: (routineExerciseId: string) => void;
     isEditing: boolean;
     onMoveUp: (index: number) => void;
@@ -17,6 +17,8 @@ type Props = {
     ) => void;
     onAddSet: (routineExerciseId: string) => void;
     onDeleteSet: (routineExerciseId: string, setId: string) => void;
+    onUpdateSetRest: (routineExerciseId: string, value: number) => void;
+    onUpdateExerciseRest: (routineExerciseId: string, value: number) => void;
     updateLocalTemplateSetValue: (
         setId: string,
         field: "weight" | "reps",
@@ -26,7 +28,6 @@ type Props = {
 
 export default function RoutineExerciseSection({
     routineExercises,
-    onEdit,
     onDelete,
     isEditing,
     onMoveUp,
@@ -36,6 +37,8 @@ export default function RoutineExerciseSection({
     onAddSet,
     onDeleteSet,
     updateLocalTemplateSetValue,
+    onUpdateSetRest,
+    onUpdateExerciseRest,
 }: Props) {
     return (
         <>
@@ -46,20 +49,30 @@ export default function RoutineExerciseSection({
             ) : (
                 <View style={styles.list}>
                     {routineExercises.map((item, index) => (
-                        <RoutineExerciseCard
-                            key={item.id}
-                            item={item}
-                            sets={routineExerciseSets[item.id] ?? []}
-                            isEditing={isEditing}
-                            onAddSet={() => onAddSet(item.id)}
-                            onUpdateSet={onUpdateSet}
-                            onDeleteSet={onDeleteSet}
-                            updateLocalTemplateSetValue={updateLocalTemplateSetValue}
-                            onEdit={() => onEdit(item)}
-                            onDelete={() => onDelete(item.id)}
-                            onMoveUp={() => onMoveUp(index)}
-                            onMoveDown={() => onMoveDown(index)}
-                        />
+                        <View key={item.id}>
+                            <RoutineExerciseCard
+                                item={item}
+                                sets={routineExerciseSets[item.id] ?? []}
+                                isEditing={isEditing}
+                                onAddSet={() => onAddSet(item.id)}
+                                onUpdateSet={onUpdateSet}
+                                onDeleteSet={onDeleteSet}
+                                updateLocalTemplateSetValue={updateLocalTemplateSetValue}
+                                onUpdateSetRest={onUpdateSetRest}
+                                onDelete={() => onDelete(item.id)}
+                                onMoveUp={() => onMoveUp(index)}
+                                onMoveDown={() => onMoveDown(index)}
+                            />
+
+                            {index < routineExercises.length - 1 ? (
+                                <RestTimeEditor
+                                    label="Rest before next exercise"
+                                    value={item.exercise_rest_seconds ?? 120}
+                                    editable={isEditing}
+                                    onChange={(value) => onUpdateExerciseRest(item.id, value)}
+                                />
+                            ) : null}
+                        </View>
                     ))}
                 </View>
             )}

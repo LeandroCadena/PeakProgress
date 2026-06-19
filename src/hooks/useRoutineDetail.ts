@@ -37,11 +37,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     const [routineTitle, setRoutineTitle] = useState(routineName);
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
 
-    const [editingExercise, setEditingExercise] = useState<RoutineExercise | null>(null);
-    const [editSets, setEditSets] = useState("");
-    const [editReps, setEditReps] = useState("");
-    const [editWeight, setEditWeight] = useState("");
-    const [editRestSeconds, setEditRestSeconds] = useState("");
     const [templateSetDraftValues, setTemplateSetDraftValues] = useState<
         Record<string, string>
     >({});
@@ -73,30 +68,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
             const setGroups = await getRoutineExerciseSets(data.map((item) => item.id));
             setRoutineExerciseSets(setGroups);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    function openEditModal(item: RoutineExercise) {
-        setEditingExercise(item);
-        setEditRestSeconds(String(item.rest_seconds));
-    }
-
-    async function saveEditedExercise() {
-        if (!editingExercise) return;
-
-        try {
-            await updateRoutineExerciseConfig({
-                routineExerciseId: editingExercise.id,
-                sets: Number(editSets),
-                reps: Number(editReps),
-                weight: Number(editWeight),
-                restSeconds: Number(editRestSeconds),
-            });
-
-            setEditingExercise(null);
-            await fetchRoutineExercises();
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -197,6 +168,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
                 reps: firstSet?.reps ?? 0,
                 weight: firstSet?.weight ?? 0,
                 restSeconds: routineExercise.rest_seconds ?? 90,
+                exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
             });
         }
         setTemplateSetDraftValues({});
@@ -431,21 +403,33 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         }
     }
 
+    function updateSetRest(routineExerciseId: string, value: number) {
+        setRoutineExercises((prev) =>
+            prev.map((exercise) =>
+                exercise.id === routineExerciseId
+                    ? { ...exercise, rest_seconds: value }
+                    : exercise
+            )
+        );
+    }
+
+    function updateExerciseRest(routineExerciseId: string, value: number) {
+        setRoutineExercises((prev) =>
+            prev.map((exercise) =>
+                exercise.id === routineExerciseId
+                    ? {
+                        ...exercise,
+                        exercise_rest_seconds: value,
+                    }
+                    : exercise
+            )
+        );
+    }
+
     return {
         routineTitle,
         routineExercises,
         moveRoutineExercise,
-
-        editingExercise,
-        setEditingExercise,
-        editSets,
-        editReps,
-        editWeight,
-        editRestSeconds,
-        setEditSets,
-        setEditReps,
-        setEditWeight,
-        setEditRestSeconds,
 
         editRoutineVisible,
         setEditRoutineVisible,
@@ -454,8 +438,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         setEditRoutineName,
         setEditRoutineDescription,
 
-        openEditModal,
-        saveEditedExercise,
         deleteRoutineExercise,
         saveRoutineChanges,
         deleteRoutine,
@@ -487,5 +469,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         setActiveWorkoutModalVisible,
         resumeActiveWorkout,
         discardAndStartWorkout,
+
+        updateSetRest,
+        updateExerciseRest,
     };
 }

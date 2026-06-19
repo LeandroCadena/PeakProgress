@@ -389,6 +389,7 @@ export async function updateRoutineExerciseConfig(params: {
     reps: number;
     weight: number;
     restSeconds: number;
+    exerciseRestSeconds: number;
 }) {
     const { error } = await supabase
         .from("routine_exercises")
@@ -397,6 +398,7 @@ export async function updateRoutineExerciseConfig(params: {
             reps: params.reps,
             weight: params.weight,
             rest_seconds: params.restSeconds,
+            exercise_rest_seconds: params.exerciseRestSeconds,
         })
         .eq("id", params.routineExerciseId);
 
