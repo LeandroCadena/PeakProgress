@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { RoutineExercise, WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
+import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import {
     getSavedSets,
     createEmptyWorkoutSet,
@@ -21,12 +21,12 @@ type Params = {
 };
 
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
-    const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
     const [sessionExercises, setSessionExercises] = useState<WorkoutSessionExercise[]>([]);
     const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
+    const [lastTimerDuration, setLastTimerDuration] = useState(0);
 
     useFocusEffect(
         useCallback(() => {
@@ -135,6 +135,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 });
 
                 if (restSeconds > 0) {
+                    setLastTimerDuration(restSeconds);
                     setTimer(restSeconds);
                     setTimerRunning(true);
                 }
@@ -142,6 +143,13 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
+    }
+
+    function restartLastTimer() {
+        if (lastTimerDuration <= 0) return;
+
+        setTimer(lastTimerDuration);
+        setTimerRunning(true);
     }
 
     async function deleteSet(setId: string) {
@@ -193,23 +201,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             ...prev,
             [key]: value,
         }));
-    }
-
-    function startTimer(seconds?: number) {
-        if (seconds) {
-            setTimer(seconds);
-        }
-
-        setTimerRunning(true);
-    }
-
-    function pauseTimer() {
-        setTimerRunning(false);
-    }
-
-    function resetTimer() {
-        setTimer(0);
-        setTimerRunning(false);
     }
 
     async function deleteSessionExercise(workoutSessionExerciseId: string) {
@@ -282,10 +273,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         timer,
         timerRunning,
 
-        startTimer,
-        pauseTimer,
-        resetTimer,
-
         addEmptySet,
         updateSetValue,
         toggleSetCompleted,
@@ -298,5 +285,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         getRestSecondsAfterSet,
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
+
+        lastTimerDuration,
+        restartLastTimer,
     };
 }

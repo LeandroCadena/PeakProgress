@@ -16,7 +16,7 @@ import {
     createRoutine as createRoutineService,
 } from "../services/routineService";
 import { Routine } from "../types/routine";
-import { getActiveWorkoutSession, getOrCreateActiveWorkoutSession, getOrCreateWorkoutAfterDiscard } from "../services/workoutService";
+import { createNewWorkoutSessionFromRoutine, getActiveWorkoutSession, getOrCreateWorkoutAfterDiscard } from "../services/workoutService";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 
@@ -90,7 +90,7 @@ export default function RoutinesScreen({ navigation }: any) {
                 return;
             }
 
-            const session = await getOrCreateActiveWorkoutSession({
+            const session = await createNewWorkoutSessionFromRoutine({
                 userId: user.id,
                 routineId: routine.id,
             });

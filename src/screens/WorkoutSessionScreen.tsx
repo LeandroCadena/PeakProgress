@@ -20,9 +20,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         sessionExercises,
         savedSets,
         timer,
-        startTimer,
-        pauseTimer,
-        resetTimer,
+        lastTimerDuration,
+        restartLastTimer,
         addEmptySet,
         updateSetValue,
         toggleSetCompleted,
@@ -51,9 +50,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
 
             <RestTimerCard
                 timer={timer}
-                onStart={() => startTimer()}
-                onPause={pauseTimer}
-                onReset={resetTimer}
+                lastTimerDuration={lastTimerDuration}
+                onRestart={restartLastTimer}
             />
 
             <FlatList

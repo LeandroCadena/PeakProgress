@@ -6,7 +6,6 @@ import {
     getRoutineExercises,
     deleteRoutineExercise as deleteRoutineExerciseService,
     updateRoutineExerciseConfig,
-    getOrCreateActiveWorkoutSession,
     updateRoutineExercisePosition,
     getRoutineExerciseSets,
     updateRoutineExerciseSet,
@@ -16,6 +15,7 @@ import {
     deleteRoutineExerciseSetsByRoutineExerciseId,
     getOrCreateWorkoutAfterDiscard,
     getActiveWorkoutSession,
+    createNewWorkoutSessionFromRoutine,
 } from "../services/workoutService";
 import {
     updateRoutine,
@@ -202,7 +202,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
                 return;
             }
 
-            const session = await getOrCreateActiveWorkoutSession({
+            const session = await createNewWorkoutSessionFromRoutine({
                 userId: user.id,
                 routineId,
             });

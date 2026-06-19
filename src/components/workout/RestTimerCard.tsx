@@ -1,36 +1,41 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 
-type RestTimerCardProps = {
+type Props = {
     timer: number;
-    onStart: () => void;
-    onPause: () => void;
-    onReset: () => void;
+    lastTimerDuration: number;
+    onRestart: () => void;
 };
 
 export default function RestTimerCard({
     timer,
-    onStart,
-    onPause,
-    onReset,
-}: RestTimerCardProps) {
+    lastTimerDuration,
+    onRestart,
+}: Props) {
     return (
-        <View style={styles.timerCard}>
-            <Text style={styles.timerLabel}>Rest Timer</Text>
-            <Text style={styles.timerText}>{timer}s</Text>
+        <View style={styles.card}>
+            <View style={styles.header}>
+                <View>
+                    <Text style={styles.label}>Rest Timer</Text>
+                    <Text style={styles.timer}>{timer}s</Text>
+                </View>
 
-            <View style={styles.timerActions}>
-                <Pressable style={styles.timerButton} onPress={onStart}>
-                    <Text style={styles.buttonText}>Start</Text>
-                </Pressable>
-
-                <Pressable style={styles.timerButton} onPress={onPause}>
-                    <Text style={styles.buttonText}>Pause</Text>
-                </Pressable>
-
-                <Pressable style={styles.timerButton} onPress={onReset}>
-                    <Text style={styles.buttonText}>Reset</Text>
+                <Pressable
+                    style={[
+                        styles.restartButton,
+                        lastTimerDuration <= 0 && styles.restartButtonDisabled,
+                    ]}
+                    disabled={lastTimerDuration <= 0}
+                    onPress={onRestart}
+                >
+                    <Text style={styles.restartIcon}>↻</Text>
                 </Pressable>
             </View>
+
+            {lastTimerDuration > 0 ? (
+                <Text style={styles.lastTimerText}>
+                    Last rest: {lastTimerDuration}s
+                </Text>
+            ) : null}
         </View>
     );
 }
@@ -69,5 +74,56 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         textAlign: "center",
+    },
+    card: {
+        backgroundColor: "#161B22",
+        borderWidth: 1,
+        borderColor: "#30363D",
+        borderRadius: 14,
+        padding: 16,
+        marginBottom: 16,
+    },
+
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+
+    label: {
+        color: "#9CA3AF",
+        fontSize: 14,
+        marginBottom: 8,
+    },
+
+    timer: {
+        color: "#FFFFFF",
+        fontSize: 36,
+        fontWeight: "800",
+    },
+
+    restartButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#2563EB",
+    },
+
+    restartButtonDisabled: {
+        backgroundColor: "#374151",
+        opacity: 0.6,
+    },
+
+    restartIcon: {
+        color: "#FFFFFF",
+        fontSize: 24,
+        fontWeight: "800",
+    },
+
+    lastTimerText: {
+        color: "#9CA3AF",
+        marginTop: 10,
     },
 });

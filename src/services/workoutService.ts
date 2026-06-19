@@ -255,45 +255,6 @@ export async function addExerciseToRoutine(params: {
     return data;
 }
 
-export async function getOrCreateActiveWorkoutSession(params: {
-    userId: string;
-    routineId: string;
-}) {
-    const { data: existingSession, error: existingError } = await supabase
-        .from("workout_sessions")
-        .select("id")
-        .eq("user_id", params.userId)
-        .eq("routine_id", params.routineId)
-        .is("completed_at", null)
-        .order("started_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (existingError) throw existingError;
-
-    if (existingSession) {
-        return existingSession;
-    }
-
-    const { data, error } = await supabase
-        .from("workout_sessions")
-        .insert({
-            user_id: params.userId,
-            routine_id: params.routineId,
-        })
-        .select("id")
-        .single();
-
-    if (error) throw error;
-
-    await createWorkoutSessionExercisesFromRoutine({
-        sessionId: data.id,
-        routineId: params.routineId,
-    });
-
-    return data;
-}
-
 export async function createWorkoutSetsFromTemplate(params: {
     sessionId: string;
     routineId: string;
@@ -697,8 +658,32 @@ export async function getOrCreateWorkoutAfterDiscard(params: {
         await discardWorkoutSession(params.activeSessionId);
     }
 
-    return getOrCreateActiveWorkoutSession({
+    return createNewWorkoutSessionFromRoutine({
         userId: params.userId,
         routineId: params.routineId,
     });
+}
+
+export async function createNewWorkoutSessionFromRoutine(params: {
+    userId: string;
+    routineId: string;
+}) {
+    const { data, error } = await supabase
+        .from("workout_sessions")
+        .insert({
+            user_id: params.userId,
+            routine_id: params.routineId,
+            started_at: new Date().toISOString(),
+        })
+        .select("id, routine_id, started_at")
+        .single();
+
+    if (error) throw error;
+
+    await createWorkoutSessionExercisesFromRoutine({
+        sessionId: data.id,
+        routineId: params.routineId,
+    });
+
+    return data;
 }
