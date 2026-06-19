@@ -193,9 +193,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
                 weight: firstSet?.weight ?? 0,
                 restSeconds: routineExercise.rest_seconds ?? 90,
             });
-
-            console.log("Persisting routine exercise:", routineExercise.id);
-            console.log("Sets to insert:", setsToInsert);
         }
         setTemplateSetDraftValues({});
     }

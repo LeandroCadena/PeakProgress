@@ -28,16 +28,15 @@ export async function getWorkoutSets(sessionId: string) {
         .from("workout_sets")
         .select(`
       id,
+      exercise_name_snapshot,
       set_number,
       reps,
       weight,
-      exercise_name_snapshot,
-      exercises (
-        name
-      )
+      is_completed
     `)
         .eq("workout_session_id", sessionId)
-        .order("created_at", { ascending: true });
+        .order("exercise_name_snapshot", { ascending: true })
+        .order("set_number", { ascending: true });
 
     if (error) throw error;
 

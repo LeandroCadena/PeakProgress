@@ -190,8 +190,9 @@ export async function finishWorkoutSession(params: {
 
     const { data: sets, error: setsError } = await supabase
         .from("workout_sets")
-        .select("reps, weight")
-        .eq("workout_session_id", params.sessionId);
+        .select("reps, weight, is_completed")
+        .eq("workout_session_id", params.sessionId)
+        .eq("is_completed", true);
 
     if (setsError) throw setsError;
 

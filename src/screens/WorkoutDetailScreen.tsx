@@ -10,15 +10,14 @@ type RouteParams = {
     };
 };
 
-type WorkoutSet = {
-    exercise_name_snapshot: string;
+export type WorkoutSet = {
     id: string;
+    exercise_id?: string | null;
+    exercise_name_snapshot?: string | null;
     set_number: number;
     reps: number;
     weight: number | null;
-    exercises: {
-        name: string;
-    }[];
+    is_completed: boolean;
 };
 
 export default function WorkoutDetailScreen() {
@@ -53,16 +52,23 @@ export default function WorkoutDetailScreen() {
                     <Text style={styles.emptyText}>No sets saved for this workout.</Text>
                 }
                 renderItem={({ item }) => {
-                    const exerciseName =
-                        item.exercise_name_snapshot ??
-                        item.exercises?.[0]?.name ??
-                        "Exercise";
-
                     return (
                         <View style={styles.card}>
-                            <Text style={styles.cardTitle}>{exerciseName}</Text>
-                            <Text style={styles.cardText}>
-                                Set {item.set_number}: {item.weight ?? 0} kg x {item.reps} reps
+                            <Text style={styles.exerciseName}>
+                                {item.exercise_name_snapshot ?? "Exercise"}
+                            </Text>
+
+                            <Text style={styles.setText}>
+                                Set {item.set_number}: {item.weight ?? 0} kg x {item.reps ?? 0} reps
+                            </Text>
+
+                            <Text
+                                style={[
+                                    styles.statusText,
+                                    item.is_completed ? styles.completedText : styles.skippedText,
+                                ]}
+                            >
+                                {item.is_completed ? "Completed" : "Skipped"}
                             </Text>
                         </View>
                     );
@@ -111,5 +117,32 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         color: "#9CA3AF",
+    },
+    completedText: {
+        color: "#4CAF50",
+        fontWeight: "700",
+    },
+
+    skippedText: {
+        color: "#F59E0B",
+        fontWeight: "700",
+    },
+    exerciseName: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#FFFFFF",
+        marginBottom: 6,
+    },
+
+    setText: {
+        fontSize: 14,
+        color: "#D1D5DB",
+        marginBottom: 4,
+    },
+
+    statusText: {
+        fontSize: 13,
+        fontWeight: "700",
+        marginTop: 4,
     },
 });

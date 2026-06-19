@@ -15,6 +15,8 @@ type WorkoutSession = {
     id: string;
     started_at: string;
     completed_at: string | null;
+    total_volume: number;
+    total_sets: number;
     routines: {
         name: string;
     }[];
@@ -80,6 +82,9 @@ export default function HistoryScreen({ navigation }: any) {
                             }
                         >
                             <Text style={styles.cardTitle}>{routineName}</Text>
+                            <Text style={styles.cardText}>
+                                Sets: {item.total_sets ?? 0} · Volume: {Number(item.total_volume ?? 0)} kg
+                            </Text>
                             <Text style={styles.cardText}>{formatDate(item.started_at)}</Text>
                             <Text style={styles.cardText}>
                                 Duration: {getDuration(item.started_at, item.completed_at)}
