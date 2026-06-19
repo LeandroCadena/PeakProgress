@@ -36,6 +36,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
     const [routineTitle, setRoutineTitle] = useState(routineName);
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
+    const [routineExercisesChanged, setRoutineExercisesChanged] = useState(false);
 
     const [templateSetDraftValues, setTemplateSetDraftValues] = useState<
         Record<string, string>
@@ -94,14 +95,16 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
         const routineSetsChanged =
             Object.keys(templateSetDraftValues).length > 0;
+        const shouldPersistRoutineExercises =
+            routineSetsChanged || routineExercisesChanged;
 
-        if (!routineInfoChanged && !routineSetsChanged) {
+        if (!routineInfoChanged && !shouldPersistRoutineExercises) {
             setIsEditingRoutine(false);
             return;
         }
 
         try {
-            if (routineSetsChanged) {
+            if (shouldPersistRoutineExercises) {
                 await persistRoutineChanges();
             }
 
@@ -172,6 +175,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             });
         }
         setTemplateSetDraftValues({});
+        setRoutineExercisesChanged(false);
     }
 
     async function deleteRoutine() {
@@ -404,6 +408,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     function updateSetRest(routineExerciseId: string, value: number) {
+        setRoutineExercisesChanged(true);
+
         setRoutineExercises((prev) =>
             prev.map((exercise) =>
                 exercise.id === routineExerciseId
@@ -414,6 +420,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     function updateExerciseRest(routineExerciseId: string, value: number) {
+        setRoutineExercisesChanged(true);
+
         setRoutineExercises((prev) =>
             prev.map((exercise) =>
                 exercise.id === routineExerciseId

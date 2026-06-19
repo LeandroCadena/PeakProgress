@@ -13,6 +13,7 @@ export async function getRoutineExercises(
       reps,
       weight,
       rest_seconds,
+      exercise_rest_seconds,
       exercise:exercises (
         name,
         image_url
