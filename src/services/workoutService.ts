@@ -680,3 +680,18 @@ export async function discardWorkoutSession(sessionId: string) {
 
     if (error) throw error;
 }
+
+export async function getOrCreateWorkoutAfterDiscard(params: {
+    userId: string;
+    routineId: string;
+    activeSessionId?: string;
+}) {
+    if (params.activeSessionId) {
+        await discardWorkoutSession(params.activeSessionId);
+    }
+
+    return getOrCreateActiveWorkoutSession({
+        userId: params.userId,
+        routineId: params.routineId,
+    });
+}

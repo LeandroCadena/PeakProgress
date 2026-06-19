@@ -16,8 +16,9 @@ import {
     createRoutine as createRoutineService,
 } from "../services/routineService";
 import { Routine } from "../types/routine";
-import { getActiveWorkoutSession, getOrCreateActiveWorkoutSession } from "../services/workoutService";
+import { getActiveWorkoutSession, getOrCreateActiveWorkoutSession, getOrCreateWorkoutAfterDiscard } from "../services/workoutService";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
+import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -26,6 +27,10 @@ export default function RoutinesScreen({ navigation }: any) {
     const [routines, setRoutines] = useState<Routine[]>([]);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+
+    const [activeWorkoutModalVisible, setActiveWorkoutModalVisible] = useState(false);
+    const [activeWorkout, setActiveWorkout] = useState<any>(null);
+    const [pendingRoutine, setPendingRoutine] = useState<Routine | null>(null);
 
     useFocusEffect(
         useCallback(() => {
@@ -76,6 +81,15 @@ export default function RoutinesScreen({ navigation }: any) {
         }
 
         try {
+            const active = await getActiveWorkoutSession(user.id);
+
+            if (active) {
+                setActiveWorkout(active);
+                setPendingRoutine(routine);
+                setActiveWorkoutModalVisible(true);
+                return;
+            }
+
             const session = await getOrCreateActiveWorkoutSession({
                 userId: user.id,
                 routineId: routine.id,
@@ -110,6 +124,48 @@ export default function RoutinesScreen({ navigation }: any) {
 
         if (hours > 0) return `${hours}h ${restMinutes}m`;
         return `${minutes}m`;
+    }
+
+    function resumeActiveWorkout() {
+        if (!activeWorkout) return;
+
+        setActiveWorkoutModalVisible(false);
+
+        navigation.navigate("WorkoutSession", {
+            sessionId: activeWorkout.id,
+            routineId: activeWorkout.routine_id,
+            routineName: getActiveRoutineName(activeWorkout) ?? "Workout",
+        });
+    }
+
+    async function discardAndStartWorkout() {
+        if (!user || !activeWorkout || !pendingRoutine) return;
+
+        try {
+            setActiveWorkoutModalVisible(false);
+
+            const session = await getOrCreateWorkoutAfterDiscard({
+                userId: user.id,
+                routineId: pendingRoutine.id,
+                activeSessionId: activeWorkout.id,
+            });
+
+            navigation.navigate("WorkoutSession", {
+                sessionId: session.id,
+                routineId: pendingRoutine.id,
+                routineName: pendingRoutine.name,
+            });
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
+    function getActiveRoutineName(active: any) {
+        if (!active) return "Workout";
+
+        return Array.isArray(active.routines)
+            ? active.routines[0]?.name
+            : active.routines?.name;
     }
 
     return (
@@ -179,6 +235,16 @@ export default function RoutinesScreen({ navigation }: any) {
                     </Pressable>
                 )}
             />
+
+            {activeWorkout ? (
+                <ActiveWorkoutModal
+                    visible={activeWorkoutModalVisible}
+                    routineName={getActiveRoutineName(activeWorkout) ?? "Workout"}
+                    onResume={resumeActiveWorkout}
+                    onDiscardAndStart={discardAndStartWorkout}
+                    onCancel={() => setActiveWorkoutModalVisible(false)}
+                />
+            ) : null}
         </View>
     );
 }

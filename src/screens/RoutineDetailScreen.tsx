@@ -9,6 +9,7 @@ import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
 import EditRoutineExerciseModal from "../components/routine/EditRoutineExerciseModal";
 import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
 import RoutineHeader from "../components/routine/RoutineHeader";
+import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 
 type RouteParams = {
     RoutineDetail: {
@@ -55,6 +56,12 @@ export default function RoutineDetailScreen({ navigation }: any) {
         addTemplateSet,
         deleteTemplateSet,
         updateLocalTemplateSetValue,
+        activeWorkoutModalVisible,
+        activeWorkoutRoutineName,
+        activeWorkoutElapsedText,
+        resumeActiveWorkout,
+        discardAndStartWorkout,
+        setActiveWorkoutModalVisible,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -139,6 +146,15 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onChangeRestSeconds={setEditRestSeconds}
                 onSave={saveEditedExercise}
                 onCancel={() => setEditingExercise(null)}
+            />
+
+            <ActiveWorkoutModal
+                visible={activeWorkoutModalVisible}
+                routineName={activeWorkoutRoutineName}
+                elapsedText={activeWorkoutElapsedText}
+                onResume={resumeActiveWorkout}
+                onDiscardAndStart={discardAndStartWorkout}
+                onCancel={() => setActiveWorkoutModalVisible(false)}
             />
         </RoutineDetailLayout >
     );

@@ -14,6 +14,8 @@ import {
     deleteRoutineExerciseSet,
     createRoutineExerciseSets,
     deleteRoutineExerciseSetsByRoutineExerciseId,
+    getOrCreateWorkoutAfterDiscard,
+    getActiveWorkoutSession,
 } from "../services/workoutService";
 import {
     updateRoutine,
@@ -54,6 +56,9 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     const [isEditingRoutine, setIsEditingRoutine] = useState(false);
     const [draftRoutineName, setDraftRoutineName] = useState(routineName);
     const [draftRoutineDescription, setDraftRoutineDescription] = useState(routineDescription);
+
+    const [activeWorkoutModalVisible, setActiveWorkoutModalVisible] = useState(false);
+    const [activeWorkout, setActiveWorkout] = useState<any>(null);
 
     useFocusEffect(
         useCallback(() => {
@@ -207,12 +212,20 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     async function startWorkout() {
-        if (!user?.id) {
-            Alert.alert("Auth error", "User is not logged in");
+        if (!user) {
+            Alert.alert("Error", "User not found");
             return;
         }
 
         try {
+            const active = await getActiveWorkoutSession(user.id);
+
+            if (active) {
+                setActiveWorkout(active);
+                setActiveWorkoutModalVisible(true);
+                return;
+            }
+
             const session = await getOrCreateActiveWorkoutSession({
                 userId: user.id,
                 routineId,
@@ -368,6 +381,56 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         }));
     }
 
+    function getActiveRoutineName(active: any) {
+        return Array.isArray(active.routines)
+            ? active.routines[0]?.name
+            : active.routines?.name;
+    }
+
+    function getElapsedText(startedAt: string) {
+        const diffMs = Date.now() - new Date(startedAt).getTime();
+        const minutes = Math.floor(diffMs / 60000);
+        const hours = Math.floor(minutes / 60);
+        const restMinutes = minutes % 60;
+
+        if (hours > 0) return `${hours}h ${restMinutes}m`;
+        return `${minutes}m`;
+    }
+
+    function resumeActiveWorkout() {
+        if (!activeWorkout) return;
+
+        setActiveWorkoutModalVisible(false);
+
+        navigation.navigate("WorkoutSession", {
+            sessionId: activeWorkout.id,
+            routineId: activeWorkout.routine_id,
+            routineName: getActiveRoutineName(activeWorkout) ?? "Workout",
+        });
+    }
+
+    async function discardAndStartWorkout() {
+        if (!user || !activeWorkout) return;
+
+        try {
+            setActiveWorkoutModalVisible(false);
+
+            const session = await getOrCreateWorkoutAfterDiscard({
+                userId: user.id,
+                routineId,
+                activeSessionId: activeWorkout.id,
+            });
+
+            navigation.navigate("WorkoutSession", {
+                sessionId: session.id,
+                routineId,
+                routineName,
+            });
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
     return {
         routineTitle,
         routineExercises,
@@ -413,5 +476,16 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
         templateSetDraftValues,
         updateLocalTemplateSetValue,
+
+        activeWorkoutModalVisible,
+        activeWorkoutRoutineName: activeWorkout
+            ? getActiveRoutineName(activeWorkout) ?? "Workout"
+            : "Workout",
+        activeWorkoutElapsedText: activeWorkout
+            ? getElapsedText(activeWorkout.started_at)
+            : undefined,
+        setActiveWorkoutModalVisible,
+        resumeActiveWorkout,
+        discardAndStartWorkout,
     };
 }
