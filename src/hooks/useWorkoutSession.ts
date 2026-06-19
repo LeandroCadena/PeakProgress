@@ -114,7 +114,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         updateLocalSetValue(setId, field, value);
     }
 
-    async function toggleSetCompleted(set: WorkoutSessionSet) {
+    async function toggleSetCompleted(
+        workoutSessionExerciseId: string,
+        set: WorkoutSessionSet
+    ) {
         try {
             await toggleWorkoutSetCompleted({
                 setId: set.id,
@@ -123,17 +126,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
             await fetchSavedSets();
 
-            const isBeingCompleted = !set.is_completed;
+            const nextCompletedValue = !set.is_completed;
 
-            if (isBeingCompleted) {
-                const routineExercise = routineExercises.find(
-                    (item) => item.exercise_id === set.exercise_id
-                );
+            if (nextCompletedValue) {
+                const restSeconds = getRestSecondsAfterSet({
+                    workoutSessionExerciseId,
+                    setId: set.id,
+                });
 
-                const restSeconds = routineExercise?.rest_seconds ?? 90;
-
-                setTimer(restSeconds);
-                setTimerRunning(true);
+                if (restSeconds > 0) {
+                    setTimer(restSeconds);
+                    setTimerRunning(true);
+                }
             }
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -218,6 +222,34 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
+    function getRestSecondsAfterSet(params: {
+        workoutSessionExerciseId: string;
+        setId: string;
+    }) {
+        const exerciseIndex = sessionExercises.findIndex(
+            (exercise) => exercise.id === params.workoutSessionExerciseId
+        );
+
+        const exercise = sessionExercises[exerciseIndex];
+        if (!exercise) return 0;
+
+        const sets = savedSets[params.workoutSessionExerciseId] ?? [];
+        const currentSetIndex = sets.findIndex((set) => set.id === params.setId);
+
+        const hasMoreSetsInExercise = currentSetIndex < sets.length - 1;
+        const hasNextExercise = exerciseIndex < sessionExercises.length - 1;
+
+        if (hasMoreSetsInExercise) {
+            return exercise.rest_seconds ?? 90;
+        }
+
+        if (hasNextExercise) {
+            return exercise.exercise_rest_seconds ?? 120;
+        }
+
+        return 0;
+    }
+
     return {
         sessionExercises,
         savedSets,
@@ -236,5 +268,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         getSetInputValue,
         updateLocalSetValue,
         deleteSessionExercise,
+        getRestSecondsAfterSet
     };
 }

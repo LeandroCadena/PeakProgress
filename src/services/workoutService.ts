@@ -432,6 +432,7 @@ export async function addExerciseToWorkoutSession(params: {
                 exercise_id: params.exerciseId,
                 exercise_name_snapshot: params.exerciseName,
                 position: params.position,
+                exercise_rest_seconds: 120,
                 rest_seconds: 90,
                 exercise_image_url_snapshot: params.exerciseImageUrl ?? null,
             })
@@ -534,6 +535,7 @@ export async function getWorkoutSessionExercises(
       exercise_id,
       exercise_name_snapshot,
       exercise_image_url_snapshot,
+      exercise_rest_seconds,
       position,
       rest_seconds
     `)
@@ -579,6 +581,7 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
                     position: routineExercise.position ?? 0,
                     rest_seconds: routineExercise.rest_seconds ?? 90,
                     exercise_image_url_snapshot: routineExercise.exercise?.image_url ?? null,
+                    exercise_rest_seconds: routineExercise.exercise_rest_seconds ?? 120,
                 })
                 .select("id")
                 .single();

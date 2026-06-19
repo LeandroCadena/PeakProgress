@@ -20,7 +20,10 @@ type WorkoutExerciseCardProps = {
         field: "weight" | "reps",
         value: string
     ) => void;
-    toggleSetCompleted: (set: WorkoutSessionSet) => void;
+    toggleSetCompleted: (
+        workoutSessionExerciseId: string,
+        set: WorkoutSessionSet
+    ) => void;
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
     onDeleteExercise: () => void;
@@ -83,7 +86,7 @@ export default function WorkoutExerciseCard({
                     onRepsBlur={(value) =>
                         updateSetValue(set.id, "reps", value)
                     }
-                    onToggleCompleted={() => toggleSetCompleted(set)}
+                    onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
                     onDelete={() => deleteSet(set.id)}
                 />
             ))}
