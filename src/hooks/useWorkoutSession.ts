@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
+import { useFocusEffect } from "@react-navigation/native";
+// import { playTimerFinishedSound } from "../utils/sounds";
 import {
     getSavedSets,
     createEmptyWorkoutSet,
@@ -11,7 +13,12 @@ import {
     getWorkoutSessionExercises,
     deleteWorkoutSessionExercise,
 } from "../services/workoutService";
-import { useFocusEffect } from "@react-navigation/native";
+import {
+    requestNotificationPermissions,
+    scheduleRestFinishedNotification,
+    cancelRestFinishedNotification,
+} from "../utils/notifications";
+
 
 type Params = {
     sessionId: string;
@@ -38,12 +45,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     );
 
     useEffect(() => {
-        if (!timerRunning || timer <= 0) return;
+        if (!timerRunning) return;
 
         const intervalId = setInterval(() => {
             setTimer((currentTimer) => {
                 if (currentTimer <= 1) {
                     setTimerRunning(false);
+
+                    // playTimerFinishedSound().catch((error) => {
+                    //     console.log("Timer sound error:", error);
+                    // });
+                    cancelRestFinishedNotification();
+
                     return 0;
                 }
 
@@ -52,7 +65,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }, 1000);
 
         return () => clearInterval(intervalId);
-    }, [timerRunning, timer]);
+    }, [timerRunning]);
 
     async function fetchSessionExercises() {
         try {
@@ -138,6 +151,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     setLastTimerDuration(restSeconds);
                     setTimer(restSeconds);
                     setTimerRunning(true);
+
+                    requestNotificationPermissions();
+                    scheduleRestFinishedNotification(restSeconds);
                 }
             }
         } catch (error: any) {
@@ -150,6 +166,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         setTimer(lastTimerDuration);
         setTimerRunning(true);
+
+        scheduleRestFinishedNotification(lastTimerDuration);
     }
 
     async function deleteSet(setId: string) {
