@@ -1,13 +1,12 @@
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import { RoutineExercise, RoutineExerciseSet } from "../types/workout";
+import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 import {
     getRoutineExercises,
     deleteRoutineExercise as deleteRoutineExerciseService,
     updateRoutineExerciseConfig,
     updateRoutineExercisePosition,
-    getRoutineExerciseSets,
     updateRoutineExerciseSet,
     createRoutineExerciseSet,
     deleteRoutineExerciseSet,
@@ -20,9 +19,9 @@ import {
 import {
     updateRoutine,
     deleteRoutineById,
+    getRoutineExerciseSetsByRoutineId,
 } from "../services/routineService";
 import { useFocusEffect } from "@react-navigation/native";
-import { updateRoutineExerciseSetCount } from "../services/exerciseService";
 
 type Params = {
     routineId: string;
@@ -64,11 +63,11 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
     async function fetchRoutineExercises() {
         try {
-            const data = await getRoutineExercises(routineId);
-            setRoutineExercises(data);
+            const exercises = await getRoutineExercises(routineId);
+            setRoutineExercises(exercises);
 
-            const setGroups = await getRoutineExerciseSets(data.map((item) => item.id));
-            setRoutineExerciseSets(setGroups);
+            const setsByExercise = await getRoutineExerciseSetsByRoutineId(routineId);
+            setRoutineExerciseSets(setsByExercise);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -129,15 +128,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
             await deleteRoutineExerciseSetsByRoutineExerciseId(routineExercise.id);
 
-            if (!currentSets.length) {
-                await updateRoutineExerciseSetCount({
-                    routineExerciseId: routineExercise.id,
-                    sets: 0,
-                });
-
-                continue;
-            }
-
             const setsToInsert = currentSets.map((set, index) => {
                 const weightDraft = templateSetDraftValues[`weight:${set.id}`];
                 const repsDraft = templateSetDraftValues[`reps:${set.id}`];
@@ -160,16 +150,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
             const firstSet = setsToInsert[0];
 
-            await updateRoutineExerciseSetCount({
-                routineExerciseId: routineExercise.id,
-                sets: setsToInsert.length,
-            });
-
             await updateRoutineExerciseConfig({
                 routineExerciseId: routineExercise.id,
-                sets: setsToInsert.length,
-                reps: firstSet?.reps ?? 0,
-                weight: firstSet?.weight ?? 0,
                 restSeconds: routineExercise.rest_seconds ?? 90,
                 exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
             });
@@ -316,11 +298,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
                 weight: Number(lastWeight),
             });
 
-            await updateRoutineExerciseSetCount({
-                routineExerciseId,
-                sets: currentSets.length + 1,
-            });
-
             await fetchRoutineExercises();
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -328,15 +305,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     async function deleteTemplateSet(routineExerciseId: string, setId: string) {
-        const currentSets = routineExerciseSets[routineExerciseId] ?? [];
-
         try {
             await deleteRoutineExerciseSet(setId);
-
-            await updateRoutineExerciseSetCount({
-                routineExerciseId,
-                sets: Math.max(0, currentSets.length - 1),
-            });
 
             await fetchRoutineExercises();
         } catch (error: any) {

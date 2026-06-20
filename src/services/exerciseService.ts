@@ -103,17 +103,3 @@ export async function getMuscleRegions(): Promise<MuscleRegion[]> {
 
     return data ?? [];
 }
-
-export async function updateRoutineExerciseSetCount(params: {
-    routineExerciseId: string;
-    sets: number;
-}) {
-    const { error } = await supabase
-        .from("routine_exercises")
-        .update({
-            sets: params.sets,
-        })
-        .eq("id", params.routineExerciseId);
-
-    if (error) throw error;
-}
