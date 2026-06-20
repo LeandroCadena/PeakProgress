@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { DashboardStats } from "../types/dashboard";
+import { getWorkoutStreak } from "./streakService";
 
 function calculateWorkoutStreak(dates: string[]) {
     if (!dates.length) return 0;
@@ -27,7 +28,7 @@ function calculateWorkoutStreak(dates: string[]) {
     return streak;
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(userId: string): Promise<DashboardStats> {
     const { count: routinesCount, error: routinesError } = await supabase
         .from("routines")
         .select("*", { count: "exact", head: true });
@@ -42,20 +43,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     if (workoutsError) throw workoutsError;
 
-    const { count: totalSets, error: setsError } = await supabase
-        .from("workout_sets")
-        .select("*", { count: "exact", head: true });
-
-    if (setsError) throw setsError;
-
     const { data: lastWorkout, error: lastWorkoutError } = await supabase
         .from("workout_sessions")
         .select(`
       id,
       started_at,
-      routines (
-        name
-      )
+      routine_name_snapshot
     `)
         .not("completed_at", "is", null)
         .is("discarded_at", null)
@@ -80,21 +73,15 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     if (routinesListError) throw routinesListError;
 
-    const lastWorkoutName = (lastWorkout?.routines as any)?.[0]?.name ?? null;
+    const lastWorkoutName = lastWorkout?.routine_name_snapshot ?? null;
 
-    const nextWorkout =
-        routinesData?.find((routine) => routine.name !== lastWorkoutName) ??
-        routinesData?.[0] ??
-        null;
+    const streak = await getWorkoutStreak(userId);
 
     return {
         routinesCount: routinesCount ?? 0,
         completedWorkouts: completedWorkouts ?? 0,
-        totalSets: totalSets ?? 0,
         lastWorkoutName,
-        currentStreak: calculateWorkoutStreak(
-            completedSessions?.map((session) => session.completed_at) ?? []
-        ),
-        nextWorkoutName: nextWorkout?.name ?? null,
+        streakWeeks: streak?.streak_weeks ?? 0,
+        streakWorkouts: streak?.total_workouts ?? 0,
     };
 }

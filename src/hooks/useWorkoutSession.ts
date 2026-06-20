@@ -24,6 +24,7 @@ import {
 } from "../utils/notifications";
 import { useAuth } from "../context/AuthContext";
 import { upsertUserExerciseRecord } from "../services/progressService";
+import { updateWorkoutStreakAfterFinish } from "../services/streakService";
 
 type Params = {
     sessionId: string;
@@ -293,6 +294,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 sessionId,
                 routineName,
             });
+
+            if (user?.id) {
+                await updateWorkoutStreakAfterFinish(user.id);
+            }
 
             onFinish();
         } catch (error: any) {

@@ -14,6 +14,15 @@ export default function HomeScreen({ navigation }: any) {
     const [activeSession, setActiveSession] = useState<any>(null);
     const [now, setNow] = useState(Date.now());
 
+    const [stats, setStats] = useState<DashboardStats>({
+        routinesCount: 0,
+        completedWorkouts: 0,
+        lastWorkoutName: null,
+        nextWorkoutName: null,
+        streakWeeks: 0,
+        streakWorkouts: 0,
+    });
+
     useEffect(() => {
         const intervalId = setInterval(() => {
             setNow(Date.now());
@@ -29,52 +38,15 @@ export default function HomeScreen({ navigation }: any) {
         }, [user?.id])
     );
 
-    const [stats, setStats] = useState<DashboardStats>({
-        routinesCount: 0,
-        completedWorkouts: 0,
-        totalSets: 0,
-        lastWorkoutName: null,
-        currentStreak: 0,
-        nextWorkoutName: null,
-    });
-
     async function fetchDashboardStats() {
         if (!user?.id) return;
 
         try {
-            const dashboardStats = await getDashboardStats();
+            const dashboardStats = await getDashboardStats(user.id);
             setStats(dashboardStats);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
-
-    function calculateWorkoutStreak(dates: string[]) {
-        if (!dates.length) return 0;
-
-        const uniqueDays = Array.from(
-            new Set(
-                dates.map((date) => new Date(date).toISOString().split("T")[0])
-            )
-        ).sort((a, b) => (a > b ? -1 : 1));
-
-        let streak = 0;
-        const today = new Date();
-
-        for (let i = 0; i < uniqueDays.length; i++) {
-            const expectedDate = new Date(today);
-            expectedDate.setDate(today.getDate() - i);
-
-            const expectedDay = expectedDate.toISOString().split("T")[0];
-
-            if (uniqueDays.includes(expectedDay)) {
-                streak++;
-            } else {
-                break;
-            }
-        }
-
-        return streak;
     }
 
     function getElapsedText(startedAt: string) {
@@ -142,11 +114,6 @@ export default function HomeScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.card}>
-                    <Text style={styles.cardValue}>{stats.totalSets}</Text>
-                    <Text style={styles.cardLabel}>Sets</Text>
-                </View>
-
-                <View style={styles.card}>
                     <Text style={styles.cardValue}>
                         {stats.lastWorkoutName ?? "-"}
                     </Text>
@@ -154,13 +121,11 @@ export default function HomeScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.card}>
-                    <Text style={styles.cardValue}>🔥 {stats.currentStreak}</Text>
-                    <Text style={styles.cardLabel}>Day Streak</Text>
-                </View>
-
-                <View style={styles.card}>
-                    <Text style={styles.cardValue}>{stats.nextWorkoutName ?? "-"}</Text>
-                    <Text style={styles.cardLabel}>Next Workout</Text>
+                    <Text style={styles.cardLabel}>
+                        {stats.streakWorkouts === 0
+                            ? "Start your first workout! 💪"
+                            : `${stats.streakWorkouts} workouts in ${stats.streakWeeks} weeks`}
+                    </Text>
                 </View>
             </View>
 
