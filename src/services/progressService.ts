@@ -13,66 +13,36 @@ export type WorkoutSetProgress = {
     } | null;
 };
 
-export async function getExerciseProgress(): Promise<ExerciseProgress[]> {
+export async function getExerciseProgress(userId: string): Promise<ExerciseProgress[]> {
     const { data, error } = await supabase
-        .from("workout_sets")
+        .from("user_exercise_records")
         .select(`
-      id,
       exercise_id,
-      exercise_name_snapshot,
-      weight,
-      reps,
-      exercise:exercises (
-        id,
+      best_volume,
+      best_weight,
+      best_reps,
+      exercises (
         name
       )
-    `);
+    `)
+        .eq("user_id", userId)
+        .order("best_volume", { ascending: false });
 
     if (error) throw error;
 
-    const sets = (data ?? []).map((item: any) => ({
-        ...item,
-        exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
-    })) as WorkoutSetProgress[];
+    return (data ?? []).map((item: any) => {
+        const exercise = Array.isArray(item.exercises)
+            ? item.exercises[0]
+            : item.exercises;
 
-    const progressByExercise: Record<string, ExerciseProgress> = {};
-
-    sets.forEach((set) => {
-        const exerciseId = set.exercise_id ?? set.exercise?.id ?? set.id;
-
-        const exerciseName =
-            set.exercise_name_snapshot ??
-            set.exercise?.name ??
-            "Unknown Exercise";
-
-        const weight = Number(set.weight ?? 0);
-        const reps = Number(set.reps ?? 0);
-        const volume = weight * reps;
-
-        if (!progressByExercise[exerciseId]) {
-            progressByExercise[exerciseId] = {
-                exerciseId,
-                exerciseName,
-                bestWeight: weight,
-                bestReps: reps,
-                totalVolume: volume,
-                totalSets: 1,
-            };
-            return;
-        }
-
-        const current = progressByExercise[exerciseId];
-
-        current.totalVolume += volume;
-        current.totalSets += 1;
-
-        if (weight > current.bestWeight) {
-            current.bestWeight = weight;
-            current.bestReps = reps;
-        }
+        return {
+            exerciseId: item.exercise_id,
+            exerciseName: exercise?.name ?? "Exercise",
+            bestVolume: Number(item.best_volume ?? 0),
+            bestWeight: Number(item.best_weight ?? 0),
+            bestReps: Number(item.best_reps ?? 0),
+        };
     });
-
-    return Object.values(progressByExercise);
 }
 
 export async function getExerciseProgressPoints(exerciseId: string) {
@@ -85,4 +55,93 @@ export async function getExerciseProgressPoints(exerciseId: string) {
     if (error) throw error;
 
     return data ?? [];
+}
+
+export async function getBestExerciseVolume(params: {
+    exerciseId: string;
+    userId: string;
+}) {
+    const { data, error } = await supabase
+        .from("workout_sets")
+        .select(`
+      weight,
+      reps,
+      workout_sessions!inner (
+        user_id,
+        completed_at,
+        discarded_at
+      )
+    `)
+        .eq("exercise_id", params.exerciseId)
+        .eq("workout_sessions.user_id", params.userId)
+        .not("workout_sessions.completed_at", "is", null)
+        .is("workout_sessions.discarded_at", null);
+
+    if (error) throw error;
+
+    return (data ?? []).reduce((best, set) => {
+        const volume = Number(set.weight ?? 0) * Number(set.reps ?? 0);
+        return Math.max(best, volume);
+    }, 0);
+}
+
+export async function getUserExerciseRecord(params: {
+    userId: string;
+    exerciseId: string;
+}) {
+    const { data, error } = await supabase
+        .from("user_exercise_records")
+        .select(`
+        id,
+        user_id,
+        exercise_id,
+        best_volume,
+        best_weight,
+        best_reps,
+        best_set_id
+        `)
+        .eq("user_id", params.userId)
+        .eq("exercise_id", params.exerciseId)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function getUserExerciseBestVolume(params: {
+    userId: string;
+    exerciseId: string;
+}) {
+    const record = await getUserExerciseRecord(params);
+
+    return Number(record?.best_volume ?? 0);
+}
+
+export async function upsertUserExerciseRecord(params: {
+    userId: string;
+    exerciseId: string;
+    bestVolume: number;
+    bestWeight: number;
+    bestReps: number;
+    bestSetId: string;
+}) {
+    const { error } = await supabase
+        .from("user_exercise_records")
+        .upsert(
+            {
+                user_id: params.userId,
+                exercise_id: params.exerciseId,
+                best_volume: params.bestVolume,
+                best_weight: params.bestWeight,
+                best_reps: params.bestReps,
+                best_set_id: params.bestSetId,
+                updated_at: new Date().toISOString(),
+            },
+            {
+                onConflict: "user_id,exercise_id",
+            }
+        );
+
+    if (error) throw error;
 }

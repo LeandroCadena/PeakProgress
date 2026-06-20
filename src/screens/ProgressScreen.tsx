@@ -5,6 +5,7 @@ import {
     getExerciseProgress,
 } from "../services/progressService";
 import { ExerciseProgress } from "../types/progress";
+import { useAuth } from "../context/AuthContext";
 
 type WorkoutSet = {
     id: string;
@@ -17,11 +18,15 @@ type WorkoutSet = {
 };
 
 export default function ProgressScreen({ navigation }: any) {
+    const { user } = useAuth();
+
     const [records, setRecords] = useState<ExerciseProgress[]>([]);
 
     async function fetchPersonalRecords() {
+        if (!user?.id) return;
+
         try {
-            const progress = await getExerciseProgress();
+            const progress = await getExerciseProgress(user.id);
             setRecords(progress);
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -58,17 +63,9 @@ export default function ProgressScreen({ navigation }: any) {
                     >
                         <Text style={styles.cardTitle}>{item.exerciseName}</Text>
 
-                        <Text style={styles.cardValue}>
-                            PR: {item.bestWeight} kg x {item.bestReps}
-                        </Text>
+                        <Text>Best Volume: {item.bestVolume} kg</Text>
+                        <Text>{item.bestWeight} kg x {item.bestReps} reps</Text>
 
-                        <Text style={styles.cardText}>
-                            Total Volume: {item.totalVolume} kg
-                        </Text>
-
-                        <Text style={styles.cardText}>
-                            Total Sets: {item.totalSets}
-                        </Text>
                     </Pressable>
                 )}
             />

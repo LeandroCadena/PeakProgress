@@ -81,28 +81,31 @@ export default function WorkoutExerciseCard({
                 <Text style={styles.setHeaderText}></Text>
             </View>
 
-            {savedSets.map((set) => (
-                <WorkoutSetRow
-                    key={set.id}
-                    set={set}
-                    weightValue={getSetInputValue(set.id, "weight", set.weight)}
-                    repsValue={getSetInputValue(set.id, "reps", set.reps)}
-                    onWeightChange={(value) =>
-                        updateLocalSetValue(set.id, "weight", value)
-                    }
-                    onRepsChange={(value) =>
-                        updateLocalSetValue(set.id, "reps", value)
-                    }
-                    onWeightBlur={(value) =>
-                        updateSetValue(set.id, "weight", value)
-                    }
-                    onRepsBlur={(value) =>
-                        updateSetValue(set.id, "reps", value)
-                    }
-                    onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
-                    onDelete={() => deleteSet(set.id)}
-                />
-            ))}
+            {savedSets.map((set) => {
+                return (
+                    <WorkoutSetRow
+                        key={set.id}
+                        set={set}
+                        isPersonalRecord={Boolean(set.is_completed && set.is_pr)}
+                        weightValue={getSetInputValue(set.id, "weight", set.weight)}
+                        repsValue={getSetInputValue(set.id, "reps", set.reps)}
+                        onWeightChange={(value) =>
+                            updateLocalSetValue(set.id, "weight", value)
+                        }
+                        onRepsChange={(value) =>
+                            updateLocalSetValue(set.id, "reps", value)
+                        }
+                        onWeightBlur={(value) =>
+                            updateSetValue(set.id, "weight", value)
+                        }
+                        onRepsBlur={(value) =>
+                            updateSetValue(set.id, "reps", value)
+                        }
+                        onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
+                        onDelete={() => deleteSet(set.id)}
+                    />
+                );
+            })}
 
             <Pressable
                 style={styles.addSetRow}

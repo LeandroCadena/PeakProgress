@@ -15,12 +15,15 @@ import {
     updateWorkoutSessionExerciseRest,
     getWorkoutSessionTimer,
     updateWorkoutSessionTimer,
+    updateWorkoutSetValues,
+    updateWorkoutSetValue,
 } from "../services/workoutService";
 import {
     scheduleRestFinishedNotification,
     cancelRestFinishedNotification,
 } from "../utils/notifications";
-
+import { useAuth } from "../context/AuthContext";
+import { upsertUserExerciseRecord } from "../services/progressService";
 
 type Params = {
     sessionId: string;
@@ -30,6 +33,8 @@ type Params = {
 };
 
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
+    const { user } = useAuth();
+
     const [sessionExercises, setSessionExercises] = useState<WorkoutSessionExercise[]>([]);
     const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
@@ -154,12 +159,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    function updateSetValue(
+    async function updateSetValue(
         setId: string,
         field: "weight" | "reps",
         value: string
     ) {
         updateLocalSetValue(setId, field, value);
+
+        await updateWorkoutSetValue({
+            setId,
+            field,
+            value: Number(value || 0),
+        });
     }
 
     async function toggleSetCompleted(
@@ -167,14 +178,29 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         set: WorkoutSessionSet
     ) {
         try {
+            const nextCompletedValue = !set.is_completed;
+
+            const { weight, reps } = getCurrentSetValues(set);
+
+            const isPr = calculateIsPersonalRecord({
+                workoutSessionExerciseId,
+                weight,
+                reps,
+            });
+
+            await updateWorkoutSetValues({
+                setId: set.id,
+                weight,
+                reps,
+                isPr,
+            });
+
             await toggleWorkoutSetCompleted({
                 setId: set.id,
                 isCompleted: set.is_completed,
             });
 
             await fetchSavedSets();
-
-            const nextCompletedValue = !set.is_completed;
 
             if (nextCompletedValue) {
                 const restSeconds = getRestSecondsAfterSet({
@@ -256,6 +282,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 savedSets,
                 editingValues,
             });
+
+            await updateUserExerciseRecordsFromWorkout();
 
             await finishWorkoutSession({
                 sessionId,
@@ -393,6 +421,84 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         setTimerRunning(remainingSeconds > 0);
     }
 
+    function calculateIsPersonalRecord(params: {
+        workoutSessionExerciseId: string;
+        weight: number;
+        reps: number;
+    }) {
+        const exercise = sessionExercises.find(
+            (item) => item.id === params.workoutSessionExerciseId
+        );
+
+        const currentPrVolume = Number(exercise?.current_pr_volume ?? 0);
+        const currentVolume = params.weight * params.reps;
+
+        return currentVolume > currentPrVolume;
+    }
+
+    function getCurrentSetValues(set: WorkoutSessionSet) {
+        const weight = Number(
+            editingValues[`${set.id}-weight`] ?? set.weight ?? 0
+        );
+
+        const reps = Number(
+            editingValues[`${set.id}-reps`] ?? set.reps ?? 0
+        );
+
+        return { weight, reps };
+    }
+
+    async function updateUserExerciseRecordsFromWorkout() {
+        if (!user) return;
+
+        const allSets = Object.values(savedSets).flat();
+
+        const completedPrSets = allSets.filter(
+            (set) => set.is_completed && set.is_pr && set.exercise_id
+        );
+
+        const bestByExercise: Record<
+            string,
+            {
+                setId: string;
+                volume: number;
+                weight: number;
+                reps: number;
+            }
+        > = {};
+
+        completedPrSets.forEach((set) => {
+            const exerciseId = set.exercise_id!;
+            const weight = Number(
+                editingValues[`${set.id}-weight`] ?? set.weight ?? 0
+            );
+            const reps = Number(
+                editingValues[`${set.id}-reps`] ?? set.reps ?? 0
+            );
+            const volume = weight * reps;
+
+            if (!bestByExercise[exerciseId] || volume > bestByExercise[exerciseId].volume) {
+                bestByExercise[exerciseId] = {
+                    setId: set.id,
+                    volume,
+                    weight,
+                    reps,
+                };
+            }
+        });
+
+        for (const [exerciseId, record] of Object.entries(bestByExercise)) {
+            await upsertUserExerciseRecord({
+                userId: user.id,
+                exerciseId,
+                bestVolume: record.volume,
+                bestWeight: record.weight,
+                bestReps: record.reps,
+                bestSetId: record.setId,
+            });
+        }
+    }
+
     return {
         sessionExercises,
         savedSets,
@@ -411,6 +517,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         getRestSecondsAfterSet,
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
+        updateUserExerciseRecordsFromWorkout,
 
         lastTimerDuration,
         restartLastTimer,

@@ -3,6 +3,8 @@ import { Alert } from "react-native";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
 import { addExerciseToRoutine, addExerciseToWorkoutSession } from "../services/workoutService";
+import { getUserExerciseBestVolume } from "../services/progressService";
+import { useAuth } from "../context/AuthContext";
 
 type Params = {
     mode: "routine" | "session";
@@ -19,6 +21,8 @@ export function useExercisePicker({
     mode,
     sessionId,
 }: Params) {
+    const { user } = useAuth();
+
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
     const [filterMode, setFilterMode] = useState<FilterMode>("region");
@@ -63,7 +67,14 @@ export function useExercisePicker({
     }
 
     async function handleAddExercise(exerciseId: string) {
+        if (!user?.id) return;
+
         try {
+            const currentPrVolume = await getUserExerciseBestVolume({
+                userId: user.id,
+                exerciseId,
+            });
+
             if (mode === "routine") {
                 await addExerciseToRoutine({
                     routineId: routineId!,
@@ -73,6 +84,7 @@ export function useExercisePicker({
                     weight: 0,
                     restSeconds: 90,
                     position: currentCount,
+                    currentPrVolume,
                 });
             } else {
                 const exercise = exercises.find(

@@ -4,6 +4,7 @@ import { sanitizeIntegerInput } from "../../utils/numberInput";
 
 type WorkoutSetRowProps = {
     set: WorkoutSessionSet;
+    isPersonalRecord?: boolean;
     weightValue: string;
     repsValue: string;
     onWeightChange: (value: string) => void;
@@ -24,9 +25,13 @@ export default function WorkoutSetRow({
     onRepsBlur,
     onToggleCompleted,
     onDelete,
+    isPersonalRecord,
 }: WorkoutSetRowProps) {
     return (
-        <View style={styles.setTableRow}>
+        <View style={[
+            styles.setTableRow,
+            isPersonalRecord && styles.personalRecordRow,
+        ]}>
             <TextInput
                 style={[
                     styles.setInput,
@@ -54,6 +59,10 @@ export default function WorkoutSetRow({
                     onRepsBlur(event.nativeEvent.text)
                 }
             />
+
+            {isPersonalRecord ? (
+                <Text style={styles.personalRecordText}>🏆 New PR</Text>
+            ) : null}
 
             <Pressable
                 style={[
@@ -123,5 +132,15 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         fontSize: 12,
+    },
+    personalRecordRow: {
+        backgroundColor: "#3A2A00",
+        borderColor: "#FBBF24",
+        borderWidth: 1,
+    },
+    personalRecordText: {
+        color: "#FBBF24",
+        fontWeight: "800",
+        marginTop: 6,
     },
 });

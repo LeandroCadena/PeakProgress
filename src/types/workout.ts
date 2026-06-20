@@ -13,6 +13,7 @@ export type RoutineExercise = {
     position: number;
     rest_seconds: number;
     exercise_rest_seconds: number;
+    current_pr_volume: number;
     exercise: {
         name: string;
         image_url?: string | null;
@@ -25,6 +26,7 @@ export type RoutineExerciseSet = {
     set_number: number;
     reps: number;
     weight: number | null;
+    is_pr: boolean;
 };
 
 export type WorkoutSessionExercise = {
@@ -36,6 +38,7 @@ export type WorkoutSessionExercise = {
     position: number;
     rest_seconds: number;
     exercise_rest_seconds: number;
+    current_pr_volume: number;
 };
 
 export type WorkoutSessionSet = {
@@ -46,4 +49,5 @@ export type WorkoutSessionSet = {
     reps: number;
     weight: number | null;
     is_completed: boolean;
+    is_pr: boolean;
 };

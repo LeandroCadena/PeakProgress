@@ -7,20 +7,22 @@ export async function getRoutineExercises(
     const { data, error } = await supabase
         .from("routine_exercises")
         .select(`
-      id,
-      exercise_id,
-      sets,
-      reps,
-      weight,
-      rest_seconds,
-      exercise_rest_seconds,
-      exercise:exercises (
-        name,
-        image_url
-      )
-    `)
+        id,
+        exercise_id,
+        sets,
+        reps,
+        weight,
+        rest_seconds,
+        exercise_rest_seconds,
+        current_pr_volume,
+        exercise:exercises (
+            name,
+            image_url
+        )
+        `)
         .eq("routine_id", routineId)
-        .order("position", { ascending: true });
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: true });
 
     if (error) {
         throw error;
@@ -39,7 +41,7 @@ export async function getRoutineExerciseSets(
 
     const { data, error } = await supabase
         .from("routine_exercise_sets")
-        .select("id, routine_exercise_id, set_number, reps, weight")
+        .select("id, routine_exercise_id, set_number, reps, weight, is_pr")
         .in("routine_exercise_id", routineExerciseIds)
         .order("set_number", { ascending: true });
 
@@ -64,14 +66,15 @@ export async function getSavedSets(
     const { data, error } = await supabase
         .from("workout_sets")
         .select(`
-      id,
-      workout_session_exercise_id,
-      exercise_id,
-      set_number,
-      reps,
-      weight,
-      is_completed
-    `)
+        id,
+        workout_session_exercise_id,
+        exercise_id,
+        set_number,
+        reps,
+        weight,
+        is_completed,
+        is_pr
+        `)
         .eq("workout_session_id", sessionId)
         .order("set_number", { ascending: true });
 
@@ -114,15 +117,18 @@ export async function createWorkoutSet(params: {
     return data;
 }
 
-export async function updateWorkoutSetValue(params: {
+export async function updateWorkoutSetValues(params: {
     setId: string;
-    field: "weight" | "reps";
-    value: number;
+    weight: number;
+    reps: number;
+    isPr: boolean;
 }) {
     const { error } = await supabase
         .from("workout_sets")
         .update({
-            [params.field]: params.value,
+            weight: params.weight,
+            reps: params.reps,
+            is_pr: params.isPr,
         })
         .eq("id", params.setId);
 
@@ -235,6 +241,7 @@ export async function addExerciseToRoutine(params: {
     weight: number;
     restSeconds: number;
     position: number;
+    currentPrVolume?: number;
 }) {
     const { data, error } = await supabase
         .from("routine_exercises")
@@ -246,6 +253,7 @@ export async function addExerciseToRoutine(params: {
             weight: params.weight,
             rest_seconds: params.restSeconds,
             position: params.position,
+            current_pr_volume: params.currentPrVolume ?? 0,
         })
         .select("id")
         .single();
@@ -495,17 +503,19 @@ export async function getWorkoutSessionExercises(
     const { data, error } = await supabase
         .from("workout_session_exercises")
         .select(`
-      id,
-      workout_session_id,
-      exercise_id,
-      exercise_name_snapshot,
-      exercise_image_url_snapshot,
-      exercise_rest_seconds,
-      position,
-      rest_seconds
-    `)
+        id,
+        workout_session_id,
+        exercise_id,
+        exercise_name_snapshot,
+        exercise_image_url_snapshot,
+        exercise_rest_seconds,
+        position,
+        rest_seconds,
+        current_pr_volume
+        `)
         .eq("workout_session_id", sessionId)
-        .order("position", { ascending: true });
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: true });
 
     if (error) throw error;
 
@@ -528,8 +538,26 @@ export async function deleteExerciseFromWorkoutSession(params: {
 export async function createWorkoutSessionExercisesFromRoutine(params: {
     sessionId: string;
     routineId: string;
+    userId: string;
 }) {
     const routineExercises = await getRoutineExercises(params.routineId);
+
+    const exerciseIds = routineExercises.map((item) => item.exercise_id);
+
+    const { data: records, error: recordsError } = await supabase
+        .from("user_exercise_records")
+        .select("exercise_id, best_volume")
+        .eq("user_id", params.userId)
+        .in("exercise_id", exerciseIds);
+
+    if (recordsError) throw recordsError;
+
+    const prByExerciseId = new Map(
+        (records ?? []).map((record) => [
+            record.exercise_id,
+            Number(record.best_volume ?? 0),
+        ])
+    );
 
     const routineExerciseSets = await getRoutineExerciseSets(
         routineExercises.map((item) => item.id)
@@ -547,6 +575,9 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
                     rest_seconds: routineExercise.rest_seconds ?? 90,
                     exercise_image_url_snapshot: routineExercise.exercise?.image_url ?? null,
                     exercise_rest_seconds: routineExercise.exercise_rest_seconds ?? 120,
+                    current_pr_volume:
+                        prByExerciseId.get(routineExercise.exercise_id) ??
+                        Number(routineExercise.current_pr_volume ?? 0),
                 })
                 .select("id")
                 .single();
@@ -685,6 +716,7 @@ export async function createNewWorkoutSessionFromRoutine(params: {
     await createWorkoutSessionExercisesFromRoutine({
         sessionId: data.id,
         routineId: params.routineId,
+        userId: params.userId,
     });
 
     return data;
@@ -738,6 +770,21 @@ export async function updateWorkoutSessionTimer(params: {
                 params.lastRestDurationSeconds ?? null,
         })
         .eq("id", params.sessionId);
+
+    if (error) throw error;
+}
+
+export async function updateWorkoutSetValue(params: {
+    setId: string;
+    field: "weight" | "reps" | "is_pr";
+    value: number | boolean;
+}) {
+    const { error } = await supabase
+        .from("workout_sets")
+        .update({
+            [params.field]: params.value,
+        })
+        .eq("id", params.setId);
 
     if (error) throw error;
 }
