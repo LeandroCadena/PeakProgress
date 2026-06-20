@@ -1,39 +1,32 @@
-import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 type Props = {
     fullName: string;
-    goal: string;
-    experienceLevel: string;
-    heightCm: string;
-    weightKg: string;
     onChangeFullName: (value: string) => void;
-    onChangeGoal: (value: string) => void;
-    onChangeExperienceLevel: (value: string) => void;
-    onChangeHeightCm: (value: string) => void;
-    onChangeWeightKg: (value: string) => void;
     onSave: () => void;
 };
 
 export default function ProfileForm({
     fullName,
-    goal,
-    experienceLevel,
-    heightCm,
-    weightKg,
     onChangeFullName,
-    onChangeGoal,
-    onChangeExperienceLevel,
-    onChangeHeightCm,
-    onChangeWeightKg,
     onSave,
 }: Props) {
     return (
-        <View>
-            <TextInput style={styles.input} placeholder="Full name" placeholderTextColor="#6B7280" value={fullName} onChangeText={onChangeFullName} />
-            <TextInput style={styles.input} placeholder="Goal - e.g. Gain muscle" placeholderTextColor="#6B7280" value={goal} onChangeText={onChangeGoal} />
-            <TextInput style={styles.input} placeholder="Experience - Beginner / Intermediate / Advanced" placeholderTextColor="#6B7280" value={experienceLevel} onChangeText={onChangeExperienceLevel} />
-            <TextInput style={styles.input} placeholder="Height cm" placeholderTextColor="#6B7280" keyboardType="numeric" value={heightCm} onChangeText={onChangeHeightCm} />
-            <TextInput style={styles.input} placeholder="Weight kg" placeholderTextColor="#6B7280" keyboardType="numeric" value={weightKg} onChangeText={onChangeWeightKg} />
+        <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Personal Information</Text>
+            <Text style={styles.helperText}>
+                Enter your name so we can personalize your experience.
+            </Text>
+
+            <Text style={styles.label}>Name</Text>
+
+            <TextInput
+                style={styles.input}
+                value={fullName}
+                onChangeText={onChangeFullName}
+                placeholder="Enter your name"
+                placeholderTextColor="#6B7280"
+            />
 
             <Pressable style={styles.button} onPress={onSave}>
                 <Text style={styles.buttonText}>Save Profile</Text>
@@ -43,20 +36,44 @@ export default function ProfileForm({
 }
 
 const styles = StyleSheet.create({
-    input: {
+    card: {
         backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        marginBottom: 12,
         borderWidth: 1,
         borderColor: "#30363D",
+        borderRadius: 14,
+        padding: 16,
+        marginBottom: 14,
+    },
+    sectionTitle: {
+        color: "#FFFFFF",
+        fontSize: 18,
+        fontWeight: "800",
+        marginBottom: 6,
+    },
+    helperText: {
+        color: "#9CA3AF",
+        marginBottom: 14,
+        lineHeight: 20,
+    },
+    label: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        marginBottom: 8,
+    },
+    input: {
+        backgroundColor: "#0B0F14",
+        borderWidth: 1,
+        borderColor: "#30363D",
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        color: "#FFFFFF",
+        marginBottom: 14,
     },
     button: {
         backgroundColor: "#4CAF50",
         paddingVertical: 14,
         borderRadius: 12,
-        marginTop: 8,
     },
     buttonText: {
         color: "#FFFFFF",

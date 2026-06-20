@@ -14,11 +14,26 @@ import ExerciseProgressScreen from "../screens/ExerciseProgressScreen";
 import ExerciseDetailScreen from "../screens/ExerciseDetailScreen";
 import ExercisePickerScreen from "../screens/ExercisePickerScreen";
 import ExercisesScreen from "../screens/ExercisesScreen";
+import HistoryScreen from "../screens/HistoryScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+import PersonalInformationScreen from "../screens/PersonalInformationScreen";
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     Main: undefined;
+    History: {
+        sessionId: string;
+        routineName: string;
+    };
+    Settings: {
+        sessionId: string;
+        routineName: string;
+    };
+    PersonalInformation: {
+        sessionId: string;
+        routineName: string;
+    };
     RoutineDetail: {
         routineId: string;
         routineName: string;
@@ -78,6 +93,9 @@ export default function AppNavigator() {
                 {session ? (
                     <>
                         <Stack.Screen name="Main" component={MainTabs} />
+                        <Stack.Screen name="History" component={HistoryScreen} />
+                        <Stack.Screen name="Settings" component={SettingsScreen} />
+                        <Stack.Screen name="PersonalInformation" component={PersonalInformationScreen} />
                         <Stack.Screen name="RoutineDetail" component={RoutineDetailScreen} />
                         <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
                         <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
