@@ -341,7 +341,7 @@ export async function addExerciseToWorkoutSession(params: {
     position: number;
     exerciseImageUrl?: string | null;
 }) {
-    const { data: sessionExercise, error: sessionExerciseError } =
+    const { error: sessionExerciseError } =
         await supabase
             .from("workout_session_exercises")
             .insert({
@@ -357,19 +357,6 @@ export async function addExerciseToWorkoutSession(params: {
             .single();
 
     if (sessionExerciseError) throw sessionExerciseError;
-
-    const { error: setError } = await supabase.from("workout_sets").insert({
-        workout_session_id: params.sessionId,
-        workout_session_exercise_id: sessionExercise.id,
-        exercise_id: params.exerciseId,
-        exercise_name_snapshot: params.exerciseName,
-        set_number: 1,
-        reps: 0,
-        weight: 0,
-        is_completed: false,
-    });
-
-    if (setError) throw setError;
 }
 
 export async function syncWorkoutSessionToRoutine(params: {
@@ -389,7 +376,6 @@ export async function syncWorkoutSessionToRoutine(params: {
         if (!sessionExercise.exercise_id) continue;
 
         const sets = params.savedSets[sessionExercise.id] ?? [];
-        const firstSet = sets[0];
 
         const { data: routineExercise, error: routineExerciseError } =
             await supabase

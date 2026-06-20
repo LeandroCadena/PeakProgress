@@ -79,9 +79,6 @@ export function useExercisePicker({
                 await addExerciseToRoutine({
                     routineId: routineId!,
                     exerciseId,
-                    sets: 0,
-                    reps: 0,
-                    weight: 0,
                     restSeconds: 90,
                     position: currentCount,
                     currentPrVolume,
