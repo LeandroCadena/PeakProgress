@@ -88,3 +88,57 @@ export async function updateWorkoutStreakAfterFinish(userId: string) {
 
     if (error) throw error;
 }
+
+export function getWorkoutStreakStatus(streak: WorkoutStreak | null) {
+    if (!streak || !streak.last_trained_week_end) {
+        return {
+            status: "empty" as const,
+            daysRemaining: null,
+        };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastTrainedWeekEnd = getWeekEndDate(new Date(streak.last_trained_week_end));
+    lastTrainedWeekEnd.setHours(0, 0, 0, 0);
+
+    const currentWeekEnd = getWeekEndDate(today);
+    const previousWeekEnd = getPreviousWeekEndDate(currentWeekEnd);
+
+    console.log(lastTrainedWeekEnd)
+    console.log(currentWeekEnd)
+    console.log(previousWeekEnd)
+
+    const isActive =
+        toDateString(lastTrainedWeekEnd) === toDateString(currentWeekEnd) ||
+        toDateString(lastTrainedWeekEnd) === toDateString(previousWeekEnd);
+
+    if (!isActive) {
+        return {
+            status: "expired" as const,
+            daysRemaining: 0,
+        };
+    }
+
+    const diffMs = currentWeekEnd.getTime() - today.getTime();
+    const daysRemaining = Math.max(
+        0,
+        Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+    );
+
+    if (
+        toDateString(lastTrainedWeekEnd) === toDateString(previousWeekEnd) &&
+        daysRemaining <= 1
+    ) {
+        return {
+            status: "warning" as const,
+            daysRemaining,
+        };
+    }
+
+    return {
+        status: "active" as const,
+        daysRemaining,
+    };
+}

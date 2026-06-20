@@ -4,4 +4,6 @@ export type DashboardStats = {
     lastWorkoutName: string | null;
     streakWeeks: number;
     streakWorkouts: number;
+    streakStatus: "empty" | "active" | "warning" | "expired";
+    streakDaysRemaining: number | null;
 };

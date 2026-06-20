@@ -20,6 +20,8 @@ export default function HomeScreen({ navigation }: any) {
         lastWorkoutName: null,
         streakWeeks: 0,
         streakWorkouts: 0,
+        streakStatus: "empty",
+        streakDaysRemaining: null,
     });
 
     useEffect(() => {
@@ -120,10 +122,16 @@ export default function HomeScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.card}>
+                    <Text style={styles.cardValue}>🔥 {stats.streakWorkouts}</Text>
+
                     <Text style={styles.cardLabel}>
-                        {stats.streakWorkouts === 0
+                        {stats.streakStatus === "empty"
                             ? "Start your first workout! 💪"
-                            : `${stats.streakWorkouts} workouts in ${stats.streakWeeks} weeks`}
+                            : stats.streakStatus === "warning"
+                                ? "Train this week to keep your streak alive! ⚡"
+                                : stats.streakStatus === "expired"
+                                    ? "Your streak expired. Start again today! 🔥"
+                                    : `${stats.streakWorkouts} workouts in ${stats.streakWeeks} weeks`}
                     </Text>
                 </View>
             </View>

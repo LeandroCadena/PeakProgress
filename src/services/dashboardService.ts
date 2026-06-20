@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import { DashboardStats } from "../types/dashboard";
-import { getWorkoutStreak } from "./streakService";
+import { getWorkoutStreak, getWorkoutStreakStatus } from "./streakService";
 
 function calculateWorkoutStreak(dates: string[]) {
     if (!dates.length) return 0;
@@ -58,24 +58,10 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 
     if (lastWorkoutError) throw lastWorkoutError;
 
-    const { data: completedSessions, error: streakError } = await supabase
-        .from("workout_sessions")
-        .select("completed_at")
-        .not("completed_at", "is", null)
-        .is("discarded_at", null);
-
-    if (streakError) throw streakError;
-
-    const { data: routinesData, error: routinesListError } = await supabase
-        .from("routines")
-        .select("id, name")
-        .order("created_at", { ascending: false });
-
-    if (routinesListError) throw routinesListError;
-
     const lastWorkoutName = lastWorkout?.routine_name_snapshot ?? null;
 
     const streak = await getWorkoutStreak(userId);
+    const streakStatus = getWorkoutStreakStatus(streak);
 
     return {
         routinesCount: routinesCount ?? 0,
@@ -83,5 +69,7 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
         lastWorkoutName,
         streakWeeks: streak?.streak_weeks ?? 0,
         streakWorkouts: streak?.total_workouts ?? 0,
+        streakStatus: streakStatus.status,
+        streakDaysRemaining: streakStatus.daysRemaining,
     };
 }
