@@ -106,10 +106,6 @@ export function getWorkoutStreakStatus(streak: WorkoutStreak | null) {
     const currentWeekEnd = getWeekEndDate(today);
     const previousWeekEnd = getPreviousWeekEndDate(currentWeekEnd);
 
-    console.log(lastTrainedWeekEnd)
-    console.log(currentWeekEnd)
-    console.log(previousWeekEnd)
-
     const isActive =
         toDateString(lastTrainedWeekEnd) === toDateString(currentWeekEnd) ||
         toDateString(lastTrainedWeekEnd) === toDateString(previousWeekEnd);
@@ -129,7 +125,7 @@ export function getWorkoutStreakStatus(streak: WorkoutStreak | null) {
 
     if (
         toDateString(lastTrainedWeekEnd) === toDateString(previousWeekEnd) &&
-        daysRemaining <= 1
+        daysRemaining <= 3
     ) {
         return {
             status: "warning" as const,
