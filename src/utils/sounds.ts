@@ -6,7 +6,11 @@ import {
 let timerPlayer: AudioPlayer | null = null;
 let personalRecordPlayer: AudioPlayer | null = null;
 let workoutCompletedPlayer: AudioPlayer | null = null;
+let soundsEnabled = true;
 
+export function setSoundsEnabled(value: boolean) {
+    soundsEnabled = value;
+}
 
 export function initializeSounds() {
     if (timerPlayer) return;
@@ -21,6 +25,8 @@ export function initializeSounds() {
 }
 
 export function playTimerFinishedSound() {
+    if (!soundsEnabled) return;
+
     try {
         if (!timerPlayer) return;
 
@@ -32,6 +38,8 @@ export function playTimerFinishedSound() {
 }
 
 export function playPersonalRecordSound() {
+    if (!soundsEnabled) return;
+
     try {
         if (!personalRecordPlayer) return;
 
