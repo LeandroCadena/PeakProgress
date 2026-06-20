@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, AppState } from "react-native";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import { useFocusEffect } from "@react-navigation/native";
-import { playTimerFinishedSound } from "../utils/sounds";
+import { playPersonalRecordSound, playTimerFinishedSound } from "../utils/sounds";
 import {
     getSavedSets,
     createEmptyWorkoutSet,
@@ -187,6 +187,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 weight,
                 reps,
             });
+
+            if (nextCompletedValue && isPr) {
+                playPersonalRecordSound();
+            }
 
             await updateWorkoutSetValues({
                 setId: set.id,

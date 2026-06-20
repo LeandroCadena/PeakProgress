@@ -14,6 +14,10 @@ export function initializeSounds() {
     timerPlayer = createAudioPlayer(
         require("../../assets/sounds/timer-finished.wav")
     );
+
+    personalRecordPlayer = createAudioPlayer(
+        require("../../assets/sounds/personal-record.wav")
+    );
 }
 
 export function playTimerFinishedSound() {
@@ -24,5 +28,16 @@ export function playTimerFinishedSound() {
         timerPlayer.play();
     } catch (error) {
         console.log("Timer sound error:", error);
+    }
+}
+
+export function playPersonalRecordSound() {
+    try {
+        if (!personalRecordPlayer) return;
+
+        personalRecordPlayer.seekTo(0);
+        personalRecordPlayer.play();
+    } catch (error) {
+        console.log("Personal record sound error:", error);
     }
 }
