@@ -89,6 +89,7 @@ export function useExercisePicker({
                 );
 
                 await addExerciseToWorkoutSession({
+                    userId: user.id,
                     sessionId: sessionId!,
                     exerciseId,
                     exerciseName: exercise?.name ?? "Exercise",

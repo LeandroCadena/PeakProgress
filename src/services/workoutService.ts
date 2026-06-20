@@ -2,6 +2,7 @@ import { supabase } from "./supabase";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 import { getUserSettings } from "./settingsService";
+import { getUserExerciseBestVolume } from "./progressService";
 
 export async function getRoutineExercises(
     routineId: string
@@ -336,28 +337,21 @@ export async function updateRoutineExercisePosition(params: {
 }
 
 export async function addExerciseToWorkoutSession(params: {
+    userId: string;
     sessionId: string;
     exerciseId: string;
     exerciseName: string;
     position: number;
     exerciseImageUrl?: string | null;
 }) {
-    const { error: sessionExerciseError } =
-        await supabase
-            .from("workout_session_exercises")
-            .insert({
-                workout_session_id: params.sessionId,
-                exercise_id: params.exerciseId,
-                exercise_name_snapshot: params.exerciseName,
-                position: params.position,
-                exercise_rest_seconds: 120,
-                rest_seconds: 90,
-                exercise_image_url_snapshot: params.exerciseImageUrl ?? null,
-            })
-            .select("id")
-            .single();
-
-    if (sessionExerciseError) throw sessionExerciseError;
+    await createWorkoutSessionExercise({
+        sessionId: params.sessionId,
+        exerciseId: params.exerciseId,
+        exerciseName: params.exerciseName,
+        exerciseImageUrl: params.exerciseImageUrl,
+        position: params.position,
+        userId: params.userId,
+    });
 }
 
 export async function syncWorkoutSessionToRoutine(params: {
@@ -484,29 +478,19 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
     );
 
     for (const routineExercise of routineExercises) {
-        const { data: sessionExercise, error: sessionExerciseError } =
-            await supabase
-                .from("workout_session_exercises")
-                .insert({
-                    workout_session_id: params.sessionId,
-                    exercise_id: routineExercise.exercise_id,
-                    exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
-                    position: routineExercise.position ?? 0,
-                    exercise_image_url_snapshot: routineExercise.exercise?.image_url ?? null,
-                    rest_seconds: settings.use_global_timers
-                        ? settings.global_set_rest_seconds
-                        : routineExercise.rest_seconds ?? 90,
-                    exercise_rest_seconds: settings.use_global_timers
-                        ? settings.global_exercise_rest_seconds
-                        : routineExercise.exercise_rest_seconds ?? 120,
-                    current_pr_volume:
-                        prByExerciseId.get(routineExercise.exercise_id) ??
-                        Number(routineExercise.current_pr_volume ?? 0),
-                })
-                .select("id")
-                .single();
-
-        if (sessionExerciseError) throw sessionExerciseError;
+        const sessionExercise = await createWorkoutSessionExercise({
+            sessionId: params.sessionId,
+            exerciseId: routineExercise.exercise_id,
+            exerciseName: routineExercise.exercise?.name ?? "Exercise",
+            exerciseImageUrl: routineExercise.exercise?.image_url ?? null,
+            position: routineExercise.position ?? 0,
+            userId: params.userId,
+            routineSetRestSeconds: routineExercise.rest_seconds ?? 90,
+            routineExerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
+            routineCurrentPrVolume:
+                prByExerciseId.get(routineExercise.exercise_id) ??
+                Number(routineExercise.current_pr_volume ?? 0),
+        });
 
         const templateSets = routineExerciseSets[routineExercise.id] ?? [];
 
@@ -711,4 +695,48 @@ export async function updateWorkoutSetValue(params: {
         .eq("id", params.setId);
 
     if (error) throw error;
+}
+
+async function createWorkoutSessionExercise(params: {
+    sessionId: string;
+    exerciseId: string;
+    exerciseName: string;
+    position: number;
+    userId: string;
+    exerciseImageUrl?: string | null;
+    routineSetRestSeconds?: number;
+    routineExerciseRestSeconds?: number;
+    routineCurrentPrVolume?: number;
+}) {
+    const settings = await getUserSettings(params.userId);
+
+    const currentPrVolume =
+        params.routineCurrentPrVolume ??
+        (await getUserExerciseBestVolume({
+            userId: params.userId,
+            exerciseId: params.exerciseId,
+        }));
+
+    const { data, error } = await supabase
+        .from("workout_session_exercises")
+        .insert({
+            workout_session_id: params.sessionId,
+            exercise_id: params.exerciseId,
+            exercise_name_snapshot: params.exerciseName,
+            position: params.position,
+            exercise_image_url_snapshot: params.exerciseImageUrl ?? null,
+            rest_seconds: settings.use_global_timers
+                ? settings.global_set_rest_seconds
+                : params.routineSetRestSeconds ?? 90,
+            exercise_rest_seconds: settings.use_global_timers
+                ? settings.global_exercise_rest_seconds
+                : params.routineExerciseRestSeconds ?? 120,
+            current_pr_volume: currentPrVolume,
+        })
+        .select("id")
+        .single();
+
+    if (error) throw error;
+
+    return data;
 }
