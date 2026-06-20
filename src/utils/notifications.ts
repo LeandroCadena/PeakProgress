@@ -11,13 +11,10 @@ export async function requestNotificationPermissions() {
 }
 
 export async function scheduleRestFinishedNotification(seconds: number) {
+    if (Platform.OS === "web") return;
     if (seconds <= 0) return;
 
-    if (currentRestNotificationId) {
-        await Notifications.cancelScheduledNotificationAsync(
-            currentRestNotificationId
-        );
-    }
+    await cancelRestFinishedNotification();
 
     currentRestNotificationId = await Notifications.scheduleNotificationAsync({
         content: {
@@ -33,8 +30,10 @@ export async function scheduleRestFinishedNotification(seconds: number) {
 }
 
 export async function cancelRestFinishedNotification() {
-    if (!currentRestNotificationId) return;
+    if (Platform.OS === "web") return;
 
-    await Notifications.cancelScheduledNotificationAsync(currentRestNotificationId);
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    await Notifications.dismissAllNotificationsAsync();
+
     currentRestNotificationId = null;
 }

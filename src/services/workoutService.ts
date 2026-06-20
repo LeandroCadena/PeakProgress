@@ -687,3 +687,26 @@ export async function createNewWorkoutSessionFromRoutine(params: {
 
     return data;
 }
+
+export async function updateWorkoutSessionExerciseRest(params: {
+    workoutSessionExerciseId: string;
+    restSeconds?: number;
+    exerciseRestSeconds?: number;
+}) {
+    const updates: Record<string, number> = {};
+
+    if (params.restSeconds !== undefined) {
+        updates.rest_seconds = params.restSeconds;
+    }
+
+    if (params.exerciseRestSeconds !== undefined) {
+        updates.exercise_rest_seconds = params.exerciseRestSeconds;
+    }
+
+    const { error } = await supabase
+        .from("workout_session_exercises")
+        .update(updates)
+        .eq("id", params.workoutSessionExerciseId);
+
+    if (error) throw error;
+}

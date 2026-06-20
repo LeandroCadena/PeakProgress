@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Alert, AppState } from "react-native";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import { useFocusEffect } from "@react-navigation/native";
-// import { playTimerFinishedSound } from "../utils/sounds";
+import { playTimerFinishedSound } from "../utils/sounds";
 import {
     getSavedSets,
     createEmptyWorkoutSet,
@@ -12,6 +12,7 @@ import {
     syncWorkoutSessionToRoutine,
     getWorkoutSessionExercises,
     deleteWorkoutSessionExercise,
+    updateWorkoutSessionExerciseRest,
 } from "../services/workoutService";
 import {
     requestNotificationPermissions,
@@ -34,6 +35,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
     const [lastTimerDuration, setLastTimerDuration] = useState(0);
+    const [restEndAt, setRestEndAt] = useState<number | null>(null);
+    const timerVersionRef = useRef(0);
 
     useFocusEffect(
         useCallback(() => {
@@ -45,27 +48,42 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     );
 
     useEffect(() => {
-        if (!timerRunning) return;
+        if (!timerRunning || !restEndAt) return;
 
         const intervalId = setInterval(() => {
-            setTimer((currentTimer) => {
-                if (currentTimer <= 1) {
-                    setTimerRunning(false);
+            const remainingSeconds = Math.max(
+                0,
+                Math.ceil((restEndAt - Date.now()) / 1000)
+            );
 
-                    // playTimerFinishedSound().catch((error) => {
-                    //     console.log("Timer sound error:", error);
-                    // });
-                    cancelRestFinishedNotification();
+            setTimer(remainingSeconds);
 
-                    return 0;
-                }
-
-                return currentTimer - 1;
-            });
+            if (remainingSeconds <= 0) {
+                setTimerRunning(false);
+                setRestEndAt(null);
+                cancelRestFinishedNotification();
+                playTimerFinishedSound();
+            }
         }, 1000);
 
         return () => clearInterval(intervalId);
-    }, [timerRunning]);
+    }, [timerRunning, restEndAt]);
+
+    useEffect(() => {
+        const subscription = AppState.addEventListener("change", (nextState) => {
+            if (nextState === "active") {
+                syncTimerWithRestEndAt();
+            }
+        });
+
+        return () => subscription.remove();
+    }, [restEndAt]);
+
+    useFocusEffect(
+        useCallback(() => {
+            syncTimerWithRestEndAt();
+        }, [restEndAt])
+    );
 
     async function fetchSessionExercises() {
         try {
@@ -148,12 +166,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 });
 
                 if (restSeconds > 0) {
-                    setLastTimerDuration(restSeconds);
-                    setTimer(restSeconds);
-                    setTimerRunning(true);
-
-                    requestNotificationPermissions();
-                    scheduleRestFinishedNotification(restSeconds);
+                    await startRestTimer(restSeconds);
                 }
             }
         } catch (error: any) {
@@ -161,13 +174,45 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
+    async function startRestTimer(restSeconds: number) {
+        timerVersionRef.current += 1;
+        const currentVersion = timerVersionRef.current;
+
+        const endAt = Date.now() + restSeconds * 1000;
+
+        setLastTimerDuration(restSeconds);
+        setRestEndAt(endAt);
+        setTimer(restSeconds);
+        setTimerRunning(true);
+
+        await cancelRestFinishedNotification();
+
+        if (currentVersion !== timerVersionRef.current) return;
+
+        await scheduleRestFinishedNotification(restSeconds);
+    }
+
+    function syncTimerWithRestEndAt() {
+        if (!restEndAt) return;
+
+        const remainingSeconds = Math.max(
+            0,
+            Math.ceil((restEndAt - Date.now()) / 1000)
+        );
+
+        setTimer(remainingSeconds);
+
+        if (remainingSeconds <= 0) {
+            setTimerRunning(false);
+            setRestEndAt(null);
+            cancelRestFinishedNotification();
+        }
+    }
+
     function restartLastTimer() {
         if (lastTimerDuration <= 0) return;
 
-        setTimer(lastTimerDuration);
-        setTimerRunning(true);
-
-        scheduleRestFinishedNotification(lastTimerDuration);
+        startRestTimer(lastTimerDuration);
     }
 
     async function deleteSet(setId: string) {
@@ -259,7 +304,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         return 0;
     }
 
-    function updateWorkoutSetRest(
+    async function updateWorkoutSetRest(
         workoutSessionExerciseId: string,
         value: number
     ) {
@@ -270,9 +315,19 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     : exercise
             )
         );
+
+        try {
+            await updateWorkoutSessionExerciseRest({
+                workoutSessionExerciseId,
+                restSeconds: value,
+            });
+
+        } catch (error) {
+            console.log("updateWorkoutSetRest error", error);
+        }
     }
 
-    function updateWorkoutExerciseRest(
+    async function updateWorkoutExerciseRest(
         workoutSessionExerciseId: string,
         value: number
     ) {
@@ -283,6 +338,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     : exercise
             )
         );
+
+        await updateWorkoutSessionExerciseRest({
+            workoutSessionExerciseId,
+            exerciseRestSeconds: value,
+        });
     }
 
     return {

@@ -1,23 +1,28 @@
-import { Audio } from "expo-av";
+import {
+    AudioPlayer,
+    createAudioPlayer,
+} from "expo-audio";
 
-export async function playTimerFinishedSound() {
+let timerPlayer: AudioPlayer | null = null;
+let personalRecordPlayer: AudioPlayer | null = null;
+let workoutCompletedPlayer: AudioPlayer | null = null;
+
+
+export function initializeSounds() {
+    if (timerPlayer) return;
+
+    timerPlayer = createAudioPlayer(
+        require("../../assets/sounds/timer-finished.wav")
+    );
+}
+
+export function playTimerFinishedSound() {
     try {
-        await Audio.setAudioModeAsync({
-            playsInSilentModeIOS: true,
-            staysActiveInBackground: false,
-        });
+        if (!timerPlayer) return;
 
-        const { sound } = await Audio.Sound.createAsync(
-            require("../../assets/sounds/timer-finished.wav"),
-            { shouldPlay: true, volume: 1.0 }
-        );
-
-        sound.setOnPlaybackStatusUpdate((status) => {
-            if (status.isLoaded && status.didJustFinish) {
-                sound.unloadAsync();
-            }
-        });
+        timerPlayer.seekTo(0);
+        timerPlayer.play();
     } catch (error) {
-        console.log("Sound error:", error);
+        console.log("Timer sound error:", error);
     }
 }
