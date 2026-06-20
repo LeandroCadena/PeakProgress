@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +12,22 @@ import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
     const [activeSession, setActiveSession] = useState<any>(null);
+    const [now, setNow] = useState(Date.now());
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setNow(Date.now());
+        }, 1000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchDashboardStats();
+            fetchActiveSession();
+        }, [user?.id])
+    );
 
     const [stats, setStats] = useState<DashboardStats>({
         routinesCount: 0,
@@ -21,13 +37,6 @@ export default function HomeScreen({ navigation }: any) {
         currentStreak: 0,
         nextWorkoutName: null,
     });
-
-    useFocusEffect(
-        useCallback(() => {
-            fetchDashboardStats();
-            fetchActiveSession();
-        }, [user?.id])
-    );
 
     async function fetchDashboardStats() {
         if (!user?.id) return;
@@ -89,12 +98,26 @@ export default function HomeScreen({ navigation }: any) {
         }
     }
 
+    function getRestRemainingText(restTimerEndAt?: string | null) {
+        if (!restTimerEndAt) return undefined;
+
+        const remainingSeconds = Math.max(
+            0,
+            Math.ceil((new Date(restTimerEndAt).getTime() - now) / 1000)
+        );
+
+        if (remainingSeconds <= 0) return undefined;
+
+        return `${remainingSeconds}s`;
+    }
+
     return (
         <View style={styles.container}>
             {activeSession ? (
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
                     elapsedText={getElapsedText(activeSession.started_at)}
+                    restRemainingText={getRestRemainingText(activeSession.rest_timer_end_at)}
                     onPress={() =>
                         navigation.navigate("WorkoutSession", {
                             sessionId: activeSession.id,

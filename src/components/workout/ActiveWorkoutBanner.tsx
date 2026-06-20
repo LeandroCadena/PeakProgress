@@ -3,12 +3,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 type Props = {
     routineName: string;
     elapsedText: string;
+    restRemainingText?: string;
     onPress: () => void;
 };
 
 export default function ActiveWorkoutBanner({
     routineName,
     elapsedText,
+    restRemainingText,
     onPress,
 }: Props) {
     return (
@@ -17,6 +19,10 @@ export default function ActiveWorkoutBanner({
                 <Text style={styles.label}>Workout running</Text>
                 <Text style={styles.title}>{routineName}</Text>
             </View>
+
+            {restRemainingText ? (
+                <Text style={styles.restText}>Rest: {restRemainingText}</Text>
+            ) : null}
 
             <Text style={styles.time}>{elapsedText}</Text>
         </Pressable>
@@ -48,5 +54,10 @@ const styles = StyleSheet.create({
     time: {
         color: "#FFFFFF",
         fontWeight: "800",
+    },
+    restText: {
+        color: "#FBBF24",
+        fontWeight: "800",
+        marginTop: 4,
     },
 });

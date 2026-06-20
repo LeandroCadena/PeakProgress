@@ -13,9 +13,10 @@ import {
     getWorkoutSessionExercises,
     deleteWorkoutSessionExercise,
     updateWorkoutSessionExerciseRest,
+    getWorkoutSessionTimer,
+    updateWorkoutSessionTimer,
 } from "../services/workoutService";
 import {
-    requestNotificationPermissions,
     scheduleRestFinishedNotification,
     cancelRestFinishedNotification,
 } from "../utils/notifications";
@@ -37,20 +38,26 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const [lastTimerDuration, setLastTimerDuration] = useState(0);
     const [restEndAt, setRestEndAt] = useState<number | null>(null);
     const timerVersionRef = useRef(0);
+    const isScreenFocusedRef = useRef(false);
 
     useFocusEffect(
         useCallback(() => {
-            if (!sessionId || !routineId) return;
+            isScreenFocusedRef.current = true;
 
             fetchSessionExercises();
             fetchSavedSets();
+            fetchWorkoutSessionTimer();
+
+            return () => {
+                isScreenFocusedRef.current = false;
+            };
         }, [sessionId, routineId])
     );
 
     useEffect(() => {
         if (!timerRunning || !restEndAt) return;
 
-        const intervalId = setInterval(() => {
+        const intervalId = setInterval(async () => {
             const remainingSeconds = Math.max(
                 0,
                 Math.ceil((restEndAt - Date.now()) / 1000)
@@ -61,13 +68,23 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             if (remainingSeconds <= 0) {
                 setTimerRunning(false);
                 setRestEndAt(null);
-                cancelRestFinishedNotification();
-                playTimerFinishedSound();
+
+                await updateWorkoutSessionTimer({
+                    sessionId,
+                    restTimerEndAt: null,
+                    lastRestDurationSeconds: lastTimerDuration,
+                });
+
+                const hadPendingNotification = await cancelRestFinishedNotification();
+
+                if (isScreenFocusedRef.current && hadPendingNotification) {
+                    playTimerFinishedSound();
+                }
             }
         }, 1000);
 
         return () => clearInterval(intervalId);
-    }, [timerRunning, restEndAt]);
+    }, [timerRunning, restEndAt, lastTimerDuration, sessionId]);
 
     useEffect(() => {
         const subscription = AppState.addEventListener("change", (nextState) => {
@@ -179,11 +196,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         const currentVersion = timerVersionRef.current;
 
         const endAt = Date.now() + restSeconds * 1000;
+        const endAtIso = new Date(endAt).toISOString();
 
         setLastTimerDuration(restSeconds);
         setRestEndAt(endAt);
         setTimer(restSeconds);
         setTimerRunning(true);
+
+        await updateWorkoutSessionTimer({
+            sessionId,
+            restTimerEndAt: endAtIso,
+            lastRestDurationSeconds: restSeconds,
+        });
 
         await cancelRestFinishedNotification();
 
@@ -343,6 +367,30 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             workoutSessionExerciseId,
             exerciseRestSeconds: value,
         });
+    }
+
+    async function fetchWorkoutSessionTimer() {
+        const data = await getWorkoutSessionTimer(sessionId);
+
+        setLastTimerDuration(data.last_rest_duration_seconds ?? 0);
+
+        if (!data.rest_timer_end_at) {
+            setTimer(0);
+            setTimerRunning(false);
+            setRestEndAt(null);
+            return;
+        }
+
+        const endAt = new Date(data.rest_timer_end_at).getTime();
+
+        const remainingSeconds = Math.max(
+            0,
+            Math.ceil((endAt - Date.now()) / 1000)
+        );
+
+        setRestEndAt(remainingSeconds > 0 ? endAt : null);
+        setTimer(remainingSeconds);
+        setTimerRunning(remainingSeconds > 0);
     }
 
     return {

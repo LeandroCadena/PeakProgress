@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -23,6 +23,7 @@ import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
     const [activeSession, setActiveSession] = useState<any>(null);
+    const [now, setNow] = useState(Date.now());
 
     const [routines, setRoutines] = useState<Routine[]>([]);
     const [name, setName] = useState("");
@@ -31,6 +32,14 @@ export default function RoutinesScreen({ navigation }: any) {
     const [activeWorkoutModalVisible, setActiveWorkoutModalVisible] = useState(false);
     const [activeWorkout, setActiveWorkout] = useState<any>(null);
     const [pendingRoutine, setPendingRoutine] = useState<Routine | null>(null);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setNow(Date.now());
+        }, 1000);
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -168,12 +177,26 @@ export default function RoutinesScreen({ navigation }: any) {
             : active.routines?.name;
     }
 
+    function getRestRemainingText(restTimerEndAt?: string | null) {
+        if (!restTimerEndAt) return undefined;
+
+        const remainingSeconds = Math.max(
+            0,
+            Math.ceil((new Date(restTimerEndAt).getTime() - now) / 1000)
+        );
+
+        if (remainingSeconds <= 0) return undefined;
+
+        return `${remainingSeconds}s`;
+    }
+
     return (
         <View style={styles.container}>
             {activeSession ? (
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
                     elapsedText={getElapsedText(activeSession.started_at)}
+                    restRemainingText={getRestRemainingText(activeSession.rest_timer_end_at)}
                     onPress={() =>
                         navigation.navigate("WorkoutSession", {
                             sessionId: activeSession.id,

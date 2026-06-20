@@ -32,8 +32,12 @@ export async function scheduleRestFinishedNotification(seconds: number) {
 export async function cancelRestFinishedNotification() {
     if (Platform.OS === "web") return;
 
+    const hadPendingNotification = (await Notifications.getAllScheduledNotificationsAsync()).length > 0;
+
     await Notifications.cancelAllScheduledNotificationsAsync();
     await Notifications.dismissAllNotificationsAsync();
 
     currentRestNotificationId = null;
+
+    return hadPendingNotification;
 }

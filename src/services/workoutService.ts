@@ -20,7 +20,7 @@ export async function getRoutineExercises(
       )
     `)
         .eq("routine_id", routineId)
-        .order("position");
+        .order("position", { ascending: true });
 
     if (error) {
         throw error;
@@ -622,6 +622,8 @@ export async function getActiveWorkoutSession(userId: string) {
       id,
       routine_id,
       started_at,
+      rest_timer_end_at,
+      last_rest_duration_seconds,
       routines (
         name
       )
@@ -707,6 +709,35 @@ export async function updateWorkoutSessionExerciseRest(params: {
         .from("workout_session_exercises")
         .update(updates)
         .eq("id", params.workoutSessionExerciseId);
+
+    if (error) throw error;
+}
+
+export async function getWorkoutSessionTimer(sessionId: string) {
+    const { data, error } = await supabase
+        .from("workout_sessions")
+        .select("rest_timer_end_at, last_rest_duration_seconds")
+        .eq("id", sessionId)
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function updateWorkoutSessionTimer(params: {
+    sessionId: string;
+    restTimerEndAt: string | null;
+    lastRestDurationSeconds?: number | null;
+}) {
+    const { error } = await supabase
+        .from("workout_sessions")
+        .update({
+            rest_timer_end_at: params.restTimerEndAt,
+            last_rest_duration_seconds:
+                params.lastRestDurationSeconds ?? null,
+        })
+        .eq("id", params.sessionId);
 
     if (error) throw error;
 }
