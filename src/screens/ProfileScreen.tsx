@@ -53,13 +53,13 @@ export default function ProfileScreen() {
                 onSave={saveProfile}
             />
 
-            <WeightTrackingSection
+            {/* <WeightTrackingSection
                 newWeight={newWeight}
                 onChangeWeight={setNewWeight}
                 onAddWeight={addWeightLog}
                 weightLogs={weightLogs}
                 onDeleteWeight={deleteWeightLog}
-            />
+            /> */}
 
             {weightLogs.length > 0 ? (
                 <LineChart
