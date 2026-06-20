@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import {
     getUserSettings,
@@ -95,6 +95,44 @@ export default function SettingsScreen() {
                     }
                 />
             </View>
+
+            {settings.use_global_timers ? (
+                <>
+                    <View style={styles.card}>
+                        <Text style={styles.label}>Global Rest Between Sets</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={String(settings.global_set_rest_seconds)}
+                            keyboardType="numeric"
+                            placeholder="90"
+                            placeholderTextColor="#6B7280"
+                            onChangeText={(value) =>
+                                updateSetting({
+                                    global_set_rest_seconds: Number(value || 0),
+                                })
+                            }
+                        />
+                        <Text style={styles.helperText}>Seconds between sets</Text>
+                    </View>
+
+                    <View style={styles.card}>
+                        <Text style={styles.label}>Global Rest Between Exercises</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={String(settings.global_exercise_rest_seconds)}
+                            keyboardType="numeric"
+                            placeholder="120"
+                            placeholderTextColor="#6B7280"
+                            onChangeText={(value) =>
+                                updateSetting({
+                                    global_exercise_rest_seconds: Number(value || 0),
+                                })
+                            }
+                        />
+                        <Text style={styles.helperText}>Seconds before the next exercise</Text>
+                    </View>
+                </>
+            ) : null}
 
             <View style={styles.card}>
                 <Text style={styles.label}>Theme</Text>
@@ -200,5 +238,20 @@ const styles = StyleSheet.create({
     optionText: {
         color: "#FFFFFF",
         fontWeight: "700",
+    },
+    input: {
+        backgroundColor: "#0B0F14",
+        borderWidth: 1,
+        borderColor: "#30363D",
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        color: "#FFFFFF",
+        marginTop: 6,
+    },
+
+    helperText: {
+        color: "#9CA3AF",
+        marginTop: 8,
     },
 });

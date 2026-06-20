@@ -1,6 +1,7 @@
 import { supabase } from "./supabase";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
+import { getUserSettings } from "./settingsService";
 
 export async function getRoutineExercises(
     routineId: string
@@ -459,6 +460,8 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
 }) {
     const routineExercises = await getRoutineExercises(params.routineId);
 
+    const settings = await getUserSettings(params.userId);
+
     const exerciseIds = routineExercises.map((item) => item.exercise_id);
 
     const { data: records, error: recordsError } = await supabase
@@ -489,9 +492,13 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
                     exercise_id: routineExercise.exercise_id,
                     exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
                     position: routineExercise.position ?? 0,
-                    rest_seconds: routineExercise.rest_seconds ?? 90,
                     exercise_image_url_snapshot: routineExercise.exercise?.image_url ?? null,
-                    exercise_rest_seconds: routineExercise.exercise_rest_seconds ?? 120,
+                    rest_seconds: settings.use_global_timers
+                        ? settings.global_set_rest_seconds
+                        : routineExercise.rest_seconds ?? 90,
+                    exercise_rest_seconds: settings.use_global_timers
+                        ? settings.global_exercise_rest_seconds
+                        : routineExercise.exercise_rest_seconds ?? 120,
                     current_pr_volume:
                         prByExerciseId.get(routineExercise.exercise_id) ??
                         Number(routineExercise.current_pr_volume ?? 0),
