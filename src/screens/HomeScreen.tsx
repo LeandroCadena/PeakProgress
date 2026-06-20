@@ -18,7 +18,6 @@ export default function HomeScreen({ navigation }: any) {
         routinesCount: 0,
         completedWorkouts: 0,
         lastWorkoutName: null,
-        nextWorkoutName: null,
         streakWeeks: 0,
         streakWorkouts: 0,
     });
