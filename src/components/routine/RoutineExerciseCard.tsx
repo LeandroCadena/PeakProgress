@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
-import { RoutineExercise, RoutineExerciseSet } from "../../types/workout";
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 import RestTimeEditor from "../workout/RestTimeEditor";
+import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 
 type Props = {
     item: RoutineExercise;
