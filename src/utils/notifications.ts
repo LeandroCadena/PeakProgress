@@ -2,6 +2,11 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 let currentRestNotificationId: string | null = null;
+let notificationsEnabled = true;
+
+export function setNotificationsEnabled(value: boolean) {
+    notificationsEnabled = value;
+}
 
 export async function requestNotificationPermissions() {
     if (Platform.OS === "web") return false;
@@ -11,6 +16,7 @@ export async function requestNotificationPermissions() {
 }
 
 export async function scheduleRestFinishedNotification(seconds: number) {
+    if (!notificationsEnabled) return;
     if (Platform.OS === "web") return;
     if (seconds <= 0) return;
 

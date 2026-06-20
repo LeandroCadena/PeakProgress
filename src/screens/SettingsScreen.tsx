@@ -7,6 +7,7 @@ import {
     UserSettings,
 } from "../services/settingsService";
 import { setSoundsEnabled } from "../utils/sounds";
+import { setNotificationsEnabled } from "../utils/notifications";
 
 export default function SettingsScreen() {
     const { user } = useAuth();
@@ -23,6 +24,7 @@ export default function SettingsScreen() {
             const data = await getUserSettings(user.id);
             setSettings(data);
             setSoundsEnabled(data.sounds_enabled);
+            setNotificationsEnabled(data.notifications_enabled);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -41,6 +43,10 @@ export default function SettingsScreen() {
 
             if (updates.sounds_enabled !== undefined) {
                 setSoundsEnabled(updates.sounds_enabled);
+            }
+
+            if (updates.notifications_enabled !== undefined) {
+                setNotificationsEnabled(updates.notifications_enabled);
             }
         } catch (error: any) {
             Alert.alert("Error", error.message);
