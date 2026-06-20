@@ -66,14 +66,6 @@ export default function WorkoutExerciseCard({
                 onChange={(value) => onUpdateSetRest(exercise.id, value)}
             />
 
-            <Text style={styles.cardText}>
-                Rest: {exercise.rest_seconds}s
-            </Text>
-
-            <Text style={styles.cardText}>
-                Saved sets: {savedSets.length}
-            </Text>
-
             <View style={styles.setTableHeader}>
                 <Text style={styles.setHeaderText}>weights</Text>
                 <Text style={styles.setHeaderText}>reps</Text>

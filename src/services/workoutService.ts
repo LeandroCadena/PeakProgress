@@ -234,9 +234,6 @@ export async function finishWorkoutSession(params: {
 export async function addExerciseToRoutine(params: {
     routineId: string;
     exerciseId: string;
-    sets: number;
-    reps: number;
-    weight: number;
     restSeconds: number;
     position: number;
     currentPrVolume?: number;
@@ -246,9 +243,6 @@ export async function addExerciseToRoutine(params: {
         .insert({
             routine_id: params.routineId,
             exercise_id: params.exerciseId,
-            sets: 0,
-            reps: params.reps,
-            weight: params.weight,
             rest_seconds: params.restSeconds,
             position: params.position,
             current_pr_volume: params.currentPrVolume ?? 0,
