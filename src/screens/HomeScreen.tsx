@@ -8,9 +8,11 @@ import {
 import { DashboardStats } from "../types/dashboard";
 import { getActiveWorkoutSession } from "../services/workoutService";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
+import { useProfile } from "../hooks/useProfile";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
+    const { fullName } = useProfile();
     const [activeSession, setActiveSession] = useState<any>(null);
     const [now, setNow] = useState(Date.now());
 
@@ -101,7 +103,11 @@ export default function HomeScreen({ navigation }: any) {
                 />
             ) : null}
             <Text style={styles.title}>PeakProgress</Text>
-            <Text style={styles.subtitle}>Welcome back, {user?.email}</Text>
+            <Text style={styles.subtitle}>
+                {fullName?.trim()
+                    ? `Welcome back, ${fullName.trim()} 👋`
+                    : `Welcome back, ${user?.email}`}
+            </Text>
 
             <View style={styles.grid}>
                 <View style={styles.card}>
