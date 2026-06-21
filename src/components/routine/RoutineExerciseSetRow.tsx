@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
-import { RoutineExerciseSet } from "../../types/workout";
 import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
+import { RoutineExerciseSet } from "../../types/routine";
 
 type Props = {
     set: RoutineExerciseSet;
     isEditing: boolean;
+    displaySetNumber: number;
     onDraftChange: (field: "weight" | "reps", value: string) => void;
     onUpdate: (field: "weight" | "reps", value: string) => void;
     onDelete: () => void;
@@ -14,6 +15,7 @@ type Props = {
 export default function RoutineExerciseSetRow({
     set,
     isEditing,
+    displaySetNumber,
     onDraftChange,
     onUpdate,
     onDelete,
@@ -45,7 +47,7 @@ export default function RoutineExerciseSetRow({
 
     return (
         <View style={styles.row}>
-            <Text style={styles.setNumber}>{set.set_number}</Text>
+            <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
             <TextInput
                 style={[styles.input, !isEditing && styles.disabledInput]}

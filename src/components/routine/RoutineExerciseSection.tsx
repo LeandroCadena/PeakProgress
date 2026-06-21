@@ -10,6 +10,7 @@ type Props = {
     onMoveUp: (index: number) => void;
     onMoveDown: (index: number) => void;
     routineExerciseSets: Record<string, RoutineExerciseSet[]>;
+    addingSetByExerciseId: Record<string, boolean>;
     onUpdateSet: (
         setId: string,
         field: "weight" | "reps",
@@ -33,6 +34,7 @@ export default function RoutineExerciseSection({
     onMoveUp,
     onMoveDown,
     routineExerciseSets,
+    addingSetByExerciseId,
     onUpdateSet,
     onAddSet,
     onDeleteSet,
@@ -54,6 +56,7 @@ export default function RoutineExerciseSection({
                                 item={item}
                                 sets={routineExerciseSets[item.id] ?? []}
                                 isEditing={isEditing}
+                                isAddingSet={Boolean(addingSetByExerciseId[item.id])}
                                 onAddSet={() => onAddSet(item.id)}
                                 onUpdateSet={onUpdateSet}
                                 onDeleteSet={onDeleteSet}

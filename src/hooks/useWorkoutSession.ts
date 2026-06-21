@@ -137,11 +137,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             (item) => item.id === workoutSessionExerciseId
         );
 
-        const setNumber =
-            currentSets.length > 0
-                ? Math.max(...currentSets.map((set) => set.set_number)) + 1
-                : 1;
-
         const reps = Number(
             lastSet
                 ? editingValues[`${lastSet.id}-reps`] ?? lastSet.reps ?? 0
@@ -160,11 +155,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             id: tempId,
             workout_session_exercise_id: workoutSessionExerciseId,
             exercise_id: sessionExercise?.exercise_id ?? null,
-            set_number: setNumber,
             reps,
             weight,
             is_completed: false,
             is_pr: false,
+            created_at: new Date().toISOString(),
         };
 
         setSavedSets((prev) => ({
@@ -181,7 +176,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 workoutSessionExerciseId,
                 exerciseId: sessionExercise?.exercise_id ?? null,
                 exerciseName: sessionExercise?.exercise_name_snapshot ?? "Exercise",
-                setNumber,
                 reps,
                 weight,
             });

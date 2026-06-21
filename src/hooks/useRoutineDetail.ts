@@ -40,6 +40,9 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     const [templateSetDraftValues, setTemplateSetDraftValues] = useState<
         Record<string, string>
     >({});
+    const [addingSetByExerciseId, setAddingSetByExerciseId] = useState<
+        Record<string, boolean>
+    >({});
 
     const [editRoutineVisible, setEditRoutineVisible] = useState(false);
     const [editRoutineName, setEditRoutineName] = useState(routineName);
@@ -134,7 +137,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
                 return {
                     routine_exercise_id: routineExercise.id,
-                    set_number: index + 1,
                     reps:
                         repsDraft !== undefined && repsDraft.trim() !== ""
                             ? Number(repsDraft)
@@ -272,13 +274,15 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     async function addTemplateSet(routineExerciseId: string) {
+        if (addingSetByExerciseId[routineExerciseId]) return;
+
+        setAddingSetByExerciseId((prev) => ({
+            ...prev,
+            [routineExerciseId]: true,
+        }));
+
         const currentSets = routineExerciseSets[routineExerciseId] ?? [];
         const lastSet = currentSets[currentSets.length - 1];
-
-        const setNumber =
-            currentSets.length > 0
-                ? Math.max(...currentSets.map((set) => set.set_number)) + 1
-                : 1;
 
         const lastWeight = lastSet
             ? templateSetDraftValues[`${lastSet.id}-weight`] ??
@@ -290,26 +294,67 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             String(lastSet.reps ?? 0)
             : "0";
 
+        const tempId = `temp-${Date.now()}`;
+        const createdAt = new Date().toISOString();
+
+        const tempSet: RoutineExerciseSet = {
+            id: tempId,
+            routine_exercise_id: routineExerciseId,
+            reps: Number(lastReps),
+            weight: Number(lastWeight),
+            is_pr: false,
+            created_at: createdAt,
+        };
+
+        setRoutineExerciseSets((prev) => ({
+            ...prev,
+            [routineExerciseId]: [...(prev[routineExerciseId] ?? []), tempSet],
+        }));
+
         try {
-            await createRoutineExerciseSet({
+            const createdSet = await createRoutineExerciseSet({
                 routineExerciseId,
-                setNumber,
                 reps: Number(lastReps),
                 weight: Number(lastWeight),
             });
 
-            await fetchRoutineExercises();
+            setRoutineExerciseSets((prev) => ({
+                ...prev,
+                [routineExerciseId]: (prev[routineExerciseId] ?? []).map((set) =>
+                    set.id === tempId ? createdSet : set
+                ),
+            }));
         } catch (error: any) {
+            setRoutineExerciseSets((prev) => ({
+                ...prev,
+                [routineExerciseId]: (prev[routineExerciseId] ?? []).filter(
+                    (set) => set.id !== tempId
+                ),
+            }));
+
             Alert.alert("Error", error.message);
+        } finally {
+            setAddingSetByExerciseId((prev) => ({
+                ...prev,
+                [routineExerciseId]: false,
+            }));
         }
     }
 
     async function deleteTemplateSet(routineExerciseId: string, setId: string) {
+        const previousSets = routineExerciseSets;
+
+        setRoutineExerciseSets((prev) => ({
+            ...prev,
+            [routineExerciseId]: (prev[routineExerciseId] ?? []).filter(
+                (set) => set.id !== setId
+            ),
+        }));
+
         try {
             await deleteRoutineExerciseSet(setId);
-
-            await fetchRoutineExercises();
         } catch (error: any) {
+            setRoutineExerciseSets(previousSets);
             Alert.alert("Error", error.message);
         }
     }
@@ -433,6 +478,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         updateTemplateSet,
         addTemplateSet,
         deleteTemplateSet,
+        addingSetByExerciseId,
 
         templateSetDraftValues,
         updateLocalTemplateSetValue,

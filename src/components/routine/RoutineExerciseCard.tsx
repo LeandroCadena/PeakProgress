@@ -7,6 +7,7 @@ type Props = {
     item: RoutineExercise;
     onDelete: () => void;
     isEditing: boolean;
+    isAddingSet?: boolean;
     onMoveUp: () => void;
     onMoveDown: () => void;
     sets: RoutineExerciseSet[];
@@ -25,6 +26,7 @@ export default function RoutineExerciseCard({
     item,
     onDelete,
     isEditing,
+    isAddingSet,
     onMoveUp,
     onMoveDown,
     sets,
@@ -61,11 +63,12 @@ export default function RoutineExerciseCard({
                 onChange={(value) => onUpdateSetRest(item.id, value)}
             />
 
-            {sets.map((set) => (
+            {sets.map((set, index) => (
                 <RoutineExerciseSetRow
                     key={set.id}
                     set={set}
                     isEditing={isEditing}
+                    displaySetNumber={index + 1}
                     onDraftChange={(field, value) =>
                         updateLocalTemplateSetValue(set.id, field, value)
                     }
@@ -75,7 +78,11 @@ export default function RoutineExerciseCard({
             ))}
 
             {isEditing ? (
-                <Pressable style={styles.addSetButton} onPress={onAddSet}>
+                <Pressable
+                    style={[styles.addSetButton, isAddingSet && styles.buttonDisabled,]}
+                    onPress={onAddSet}
+                    disabled={isAddingSet}
+                >
                     <Text style={styles.addSetText}>+ Add Set</Text>
                 </Pressable>
             ) : null}
@@ -198,5 +205,8 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginBottom: 12,
         backgroundColor: "#0B0F14",
+    },
+    buttonDisabled: {
+        opacity: 0.6,
     },
 });

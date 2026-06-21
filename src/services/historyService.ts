@@ -4,17 +4,17 @@ export async function getCompletedWorkoutSessions() {
     const { data, error } = await supabase
         .from("workout_sessions")
         .select(`
-      id,
-      started_at,
-      completed_at,
-      routine_name_snapshot,
-      total_sets,
-      total_volume,
-      duration_minutes,
-      routines (
-        name
-      )
-    `)
+        id,
+        started_at,
+        completed_at,
+        routine_name_snapshot,
+        total_sets,
+        total_volume,
+        duration_minutes,
+        routines (
+            name
+        )
+        `)
         .not("completed_at", "is", null)
         .is("discarded_at", null)
         .order("started_at", { ascending: false });
@@ -28,16 +28,15 @@ export async function getWorkoutSets(sessionId: string) {
     const { data, error } = await supabase
         .from("workout_sets")
         .select(`
-      id,
-      exercise_name_snapshot,
-      set_number,
-      reps,
-      weight,
-      is_completed
-    `)
+        id,
+        exercise_name_snapshot,
+        reps,
+        weight,
+        is_completed
+        `)
         .eq("workout_session_id", sessionId)
         .order("exercise_name_snapshot", { ascending: true })
-        .order("set_number", { ascending: true });
+        .order("created_at", { ascending: true });
 
     if (error) throw error;
 

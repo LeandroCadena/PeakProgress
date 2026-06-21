@@ -42,9 +42,16 @@ export async function getRoutineExerciseSets(
 
     const { data, error } = await supabase
         .from("routine_exercise_sets")
-        .select("id, routine_exercise_id, set_number, reps, weight, is_pr")
+        .select(`
+        id,
+        routine_exercise_id,
+        reps,
+        weight,
+        is_pr,
+        created_at
+        `)
         .in("routine_exercise_id", routineExerciseIds)
-        .order("set_number", { ascending: true });
+        .order("created_at", { ascending: true });
 
     if (error) throw error;
 
@@ -70,14 +77,14 @@ export async function getSavedSets(
         id,
         workout_session_exercise_id,
         exercise_id,
-        set_number,
         reps,
         weight,
         is_completed,
-        is_pr
+        is_pr,
+        created_at
         `)
         .eq("workout_session_id", sessionId)
-        .order("set_number", { ascending: true });
+        .order("created_at", { ascending: true });
 
     if (error) throw error;
 
@@ -97,7 +104,6 @@ export async function getSavedSets(
 export async function createWorkoutSet(params: {
     sessionId: string;
     exerciseId: string;
-    setNumber: number;
     reps: number;
     weight: number;
 }) {
@@ -106,7 +112,6 @@ export async function createWorkoutSet(params: {
         .insert({
             workout_session_id: params.sessionId,
             exercise_id: params.exerciseId,
-            set_number: params.setNumber,
             reps: params.reps,
             weight: params.weight,
         })
@@ -164,7 +169,6 @@ export async function createEmptyWorkoutSet(params: {
     workoutSessionExerciseId: string;
     exerciseId: string | null;
     exerciseName: string;
-    setNumber: number;
     reps: number;
     weight: number;
 }) {
@@ -175,7 +179,6 @@ export async function createEmptyWorkoutSet(params: {
             workout_session_exercise_id: params.workoutSessionExerciseId,
             exercise_id: params.exerciseId,
             exercise_name_snapshot: params.exerciseName,
-            set_number: params.setNumber,
             reps: params.reps,
             weight: params.weight,
             is_completed: false,
@@ -185,7 +188,6 @@ export async function createEmptyWorkoutSet(params: {
         id,
         workout_session_exercise_id,
         exercise_id,
-        set_number,
         reps,
         weight,
         is_completed,
@@ -291,18 +293,30 @@ export async function updateRoutineExerciseSet(params: {
 
 export async function createRoutineExerciseSet(params: {
     routineExerciseId: string;
-    setNumber: number;
     reps: number;
     weight: number;
 }) {
-    const { error } = await supabase.from("routine_exercise_sets").insert({
-        routine_exercise_id: params.routineExerciseId,
-        set_number: params.setNumber,
-        reps: params.reps,
-        weight: params.weight,
-    });
+    const { data, error } = await supabase
+        .from("routine_exercise_sets")
+        .insert({
+            routine_exercise_id: params.routineExerciseId,
+            reps: params.reps,
+            weight: params.weight,
+            is_pr: false,
+        })
+        .select(`
+            id, 
+            routine_exercise_id, 
+            reps, 
+            weight, 
+            is_pr,
+            created_at
+            `)
+        .single();
 
     if (error) throw error;
+
+    return data as RoutineExerciseSet;
 }
 
 export async function deleteRoutineExerciseSet(setId: string) {
@@ -409,7 +423,6 @@ export async function syncWorkoutSessionToRoutine(params: {
 
         const routineSets = sets.map((set) => ({
             routine_exercise_id: routineExercise.id,
-            set_number: set.set_number,
             reps: Number(
                 params.editingValues[`${set.id}-reps`] ?? set.reps ?? 0
             ),
@@ -518,7 +531,6 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
             workout_session_exercise_id: sessionExercise.id,
             exercise_id: routineExercise.exercise_id,
             exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
-            set_number: set.set_number,
             reps: set.reps,
             weight: set.weight ?? 0,
             is_completed: false,
@@ -557,7 +569,6 @@ export async function deleteRoutineExerciseSetsByRoutineExerciseId(
 export async function createRoutineExerciseSets(
     sets: {
         routine_exercise_id: string;
-        set_number: number;
         reps: number;
         weight: number;
     }[]
@@ -575,15 +586,15 @@ export async function getActiveWorkoutSession(userId: string) {
     const { data, error } = await supabase
         .from("workout_sessions")
         .select(`
-      id,
-      routine_id,
-      started_at,
-      rest_timer_end_at,
-      last_rest_duration_seconds,
-      routines (
-        name
-      )
-    `)
+        id,
+        routine_id,
+        started_at,
+        rest_timer_end_at,
+        last_rest_duration_seconds,
+        routines (
+            name
+        )
+        `)
         .eq("user_id", userId)
         .is("completed_at", null)
         .is("discarded_at", null)

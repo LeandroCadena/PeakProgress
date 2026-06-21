@@ -51,30 +51,8 @@ export async function deleteRoutineById(routineId: string) {
     if (error) throw error;
 }
 
-export async function getRoutineExerciseSets(
-    routineExerciseId: string
-): Promise<RoutineExerciseSet[]> {
-    const { data, error } = await supabase
-        .from("routine_exercise_sets")
-        .select(`
-      id,
-      routine_exercise_id,
-      set_number,
-      reps,
-      weight,
-      is_pr
-    `)
-        .eq("routine_exercise_id", routineExerciseId)
-        .order("set_number", { ascending: true });
-
-    if (error) throw error;
-
-    return data ?? [];
-}
-
 export async function createRoutineExerciseSet(params: {
     routineExerciseId: string;
-    setNumber: number;
     reps: number;
     weight: number;
 }) {
@@ -82,7 +60,6 @@ export async function createRoutineExerciseSet(params: {
         .from("routine_exercise_sets")
         .insert({
             routine_exercise_id: params.routineExerciseId,
-            set_number: params.setNumber,
             reps: params.reps,
             weight: params.weight,
         });
@@ -120,18 +97,18 @@ export async function getRoutineExerciseSetsByRoutineId(
     const { data, error } = await supabase
         .from("routine_exercise_sets")
         .select(`
-      id,
-      routine_exercise_id,
-      set_number,
-      reps,
-      weight,
-      is_pr,
-      routine_exercises!inner (
-        routine_id
-      )
-    `)
+        id,
+        routine_exercise_id,
+        reps,
+        weight,
+        is_pr,
+        created_at,
+        routine_exercises!inner (
+            routine_id
+        )
+        `)
         .eq("routine_exercises.routine_id", routineId)
-        .order("set_number", { ascending: true });
+        .order("created_at", { ascending: true });
 
     if (error) throw error;
 

@@ -51,6 +51,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
         setActiveWorkoutModalVisible,
         updateSetRest,
         updateExerciseRest,
+        addingSetByExerciseId,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -96,6 +97,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 routineExercises={routineExercises}
                 routineExerciseSets={routineExerciseSets}
                 isEditing={isEditingRoutine}
+                addingSetByExerciseId={addingSetByExerciseId}
                 onDelete={deleteRoutineExercise}
                 onMoveUp={(index) => moveRoutineExercise(index, "up")}
                 onMoveDown={(index) => moveRoutineExercise(index, "down")}

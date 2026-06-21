@@ -21,8 +21,8 @@ export type RoutineExercise = {
 export type RoutineExerciseSet = {
     id: string;
     routine_exercise_id: string;
-    set_number: number;
     reps: number;
-    weight: number | null;
+    weight: number;
     is_pr: boolean;
+    created_at: string;
 };

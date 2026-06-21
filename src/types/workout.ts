@@ -20,11 +20,11 @@ export type WorkoutSessionExercise = {
 
 export type WorkoutSessionSet = {
     id: string;
-    workout_session_exercise_id: string | null;
+    workout_session_exercise_id: string;
     exercise_id: string | null;
-    set_number: number;
     reps: number;
-    weight: number | null;
+    weight: number;
     is_completed: boolean;
     is_pr: boolean;
+    created_at: string;
 };

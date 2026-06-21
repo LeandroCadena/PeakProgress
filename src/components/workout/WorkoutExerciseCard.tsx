@@ -69,18 +69,20 @@ export default function WorkoutExerciseCard({
             />
 
             <View style={styles.setTableHeader}>
+                <Text style={styles.setNumberHeader}>Set</Text>
                 <Text style={styles.setHeaderText}>weights</Text>
                 <Text style={styles.setHeaderText}>reps</Text>
                 <Text style={styles.setHeaderText}>Done</Text>
                 <Text style={styles.setHeaderText}></Text>
             </View>
 
-            {savedSets.map((set) => {
+            {savedSets.map((set, index) => {
                 return (
                     <WorkoutSetRow
                         key={set.id}
                         set={set}
                         isPersonalRecord={Boolean(set.is_completed && set.is_pr)}
+                        displaySetNumber={index + 1}
                         weightValue={getSetInputValue(set.id, "weight", set.weight)}
                         repsValue={getSetInputValue(set.id, "reps", set.reps)}
                         onWeightChange={(value) =>
@@ -145,6 +147,12 @@ const styles = StyleSheet.create({
         color: "#9CA3AF",
         fontWeight: "700",
         fontSize: 12,
+    },
+    setNumberHeader: {
+        width: 28,
+        color: "#9CA3AF",
+        fontSize: 12,
+        fontWeight: "700",
     },
     addSetRow: {
         backgroundColor: "#102A1A",

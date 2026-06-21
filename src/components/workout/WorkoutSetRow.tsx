@@ -5,8 +5,10 @@ import { sanitizeIntegerInput } from "../../utils/numberInput";
 type WorkoutSetRowProps = {
     set: WorkoutSessionSet;
     isPersonalRecord?: boolean;
+    displaySetNumber: number;
     weightValue: string;
     repsValue: string;
+    isTemporarySet?: boolean;
     onWeightChange: (value: string) => void;
     onRepsChange: (value: string) => void;
     onWeightBlur: (value: string) => void;
@@ -26,12 +28,17 @@ export default function WorkoutSetRow({
     onToggleCompleted,
     onDelete,
     isPersonalRecord,
+    displaySetNumber,
 }: WorkoutSetRowProps) {
+    const isTemporarySet = set.id.startsWith("temp-");
+
     return (
         <View style={[
             styles.setTableRow,
             isPersonalRecord && styles.personalRecordRow,
         ]}>
+            <Text style={styles.setNumber}>{displaySetNumber}</Text>
+
             <TextInput
                 style={[
                     styles.setInput,
@@ -70,6 +77,7 @@ export default function WorkoutSetRow({
                     set.is_completed && styles.checkboxChecked,
                 ]}
                 onPress={onToggleCompleted}
+                disabled={isTemporarySet}
             >
                 <Text style={styles.checkboxText}>
                     {set.is_completed ? "✓" : ""}
@@ -79,6 +87,7 @@ export default function WorkoutSetRow({
             <Pressable
                 style={styles.deleteSetButton}
                 onPress={onDelete}
+                disabled={isTemporarySet}
             >
                 <Text style={styles.deleteSetText}>X</Text>
             </Pressable>
@@ -142,5 +151,10 @@ const styles = StyleSheet.create({
         color: "#FBBF24",
         fontWeight: "800",
         marginTop: 6,
+    },
+    setNumber: {
+        width: 28,
+        color: "#9CA3AF",
+        fontWeight: "700",
     },
 });

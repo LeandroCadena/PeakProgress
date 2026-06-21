@@ -46,10 +46,10 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     const { data: lastWorkout, error: lastWorkoutError } = await supabase
         .from("workout_sessions")
         .select(`
-      id,
-      started_at,
-      routine_name_snapshot
-    `)
+        id,
+        started_at,
+        routine_name_snapshot
+        `)
         .not("completed_at", "is", null)
         .is("discarded_at", null)
         .order("started_at", { ascending: false })

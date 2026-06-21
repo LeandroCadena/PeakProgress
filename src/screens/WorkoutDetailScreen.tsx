@@ -14,7 +14,6 @@ export type WorkoutSet = {
     id: string;
     exercise_id?: string | null;
     exercise_name_snapshot?: string | null;
-    set_number: number;
     reps: number;
     weight: number | null;
     is_completed: boolean;
@@ -59,7 +58,9 @@ export default function WorkoutDetailScreen() {
                             </Text>
 
                             <Text style={styles.setText}>
-                                Set {item.set_number}: {item.weight ?? 0} kg x {item.reps ?? 0} reps
+                                Set {sets.map((set, index) => (
+                                    <Text>Set {index + 1}</Text>
+                                ))}: {item.weight ?? 0} kg x {item.reps ?? 0} reps
                             </Text>
 
                             <Text

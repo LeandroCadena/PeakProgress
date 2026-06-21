@@ -17,14 +17,14 @@ export async function getExerciseProgress(userId: string): Promise<ExerciseProgr
     const { data, error } = await supabase
         .from("user_exercise_records")
         .select(`
-      exercise_id,
-      best_volume,
-      best_weight,
-      best_reps,
-      exercises (
-        name
-      )
-    `)
+        exercise_id,
+        best_volume,
+        best_weight,
+        best_reps,
+        exercises (
+            name
+        )
+        `)
         .eq("user_id", userId)
         .order("best_volume", { ascending: false });
 
@@ -64,14 +64,14 @@ export async function getBestExerciseVolume(params: {
     const { data, error } = await supabase
         .from("workout_sets")
         .select(`
-      weight,
-      reps,
-      workout_sessions!inner (
-        user_id,
-        completed_at,
-        discarded_at
-      )
-    `)
+        weight,
+        reps,
+        workout_sessions!inner (
+            user_id,
+            completed_at,
+            discarded_at
+        )
+        `)
         .eq("exercise_id", params.exerciseId)
         .eq("workout_sessions.user_id", params.userId)
         .not("workout_sessions.completed_at", "is", null)

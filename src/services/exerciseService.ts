@@ -31,18 +31,18 @@ export async function getExercisesByFilter(params: {
     const { data, error } = await supabase
         .from("exercises")
         .select(`
-      id,
-      name,
-      equipment,
-      difficulty,
-      image_url,
-      exercise_muscles (
-        muscle_id,
-        muscles (
-          region_id
+        id,
+        name,
+        equipment,
+        difficulty,
+        image_url,
+        exercise_muscles (
+            muscle_id,
+            muscles (
+            region_id
+            )
         )
-      )
-    `)
+        `)
         .order("name");
 
     if (error) throw error;
@@ -69,22 +69,22 @@ export async function getExerciseDetail(exerciseId: string) {
     const { data, error } = await supabase
         .from("exercises")
         .select(`
-      id,
-      name,
-      description,
-      instructions,
-      tips,
-      equipment,
-      difficulty,
-      image_url,
-      animation_url,
-      exercise_muscles (
-        role,
-        muscles (
-          name
+        id,
+        name,
+        description,
+        instructions,
+        tips,
+        equipment,
+        difficulty,
+        image_url,
+        animation_url,
+        exercise_muscles (
+            role,
+            muscles (
+            name
+            )
         )
-      )
-    `)
+        `)
         .eq("id", exerciseId)
         .single();
 
