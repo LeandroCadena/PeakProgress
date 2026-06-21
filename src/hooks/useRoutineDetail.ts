@@ -40,9 +40,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     const [templateSetDraftValues, setTemplateSetDraftValues] = useState<
         Record<string, string>
     >({});
-    const [addingSetByExerciseId, setAddingSetByExerciseId] = useState<
-        Record<string, boolean>
-    >({});
 
     const [editRoutineVisible, setEditRoutineVisible] = useState(false);
     const [editRoutineName, setEditRoutineName] = useState(routineName);
@@ -274,13 +271,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     async function addTemplateSet(routineExerciseId: string) {
-        if (addingSetByExerciseId[routineExerciseId]) return;
-
-        setAddingSetByExerciseId((prev) => ({
-            ...prev,
-            [routineExerciseId]: true,
-        }));
-
         const currentSets = routineExerciseSets[routineExerciseId] ?? [];
         const lastSet = currentSets[currentSets.length - 1];
 
@@ -333,11 +323,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             }));
 
             Alert.alert("Error", error.message);
-        } finally {
-            setAddingSetByExerciseId((prev) => ({
-                ...prev,
-                [routineExerciseId]: false,
-            }));
         }
     }
 
@@ -478,7 +463,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         updateTemplateSet,
         addTemplateSet,
         deleteTemplateSet,
-        addingSetByExerciseId,
 
         templateSetDraftValues,
         updateLocalTemplateSetValue,

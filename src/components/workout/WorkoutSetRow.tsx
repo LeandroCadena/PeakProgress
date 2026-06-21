@@ -29,9 +29,8 @@ export default function WorkoutSetRow({
     onDelete,
     isPersonalRecord,
     displaySetNumber,
+    isTemporarySet,
 }: WorkoutSetRowProps) {
-    const isTemporarySet = set.id.startsWith("temp-");
-
     return (
         <View style={[
             styles.setTableRow,

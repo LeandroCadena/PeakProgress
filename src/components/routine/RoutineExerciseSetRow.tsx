@@ -10,6 +10,7 @@ type Props = {
     onDraftChange: (field: "weight" | "reps", value: string) => void;
     onUpdate: (field: "weight" | "reps", value: string) => void;
     onDelete: () => void;
+    isTemporarySet?: boolean;
 };
 
 export default function RoutineExerciseSetRow({
@@ -19,6 +20,7 @@ export default function RoutineExerciseSetRow({
     onDraftChange,
     onUpdate,
     onDelete,
+    isTemporarySet,
 }: Props) {
     const [weightValue, setWeightValue] = useState(
         displayZeroAsEmpty(set.weight)
@@ -68,7 +70,11 @@ export default function RoutineExerciseSetRow({
             />
 
             {isEditing ? (
-                <Pressable style={styles.deleteButton} onPress={onDelete}>
+                <Pressable
+                    style={styles.deleteButton}
+                    onPress={onDelete}
+                    disabled={isTemporarySet}
+                >
                     <Text style={styles.deleteText}>X</Text>
                 </Pressable>
             ) : null}

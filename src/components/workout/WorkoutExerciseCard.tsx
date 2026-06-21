@@ -77,6 +77,7 @@ export default function WorkoutExerciseCard({
             </View>
 
             {savedSets.map((set, index) => {
+                const isTemporarySet = set.id.startsWith("temp-");
                 return (
                     <WorkoutSetRow
                         key={set.id}
@@ -99,6 +100,7 @@ export default function WorkoutExerciseCard({
                         }
                         onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
                         onDelete={() => deleteSet(set.id)}
+                        isTemporarySet={isTemporarySet}
                     />
                 );
             })}

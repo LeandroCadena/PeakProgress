@@ -7,7 +7,6 @@ type Props = {
     item: RoutineExercise;
     onDelete: () => void;
     isEditing: boolean;
-    isAddingSet?: boolean;
     onMoveUp: () => void;
     onMoveDown: () => void;
     sets: RoutineExerciseSet[];
@@ -26,7 +25,6 @@ export default function RoutineExerciseCard({
     item,
     onDelete,
     isEditing,
-    isAddingSet,
     onMoveUp,
     onMoveDown,
     sets,
@@ -63,25 +61,28 @@ export default function RoutineExerciseCard({
                 onChange={(value) => onUpdateSetRest(item.id, value)}
             />
 
-            {sets.map((set, index) => (
-                <RoutineExerciseSetRow
-                    key={set.id}
-                    set={set}
-                    isEditing={isEditing}
-                    displaySetNumber={index + 1}
-                    onDraftChange={(field, value) =>
-                        updateLocalTemplateSetValue(set.id, field, value)
-                    }
-                    onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
-                    onDelete={() => onDeleteSet(item.id, set.id)}
-                />
-            ))}
+            {sets.map((set, index) => {
+                const isTemporarySet = set.id.startsWith("temp-");
+                return (
+                    <RoutineExerciseSetRow
+                        key={set.id}
+                        set={set}
+                        isEditing={isEditing}
+                        displaySetNumber={index + 1}
+                        onDraftChange={(field, value) =>
+                            updateLocalTemplateSetValue(set.id, field, value)
+                        }
+                        onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
+                        onDelete={() => onDeleteSet(item.id, set.id)}
+                        isTemporarySet={isTemporarySet}
+                    />
+                )
+            })}
 
             {isEditing ? (
                 <Pressable
-                    style={[styles.addSetButton, isAddingSet && styles.buttonDisabled,]}
+                    style={styles.addSetButton}
                     onPress={onAddSet}
-                    disabled={isAddingSet}
                 >
                     <Text style={styles.addSetText}>+ Add Set</Text>
                 </Pressable>
@@ -205,8 +206,5 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginBottom: 12,
         backgroundColor: "#0B0F14",
-    },
-    buttonDisabled: {
-        opacity: 0.6,
     },
 });
