@@ -32,6 +32,7 @@ type WorkoutExerciseCardProps = {
         workoutSessionExerciseId: string,
         value: number
     ) => void;
+    useGlobalTimers: boolean;
 };
 
 export default function WorkoutExerciseCard({
@@ -45,6 +46,7 @@ export default function WorkoutExerciseCard({
     addEmptySet,
     onDeleteExercise,
     onUpdateSetRest,
+    useGlobalTimers,
 }: WorkoutExerciseCardProps) {
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
@@ -62,7 +64,7 @@ export default function WorkoutExerciseCard({
             <RestTimeEditor
                 label="Rest between sets"
                 value={exercise.rest_seconds ?? 90}
-                editable
+                editable={!useGlobalTimers}
                 onChange={(value) => onUpdateSetRest(exercise.id, value)}
             />
 

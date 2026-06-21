@@ -22,6 +22,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         timer,
         lastTimerDuration,
         restartLastTimer,
+        useGlobalTimers,
         addEmptySet,
         updateSetValue,
         toggleSetCompleted,
@@ -71,13 +72,14 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                             addEmptySet={addEmptySet}
                             onDeleteExercise={() => deleteSessionExercise(item.id)}
                             onUpdateSetRest={updateWorkoutSetRest}
+                            useGlobalTimers={useGlobalTimers}
                         />
 
                         {index < sessionExercises.length - 1 ? (
                             <RestTimeEditor
                                 label="Rest before next exercise"
                                 value={item.exercise_rest_seconds ?? 120}
-                                editable
+                                editable={!useGlobalTimers}
                                 onChange={(value) => updateWorkoutExerciseRest(item.id, value)}
                             />
                         ) : null}

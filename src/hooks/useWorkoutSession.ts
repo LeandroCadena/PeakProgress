@@ -25,6 +25,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { upsertUserExerciseRecord } from "../services/progressService";
 import { updateWorkoutStreakAfterFinish } from "../services/streakService";
+import { getUserSettings } from "../services/settingsService";
 
 type Params = {
     sessionId: string;
@@ -43,6 +44,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const [timerRunning, setTimerRunning] = useState(false);
     const [lastTimerDuration, setLastTimerDuration] = useState(0);
     const [restEndAt, setRestEndAt] = useState<number | null>(null);
+    const [useGlobalTimers, setUseGlobalTimers] = useState(false);
     const timerVersionRef = useRef(0);
     const isScreenFocusedRef = useRef(false);
 
@@ -53,6 +55,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             fetchSessionExercises();
             fetchSavedSets();
             fetchWorkoutSessionTimer();
+            fetchUserSettings();
 
             return () => {
                 isScreenFocusedRef.current = false;
@@ -268,6 +271,13 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         if (lastTimerDuration <= 0) return;
 
         startRestTimer(lastTimerDuration);
+    }
+
+    async function fetchUserSettings() {
+        if (!user?.id) return;
+
+        const settings = await getUserSettings(user.id);
+        setUseGlobalTimers(settings.use_global_timers);
     }
 
     async function deleteSet(setId: string) {
@@ -530,5 +540,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         lastTimerDuration,
         restartLastTimer,
+        useGlobalTimers,
     };
 }
