@@ -132,33 +132,74 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     async function addEmptySet(workoutSessionExerciseId: string) {
         const currentSets = savedSets[workoutSessionExerciseId] ?? [];
         const lastSet = currentSets[currentSets.length - 1];
-        const setNumber = currentSets.length + 1;
 
         const sessionExercise = sessionExercises.find(
             (item) => item.id === workoutSessionExerciseId
         );
 
-        const lastWeight = lastSet
-            ? editingValues[`${lastSet.id}-weight`] ?? String(lastSet.weight ?? 0)
-            : "0";
+        const setNumber =
+            currentSets.length > 0
+                ? Math.max(...currentSets.map((set) => set.set_number)) + 1
+                : 1;
 
-        const lastReps = lastSet
-            ? editingValues[`${lastSet.id}-reps`] ?? String(lastSet.reps ?? 0)
-            : "0";
+        const reps = Number(
+            lastSet
+                ? editingValues[`${lastSet.id}-reps`] ?? lastSet.reps ?? 0
+                : 0
+        );
+
+        const weight = Number(
+            lastSet
+                ? editingValues[`${lastSet.id}-weight`] ?? lastSet.weight ?? 0
+                : 0
+        );
+
+        const tempId = `temp-${Date.now()}`;
+
+        const tempSet: WorkoutSessionSet = {
+            id: tempId,
+            workout_session_exercise_id: workoutSessionExerciseId,
+            exercise_id: sessionExercise?.exercise_id ?? null,
+            set_number: setNumber,
+            reps,
+            weight,
+            is_completed: false,
+            is_pr: false,
+        };
+
+        setSavedSets((prev) => ({
+            ...prev,
+            [workoutSessionExerciseId]: [
+                ...(prev[workoutSessionExerciseId] ?? []),
+                tempSet,
+            ],
+        }));
 
         try {
-            await createEmptyWorkoutSet({
+            const createdSet = await createEmptyWorkoutSet({
                 sessionId,
                 workoutSessionExerciseId,
                 exerciseId: sessionExercise?.exercise_id ?? null,
                 exerciseName: sessionExercise?.exercise_name_snapshot ?? "Exercise",
                 setNumber,
-                reps: Number(lastReps),
-                weight: Number(lastWeight),
+                reps,
+                weight,
             });
 
-            await fetchSavedSets();
+            setSavedSets((prev) => ({
+                ...prev,
+                [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map(
+                    (set) => (set.id === tempId ? createdSet : set)
+                ),
+            }));
         } catch (error: any) {
+            setSavedSets((prev) => ({
+                ...prev,
+                [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).filter(
+                    (set) => set.id !== tempId
+                ),
+            }));
+
             Alert.alert("Error", error.message);
         }
     }
@@ -181,21 +222,34 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         workoutSessionExerciseId: string,
         set: WorkoutSessionSet
     ) {
+        const nextCompletedValue = !set.is_completed;
+        const previousSets = savedSets;
+
+        const { weight, reps } = getCurrentSetValues(set);
+
+        const isPr = calculateIsPersonalRecord({
+            workoutSessionExerciseId,
+            weight,
+            reps,
+        });
+
+        setSavedSets((prev) => ({
+            ...prev,
+            [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map(
+                (currentSet) =>
+                    currentSet.id === set.id
+                        ? {
+                            ...currentSet,
+                            weight,
+                            reps,
+                            is_pr: isPr,
+                            is_completed: nextCompletedValue,
+                        }
+                        : currentSet
+            ),
+        }));
+
         try {
-            const nextCompletedValue = !set.is_completed;
-
-            const { weight, reps } = getCurrentSetValues(set);
-
-            const isPr = calculateIsPersonalRecord({
-                workoutSessionExerciseId,
-                weight,
-                reps,
-            });
-
-            if (nextCompletedValue && isPr) {
-                playPersonalRecordSound();
-            }
-
             await updateWorkoutSetValues({
                 setId: set.id,
                 weight,
@@ -208,7 +262,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 isCompleted: set.is_completed,
             });
 
-            await fetchSavedSets();
+            if (nextCompletedValue && isPr) {
+                playPersonalRecordSound();
+            }
 
             if (nextCompletedValue) {
                 const restSeconds = getRestSecondsAfterSet({
@@ -221,6 +277,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 }
             }
         } catch (error: any) {
+            setSavedSets(previousSets);
             Alert.alert("Error", error.message);
         }
     }
@@ -281,10 +338,22 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     async function deleteSet(setId: string) {
+        const previousSets = savedSets;
+
+        setSavedSets((prev) => {
+            const next = { ...prev };
+
+            Object.keys(next).forEach((exerciseId) => {
+                next[exerciseId] = next[exerciseId].filter((set) => set.id !== setId);
+            });
+
+            return next;
+        });
+
         try {
             await deleteWorkoutSet(setId);
-            await fetchSavedSets();
         } catch (error: any) {
+            setSavedSets(previousSets);
             Alert.alert("Error", error.message);
         }
     }

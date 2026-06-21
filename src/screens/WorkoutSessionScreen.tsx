@@ -93,7 +93,9 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                     navigation.navigate("ExercisePicker", {
                         mode: "session",
                         sessionId,
-                        currentCount: sessionExercises.length,
+                        currentCount: sessionExercises.length > 0
+                            ? Math.max(...sessionExercises.map((item) => item.position ?? 0)) + 1
+                            : 0,
                         currentExerciseIds: sessionExercises.map((item) => item.exercise_id),
                     })
                 }

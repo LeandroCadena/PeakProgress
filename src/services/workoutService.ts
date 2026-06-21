@@ -15,6 +15,7 @@ export async function getRoutineExercises(
         rest_seconds,
         exercise_rest_seconds,
         current_pr_volume,
+        position,
         exercise:exercises (
             name,
             image_url
@@ -167,18 +168,34 @@ export async function createEmptyWorkoutSet(params: {
     reps: number;
     weight: number;
 }) {
-    const { error } = await supabase.from("workout_sets").insert({
-        workout_session_id: params.sessionId,
-        workout_session_exercise_id: params.workoutSessionExerciseId,
-        exercise_id: params.exerciseId,
-        exercise_name_snapshot: params.exerciseName,
-        set_number: params.setNumber,
-        reps: params.reps,
-        weight: params.weight,
-        is_completed: false,
-    });
+    const { data, error } = await supabase
+        .from("workout_sets")
+        .insert({
+            workout_session_id: params.sessionId,
+            workout_session_exercise_id: params.workoutSessionExerciseId,
+            exercise_id: params.exerciseId,
+            exercise_name_snapshot: params.exerciseName,
+            set_number: params.setNumber,
+            reps: params.reps,
+            weight: params.weight,
+            is_completed: false,
+            is_pr: false,
+        })
+        .select(`
+        id,
+        workout_session_exercise_id,
+        exercise_id,
+        set_number,
+        reps,
+        weight,
+        is_completed,
+        is_pr
+        `)
+        .single();
 
     if (error) throw error;
+
+    return data as WorkoutSessionSet;
 }
 
 export async function finishWorkoutSession(params: {

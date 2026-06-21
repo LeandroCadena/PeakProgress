@@ -114,7 +114,9 @@ export default function RoutineDetailScreen({ navigation }: any) {
                         navigation.navigate("ExercisePicker", {
                             mode: "routine",
                             routineId,
-                            currentCount: routineExercises.length,
+                            currentCount: routineExercises.length > 0
+                                ? Math.max(...routineExercises.map((item) => item.position ?? 0)) + 1
+                                : 0,
                             currentExerciseIds: routineExercises.map((item) => item.exercise_id),
                         })
                     }
