@@ -1,14 +1,17 @@
 import { Text, StyleSheet, ScrollView, Alert, TextInput, Pressable, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
+import { useFocusEffect } from "@react-navigation/native";
+import { supabase } from "../services/supabase";
 
 export default function PersonalInformationScreen() {
     const { user } = useAuth();
 
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [currentEmail, setCurrentEmail] = useState(user?.email ?? "");
     const [newEmail, setNewEmail] = useState("");
     const [editingSection, setEditingSection] = useState<
         "name" | "email" | "password" | null
@@ -19,6 +22,20 @@ export default function PersonalInformationScreen() {
         setFullName,
         saveProfile,
     } = useProfile();
+
+    useFocusEffect(
+        useCallback(() => {
+            async function refreshUserEmail() {
+                const { data, error } = await supabase.auth.getUser();
+
+                if (error) return;
+
+                setCurrentEmail(data.user?.email ?? "");
+            }
+
+            refreshUserEmail();
+        }, [])
+    );
 
     async function handleChangePassword() {
         if (!newPassword.trim()) {
@@ -91,9 +108,11 @@ export default function PersonalInformationScreen() {
                         </Text>
                     </View>
 
-                    <Pressable onPress={() => setEditingSection("name")}>
-                        <Text style={styles.editIcon}>✎</Text>
-                    </Pressable>
+                    {editingSection !== "name" ? (
+                        <Pressable onPress={() => setEditingSection("name")}>
+                            <Text style={styles.editIcon}>✎</Text>
+                        </Pressable>
+                    ) : null}
                 </View>
 
                 {editingSection === "name" ? (
@@ -124,12 +143,14 @@ export default function PersonalInformationScreen() {
                 <View style={styles.cardHeader}>
                     <View>
                         <Text style={styles.sectionTitle}>Email</Text>
-                        <Text style={styles.valueText}>{user?.email}</Text>
+                        <Text style={styles.valueText}>{currentEmail}</Text>
                     </View>
 
-                    <Pressable onPress={() => setEditingSection("email")}>
-                        <Text style={styles.editIcon}>✎</Text>
-                    </Pressable>
+                    {editingSection !== "email" ? (
+                        <Pressable onPress={() => setEditingSection("email")}>
+                            <Text style={styles.editIcon}>✎</Text>
+                        </Pressable>
+                    ) : null}
                 </View>
 
                 {editingSection === "email" ? (
@@ -165,9 +186,11 @@ export default function PersonalInformationScreen() {
                         <Text style={styles.valueText}>••••••••</Text>
                     </View>
 
-                    <Pressable onPress={() => setEditingSection("password")}>
-                        <Text style={styles.editIcon}>✎</Text>
-                    </Pressable>
+                    {editingSection !== "password" ? (
+                        <Pressable onPress={() => setEditingSection("password")}>
+                            <Text style={styles.editIcon}>✎</Text>
+                        </Pressable>
+                    ) : null}
                 </View>
 
                 {editingSection === "password" ? (
