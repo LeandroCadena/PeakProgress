@@ -18,9 +18,13 @@ export function useProfile() {
     const [experienceLevel, setExperienceLevel] = useState("");
     const [heightCm, setHeightCm] = useState("");
     const [weightKg, setWeightKg] = useState("");
-
     const [newWeight, setNewWeight] = useState("");
     const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
+
+    useEffect(() => {
+        fetchProfile();
+        fetchWeightLogs();
+    }, [user?.id]);
 
     async function fetchProfile() {
         if (!user?.id) return;
@@ -94,11 +98,6 @@ export function useProfile() {
             Alert.alert("Error", error.message);
         }
     }
-
-    useEffect(() => {
-        fetchProfile();
-        fetchWeightLogs();
-    }, [user?.id]);
 
     return {
         fullName,

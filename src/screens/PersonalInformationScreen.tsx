@@ -1,15 +1,18 @@
 import { Text, StyleSheet, ScrollView, Alert, TextInput, Pressable, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
-import ProfileForm from "../components/profile/ProfileForm";
 import { useState } from "react";
-import { updateUserPassword } from "../services/authService";
+import { updateUserEmail, updateUserPassword } from "../services/authService";
 
 export default function PersonalInformationScreen() {
     const { user } = useAuth();
 
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [newEmail, setNewEmail] = useState("");
+    const [editingSection, setEditingSection] = useState<
+        "name" | "email" | "password" | null
+    >(null);
 
     const {
         fullName,
@@ -37,52 +40,168 @@ export default function PersonalInformationScreen() {
             await updateUserPassword(newPassword);
             setNewPassword("");
             setConfirmPassword("");
+            setEditingSection(null)
             Alert.alert("Success", "Password updated successfully");
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
     }
 
+    async function handleChangeEmail() {
+        const email = newEmail.trim();
+
+        if (!email) {
+            Alert.alert("Validation", "Email is required");
+            return;
+        }
+
+        if (!email.includes("@")) {
+            Alert.alert("Validation", "Please enter a valid email");
+            return;
+        }
+
+        try {
+            await updateUserEmail(email);
+            setNewEmail("");
+            setEditingSection(null)
+            Alert.alert(
+                "Verification required",
+                "Check your new email address to confirm the change."
+            );
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
+    async function handleSaveProfile() {
+        await saveProfile()
+        setEditingSection(null)
+    }
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Personal Information</Text>
-            <Text style={styles.subtitle}>{user?.email}</Text>
-
-            <ProfileForm
-                fullName={fullName}
-                onChangeFullName={setFullName}
-                onSave={saveProfile}
-            />
 
             <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Change Password</Text>
-                <Text style={styles.helperText}>
-                    Update your account password.
-                </Text>
+                <View style={styles.cardHeader}>
+                    <View>
+                        <Text style={styles.sectionTitle}>Name</Text>
+                        <Text style={styles.valueText}>
+                            {fullName?.trim() || "Enter your name"}
+                        </Text>
+                    </View>
 
-                <Text style={styles.label}>New Password</Text>
-                <TextInput
-                    style={styles.input}
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    placeholder="Enter new password"
-                    placeholderTextColor="#6B7280"
-                    secureTextEntry
-                />
+                    <Pressable onPress={() => setEditingSection("name")}>
+                        <Text style={styles.editIcon}>✎</Text>
+                    </Pressable>
+                </View>
 
-                <Text style={styles.label}>Confirm Password</Text>
-                <TextInput
-                    style={styles.input}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    placeholder="Confirm new password"
-                    placeholderTextColor="#6B7280"
-                    secureTextEntry
-                />
+                {editingSection === "name" ? (
+                    <>
+                        <TextInput
+                            style={styles.input}
+                            value={fullName}
+                            onChangeText={setFullName}
+                            placeholder="Enter your name"
+                            placeholderTextColor="#6B7280"
+                        />
 
-                <Pressable style={styles.button} onPress={handleChangePassword}>
-                    <Text style={styles.buttonText}>Update Password</Text>
-                </Pressable>
+                        <Pressable style={styles.button} onPress={handleSaveProfile}>
+                            <Text style={styles.buttonText}>Save Name</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={styles.secondaryButton}
+                            onPress={() => setEditingSection(null)}
+                        >
+                            <Text style={styles.secondaryButtonText}>Cancel</Text>
+                        </Pressable>
+                    </>
+                ) : null}
+            </View>
+
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <View>
+                        <Text style={styles.sectionTitle}>Email</Text>
+                        <Text style={styles.valueText}>{user?.email}</Text>
+                    </View>
+
+                    <Pressable onPress={() => setEditingSection("email")}>
+                        <Text style={styles.editIcon}>✎</Text>
+                    </Pressable>
+                </View>
+
+                {editingSection === "email" ? (
+                    <>
+                        <TextInput
+                            style={styles.input}
+                            value={newEmail}
+                            onChangeText={setNewEmail}
+                            placeholder="Enter new email"
+                            placeholderTextColor="#6B7280"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+
+                        <Pressable style={styles.button} onPress={handleChangeEmail}>
+                            <Text style={styles.buttonText}>Update Email</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={styles.secondaryButton}
+                            onPress={() => setEditingSection(null)}
+                        >
+                            <Text style={styles.secondaryButtonText}>Cancel</Text>
+                        </Pressable>
+                    </>
+                ) : null}
+            </View>
+
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <View>
+                        <Text style={styles.sectionTitle}>Password</Text>
+                        <Text style={styles.valueText}>••••••••</Text>
+                    </View>
+
+                    <Pressable onPress={() => setEditingSection("password")}>
+                        <Text style={styles.editIcon}>✎</Text>
+                    </Pressable>
+                </View>
+
+                {editingSection === "password" ? (
+                    <>
+                        <TextInput
+                            style={styles.input}
+                            value={newPassword}
+                            onChangeText={setNewPassword}
+                            placeholder="Enter new password"
+                            placeholderTextColor="#6B7280"
+                            secureTextEntry
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                            placeholder="Confirm new password"
+                            placeholderTextColor="#6B7280"
+                            secureTextEntry
+                        />
+
+                        <Pressable style={styles.button} onPress={handleChangePassword}>
+                            <Text style={styles.buttonText}>Update Password</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={styles.secondaryButton}
+                            onPress={() => setEditingSection(null)}
+                        >
+                            <Text style={styles.secondaryButtonText}>Cancel</Text>
+                        </Pressable>
+                    </>
+                ) : null}
             </View>
         </ScrollView>
     );
@@ -157,6 +276,36 @@ const styles = StyleSheet.create({
 
     buttonText: {
         color: "#FFFFFF",
+        fontWeight: "700",
+        textAlign: "center",
+    },
+    cardHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    valueText: {
+        color: "#9CA3AF",
+        marginTop: 6,
+    },
+
+    editIcon: {
+        color: "#4CAF50",
+        fontSize: 20,
+        fontWeight: "800",
+    },
+
+    secondaryButton: {
+        paddingVertical: 12,
+        borderRadius: 12,
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: "#30363D",
+    },
+
+    secondaryButtonText: {
+        color: "#9CA3AF",
         fontWeight: "700",
         textAlign: "center",
     },

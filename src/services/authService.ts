@@ -7,3 +7,11 @@ export async function updateUserPassword(newPassword: string) {
 
     if (error) throw error;
 }
+
+export async function updateUserEmail(newEmail: string) {
+    const { error } = await supabase.auth.updateUser({
+        email: newEmail,
+    });
+
+    if (error) throw error;
+}
