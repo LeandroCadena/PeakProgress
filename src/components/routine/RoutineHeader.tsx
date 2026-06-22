@@ -1,5 +1,12 @@
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet } from "react-native";
+import AppInput from "../common/AppInput";
+import AppButton from "../common/AppButton";
+import IconButton from "../common/IconButton";
+import {
+    colors,
+    spacing,
+    typography,
+} from "../../theme";
 
 type Props = {
     title: string;
@@ -28,12 +35,11 @@ export default function RoutineHeader({
         <View style={styles.container}>
             <View style={styles.row}>
                 {isEditing ? (
-                    <TextInput
+                    <AppInput
                         style={styles.titleInput}
                         value={title}
                         onChangeText={onChangeTitle}
                         placeholder="Routine name"
-                        placeholderTextColor="#6B7280"
                     />
                 ) : (
                     <Text style={styles.title}>{title}</Text>
@@ -41,31 +47,36 @@ export default function RoutineHeader({
 
                 {isEditing ? (
                     <View style={styles.actions}>
-                        <Pressable style={styles.iconButton} onPress={onSave}>
-                            <Ionicons name="checkmark-outline" size={22} color="#FFFFFF" />
-                        </Pressable>
-
-                        <Pressable style={styles.cancelButton} onPress={onCancel}>
-                            <Ionicons name="close-outline" size={22} color="#FFFFFF" />
-                        </Pressable>
-                        <Pressable style={styles.deleteButton} onPress={onDelete}>
-                            <Text style={styles.deleteButtonText}>Delete Routine</Text>
-                        </Pressable>
+                        <IconButton
+                            icon="✓"
+                            variant="success"
+                            onPress={onSave}
+                        />
+                        <IconButton
+                            icon="✕"
+                            onPress={onCancel}
+                        />
+                        <AppButton
+                            title="Delete Routine"
+                            variant="danger"
+                            onPress={onDelete}
+                        />
                     </View>
                 ) : (
-                    <Pressable style={styles.iconButton} onPress={onStartEdit}>
-                        <Ionicons name="create-outline" size={22} color="#FFFFFF" />
-                    </Pressable>
+                    <IconButton
+                        icon="✎"
+                        variant="primary"
+                        onPress={onStartEdit}
+                    />
                 )}
             </View>
 
             {isEditing ? (
-                <TextInput
+                <AppInput
                     style={styles.descriptionInput}
                     value={description}
                     onChangeText={onChangeDescription}
                     placeholder="Description"
-                    placeholderTextColor="#6B7280"
                     multiline
                 />
             ) : description ? (
@@ -77,75 +88,42 @@ export default function RoutineHeader({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 18,
+        marginBottom: spacing.lg,
     },
+
     row: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        gap: spacing.md,
     },
+
     title: {
         flex: 1,
-        color: "#FFFFFF",
-        fontSize: 30,
+        color: colors.text,
+        fontSize: typography.title,
         fontWeight: "800",
     },
+
     titleInput: {
         flex: 1,
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
         fontSize: 24,
         fontWeight: "800",
     },
+
     description: {
-        color: "#9CA3AF",
-        marginTop: 8,
+        color: colors.textSecondary,
+        marginTop: spacing.sm,
         lineHeight: 20,
     },
+
     descriptionInput: {
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-        marginTop: 12,
+        marginTop: spacing.md,
         minHeight: 72,
         textAlignVertical: "top",
     },
+
     actions: {
         flexDirection: "row",
-        gap: 8,
-    },
-    iconButton: {
-        backgroundColor: "#2563EB",
-        width: 42,
-        height: 42,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    cancelButton: {
-        backgroundColor: "#374151",
-        width: 42,
-        height: 42,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    deleteButton: {
-        backgroundColor: "#EF4444",
-        paddingVertical: 12,
-        borderRadius: 12,
-        marginTop: 12,
-    },
-    deleteButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
+        gap: spacing.sm,
     },
 });
