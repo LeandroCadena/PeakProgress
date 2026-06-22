@@ -42,6 +42,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
     const [isInitializingSession, setIsInitializingSession] = useState(true);
+    const [isFinishingWorkout, setIsFinishingWorkout] = useState(false);
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
     const [lastTimerDuration, setLastTimerDuration] = useState(0);
@@ -356,28 +357,34 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     async function finishWorkout() {
+        if (isFinishingWorkout) return;
+
+        setIsFinishingWorkout(true);
+
         try {
-            await syncWorkoutSessionToRoutine({
-                routineId,
-                sessionExercises,
-                savedSets,
-                editingValues,
-            });
-
-            await updateUserExerciseRecordsFromWorkout();
-
             await finishWorkoutSession({
                 sessionId,
                 routineName,
             });
 
-            if (user?.id) {
-                await updateWorkoutStreakAfterFinish(user.id);
-            }
+            await Promise.all([
+                syncWorkoutSessionToRoutine({
+                    routineId,
+                    sessionExercises,
+                    savedSets,
+                    editingValues,
+                }),
+                updateUserExerciseRecordsFromWorkout(),
+                user?.id
+                    ? updateWorkoutStreakAfterFinish(user.id)
+                    : Promise.resolve(),
+            ]);
 
             onFinish();
         } catch (error: any) {
             Alert.alert("Error finishing workout", error.message);
+        } finally {
+            setIsFinishingWorkout(false);
         }
     }
 
@@ -621,6 +628,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     return {
         sessionExercises,
         isInitializingSession,
+        isFinishingWorkout,
         savedSets,
         timer,
         timerRunning,

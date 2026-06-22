@@ -36,6 +36,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
         isInitializingSession,
+        isFinishingWorkout,
     } = useWorkoutSession({
         sessionId,
         routineId,
@@ -115,8 +116,17 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 <Text style={styles.addExerciseButtonText}>+ Add Exercise</Text>
             </Pressable>
 
-            <Pressable style={styles.finishButton} onPress={finishWorkout}>
-                <Text style={styles.buttonText}>Finish Workout</Text>
+            <Pressable
+                style={[
+                    styles.finishButton,
+                    isFinishingWorkout && styles.buttonDisabled,
+                ]}
+                disabled={isFinishingWorkout}
+                onPress={finishWorkout}
+            >
+                <Text style={styles.buttonText}>
+                    {isFinishingWorkout ? "Finishing..." : "Finish Workout"}
+                </Text>
             </Pressable>
         </View>
     );
@@ -185,5 +195,8 @@ const styles = StyleSheet.create({
     loadingText: {
         color: "#9CA3AF",
         marginTop: 6,
+    },
+    buttonDisabled: {
+        opacity: 0.5,
     },
 });
