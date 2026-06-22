@@ -14,7 +14,7 @@ import {
     deleteRoutineExerciseSetsByRoutineExerciseId,
     getOrCreateWorkoutAfterDiscard,
     getActiveWorkoutSession,
-    createNewWorkoutSessionFromRoutine,
+    createWorkoutSession,
 } from "../services/workoutService";
 import {
     updateRoutine,
@@ -36,7 +36,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     const [routineTitle, setRoutineTitle] = useState(routineName);
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
     const [routineExercisesChanged, setRoutineExercisesChanged] = useState(false);
-
+    const [isStartingWorkout, setIsStartingWorkout] = useState(false);
     const [templateSetDraftValues, setTemplateSetDraftValues] = useState<
         Record<string, string>
     >({});
@@ -173,6 +173,9 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             Alert.alert("Error", "User not found");
             return;
         }
+        if (isStartingWorkout) return;
+
+        setIsStartingWorkout(true);
 
         try {
             const active = await getActiveWorkoutSession(user.id);
@@ -183,7 +186,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
                 return;
             }
 
-            const session = await createNewWorkoutSessionFromRoutine({
+            const session = await createWorkoutSession({
                 userId: user.id,
                 routineId,
             });
@@ -195,6 +198,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             });
         } catch (error: any) {
             Alert.alert("Error", error.message);
+        } finally {
+            setIsStartingWorkout(false);
         }
     }
 
@@ -387,6 +392,9 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
     async function discardAndStartWorkout() {
         if (!user || !activeWorkout) return;
+        if (isStartingWorkout) return;
+
+        setIsStartingWorkout(true);
 
         try {
             setActiveWorkoutModalVisible(false);
@@ -404,6 +412,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             });
         } catch (error: any) {
             Alert.alert("Error", error.message);
+        } finally {
+            setIsStartingWorkout(false);
         }
     }
 
@@ -450,6 +460,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         saveRoutineChanges,
         deleteRoutine,
         startWorkout,
+        isStartingWorkout,
 
         isEditingRoutine,
         draftRoutineName,

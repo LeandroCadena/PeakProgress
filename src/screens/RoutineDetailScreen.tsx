@@ -29,6 +29,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
         deleteRoutineExercise,
         saveRoutineChanges,
         startWorkout,
+        isStartingWorkout,
         isEditingRoutine,
         draftRoutineName,
         draftRoutineDescription,
@@ -75,20 +76,24 @@ export default function RoutineDetailScreen({ navigation }: any) {
             <Pressable
                 style={[
                     styles.startButton,
-                    isEditingRoutine && styles.startButtonDisabled,
+                    (isEditingRoutine || isStartingWorkout) &&
+                    styles.startButtonDisabled,
                 ]}
-                disabled={isEditingRoutine}
+                disabled={isEditingRoutine || isStartingWorkout}
                 onPress={startWorkout}
             >
                 <Text
                     style={[
                         styles.startButtonText,
-                        isEditingRoutine && styles.startButtonTextDisabled,
+                        (isEditingRoutine || isStartingWorkout) &&
+                        styles.startButtonTextDisabled,
                     ]}
                 >
                     {isEditingRoutine
                         ? "Save Changes First"
-                        : "Start Workout"}
+                        : isStartingWorkout
+                            ? "Starting..."
+                            : "Start Workout"}
                 </Text>
             </Pressable>
 

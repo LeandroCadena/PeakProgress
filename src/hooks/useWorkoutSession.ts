@@ -17,6 +17,7 @@ import {
     updateWorkoutSessionTimer,
     updateWorkoutSetValues,
     updateWorkoutSetValue,
+    createWorkoutSessionExercisesFromRoutine,
 } from "../services/workoutService";
 import {
     scheduleRestFinishedNotification,
@@ -40,6 +41,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const [sessionExercises, setSessionExercises] = useState<WorkoutSessionExercise[]>([]);
     const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
+    const [isInitializingSession, setIsInitializingSession] = useState(true);
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
     const [lastTimerDuration, setLastTimerDuration] = useState(0);
@@ -52,7 +54,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         useCallback(() => {
             isScreenFocusedRef.current = true;
 
-            fetchSessionExercises();
+            ensureWorkoutSessionInitialized();
             fetchSavedSets();
             fetchWorkoutSessionTimer();
             fetchUserSettings();
@@ -150,6 +152,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         );
 
         const tempId = `temp-${Date.now()}`;
+        const createdAt = new Date().toISOString();
 
         const tempSet: WorkoutSessionSet = {
             id: tempId,
@@ -159,7 +162,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             weight,
             is_completed: false,
             is_pr: false,
-            created_at: new Date().toISOString(),
+            created_at: createdAt,
         };
 
         setSavedSets((prev) => ({
@@ -581,8 +584,37 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
+    async function ensureWorkoutSessionInitialized() {
+        if (!user?.id || !sessionId || !routineId) return;
+
+        setIsInitializingSession(true);
+
+        try {
+            const exercises = await getWorkoutSessionExercises(sessionId);
+
+            if (exercises.length > 0) {
+                setSessionExercises(exercises);
+                return;
+            }
+
+            await createWorkoutSessionExercisesFromRoutine({
+                sessionId,
+                routineId,
+                userId: user.id,
+            });
+
+            const createdExercises = await getWorkoutSessionExercises(sessionId);
+            setSessionExercises(createdExercises);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        } finally {
+            setIsInitializingSession(false);
+        }
+    }
+
     return {
         sessionExercises,
+        isInitializingSession,
         savedSets,
         timer,
         timerRunning,

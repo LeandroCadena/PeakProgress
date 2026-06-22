@@ -637,6 +637,21 @@ export async function createNewWorkoutSessionFromRoutine(params: {
     userId: string;
     routineId: string;
 }) {
+    const session = await createWorkoutSession(params);
+
+    await createWorkoutSessionExercisesFromRoutine({
+        sessionId: session.id,
+        routineId: params.routineId,
+        userId: params.userId,
+    });
+
+    return session;
+}
+
+export async function createWorkoutSession(params: {
+    userId: string;
+    routineId: string;
+}) {
     const { data, error } = await supabase
         .from("workout_sessions")
         .insert({
@@ -648,12 +663,6 @@ export async function createNewWorkoutSessionFromRoutine(params: {
         .single();
 
     if (error) throw error;
-
-    await createWorkoutSessionExercisesFromRoutine({
-        sessionId: data.id,
-        routineId: params.routineId,
-        userId: params.userId,
-    });
 
     return data;
 }

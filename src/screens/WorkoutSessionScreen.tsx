@@ -11,6 +11,8 @@ import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
 import RestTimeEditor from "../components/workout/RestTimeEditor";
+import LoadingCard from "../components/common/LoadingCard";
+import EmptyStateCard from "../components/common/EmptyStateCard";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -33,6 +35,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         deleteSessionExercise,
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
+        isInitializingSession,
     } = useWorkoutSession({
         sessionId,
         routineId,
@@ -49,16 +52,25 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             <Text style={styles.title}>{routineName}</Text>
             <Text style={styles.subtitle}>Workout Session</Text>
 
-            <RestTimerCard
-                timer={timer}
-                lastTimerDuration={lastTimerDuration}
-                onRestart={restartLastTimer}
-            />
+            {!isInitializingSession && (
+                <RestTimerCard
+                    timer={timer}
+                    lastTimerDuration={lastTimerDuration}
+                    onRestart={restartLastTimer}
+                />
+            )}
 
             <FlatList
                 data={sessionExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
+                ListEmptyComponent={
+                    isInitializingSession ? (
+                        <LoadingCard />
+                    ) : (
+                        <EmptyStateCard />
+                    )
+                }
                 renderItem={({ item, index }) => (
                     <View>
                         <WorkoutExerciseCard
@@ -154,5 +166,24 @@ const styles = StyleSheet.create({
     addExerciseButtonText: {
         color: "#4CAF50",
         fontWeight: "800",
+    },
+    loadingCard: {
+        backgroundColor: "#161B22",
+        borderWidth: 1,
+        borderColor: "#30363D",
+        borderRadius: 16,
+        padding: 18,
+        marginTop: 20,
+    },
+
+    loadingTitle: {
+        color: "#FFFFFF",
+        fontSize: 18,
+        fontWeight: "800",
+    },
+
+    loadingText: {
+        color: "#9CA3AF",
+        marginTop: 6,
     },
 });
