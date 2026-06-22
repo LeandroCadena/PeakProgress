@@ -7,6 +7,7 @@ type Props = {
     onResume: () => void;
     onDiscardAndStart: () => void;
     onCancel: () => void;
+    isStarting: boolean;
 };
 
 export default function ActiveWorkoutModal({
@@ -16,6 +17,7 @@ export default function ActiveWorkoutModal({
     onResume,
     onDiscardAndStart,
     onCancel,
+    isStarting,
 }: Props) {
     return (
         <Modal visible={visible} transparent animationType="fade">
@@ -37,8 +39,16 @@ export default function ActiveWorkoutModal({
                         <Text style={styles.primaryText}>Resume Workout</Text>
                     </Pressable>
 
-                    <Pressable style={styles.dangerButton} onPress={onDiscardAndStart}>
-                        <Text style={styles.dangerText}>Discard and Start New</Text>
+                    <Pressable
+                        style={styles.dangerButton}
+                        onPress={onDiscardAndStart}
+                        disabled={isStarting}
+                    >
+                        <Text style={styles.dangerText}>
+                            {isStarting
+                                ? "Starting..."
+                                : "Discard and Start New"}
+                        </Text>
                     </Pressable>
 
                     <Pressable style={styles.cancelButton} onPress={onCancel}>

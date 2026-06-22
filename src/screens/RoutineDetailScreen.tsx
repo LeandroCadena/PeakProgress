@@ -138,6 +138,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onResume={resumeActiveWorkout}
                 onDiscardAndStart={discardAndStartWorkout}
                 onCancel={() => setActiveWorkoutModalVisible(false)}
+                isStarting={isStartingWorkout}
             />
         </RoutineDetailLayout >
     );

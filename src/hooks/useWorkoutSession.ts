@@ -594,17 +594,23 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
             if (exercises.length > 0) {
                 setSessionExercises(exercises);
+
+                const existingSets = await getSavedSets(sessionId);
+                setSavedSets(existingSets);
+
                 return;
             }
 
-            await createWorkoutSessionExercisesFromRoutine({
+            const createdExercises = await createWorkoutSessionExercisesFromRoutine({
                 sessionId,
                 routineId,
                 userId: user.id,
             });
 
-            const createdExercises = await getWorkoutSessionExercises(sessionId);
             setSessionExercises(createdExercises);
+
+            const createdSets = await getSavedSets(sessionId);
+            setSavedSets(createdSets);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         } finally {

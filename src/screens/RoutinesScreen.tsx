@@ -16,7 +16,7 @@ import {
     createRoutine as createRoutineService,
 } from "../services/routineService";
 import { Routine } from "../types/routine";
-import { createNewWorkoutSessionFromRoutine, getActiveWorkoutSession, getOrCreateWorkoutAfterDiscard } from "../services/workoutService";
+import { createWorkoutSession, getActiveWorkoutSession, getOrCreateWorkoutAfterDiscard } from "../services/workoutService";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 
@@ -32,6 +32,7 @@ export default function RoutinesScreen({ navigation }: any) {
     const [activeWorkoutModalVisible, setActiveWorkoutModalVisible] = useState(false);
     const [activeWorkout, setActiveWorkout] = useState<any>(null);
     const [pendingRoutine, setPendingRoutine] = useState<Routine | null>(null);
+    const [startingRoutineId, setStartingRoutineId] = useState<string | null>(null);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -88,6 +89,9 @@ export default function RoutinesScreen({ navigation }: any) {
             Alert.alert("Error", "User not found");
             return;
         }
+        if (startingRoutineId === routine.id) return;
+
+        setStartingRoutineId(routine.id)
 
         try {
             const active = await getActiveWorkoutSession(user.id);
@@ -99,7 +103,7 @@ export default function RoutinesScreen({ navigation }: any) {
                 return;
             }
 
-            const session = await createNewWorkoutSessionFromRoutine({
+            const session = await createWorkoutSession({
                 userId: user.id,
                 routineId: routine.id,
             });
@@ -111,6 +115,8 @@ export default function RoutinesScreen({ navigation }: any) {
             });
         } catch (error: any) {
             Alert.alert("Error", error.message);
+        } finally {
+            setStartingRoutineId(null);
         }
     }
 
@@ -149,6 +155,9 @@ export default function RoutinesScreen({ navigation }: any) {
 
     async function discardAndStartWorkout() {
         if (!user || !activeWorkout || !pendingRoutine) return;
+        if (startingRoutineId) return;
+
+        setStartingRoutineId(pendingRoutine.id);
 
         try {
             setActiveWorkoutModalVisible(false);
@@ -166,6 +175,8 @@ export default function RoutinesScreen({ navigation }: any) {
             });
         } catch (error: any) {
             Alert.alert("Error", error.message);
+        } finally {
+            setStartingRoutineId(null);
         }
     }
 
@@ -250,10 +261,21 @@ export default function RoutinesScreen({ navigation }: any) {
                             <Text style={styles.cardDescription}>{item.description}</Text>
                         ) : null}
                         <Pressable
-                            style={styles.startButton}
-                            onPress={() => startWorkout(item)}
+                            style={[
+                                styles.startButton,
+                                startingRoutineId === item.id && styles.startButtonDisabled,
+                            ]}
+                            onPress={(event) => {
+                                event.stopPropagation();
+                                startWorkout(item);
+                            }}
+                            disabled={startingRoutineId === item.id}
                         >
-                            <Text style={styles.startButtonText}>Start Workout</Text>
+                            <Text style={styles.startButtonText}>
+                                {startingRoutineId === item.id
+                                    ? "Starting..."
+                                    : "Start Workout"}
+                            </Text>
                         </Pressable>
                     </Pressable>
                 )}
@@ -266,6 +288,7 @@ export default function RoutinesScreen({ navigation }: any) {
                     onResume={resumeActiveWorkout}
                     onDiscardAndStart={discardAndStartWorkout}
                     onCancel={() => setActiveWorkoutModalVisible(false)}
+                    isStarting={Boolean(startingRoutineId)}
                 />
             ) : null}
         </View>
@@ -336,5 +359,8 @@ const styles = StyleSheet.create({
     startButtonText: {
         color: "#FFFFFF",
         fontWeight: "800",
+    },
+    startButtonDisabled: {
+        opacity: 0.6,
     },
 });

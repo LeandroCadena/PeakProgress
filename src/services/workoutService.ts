@@ -482,9 +482,8 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
     routineId: string;
     userId: string;
 }) {
-    const routineExercises = await getRoutineExercises(params.routineId);
-
     const settings = await getUserSettings(params.userId);
+    const routineExercises = await getRoutineExercisesWithSets(params.routineId);
 
     const exerciseIds = routineExercises.map((item) => item.exercise_id);
 
@@ -503,45 +502,81 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
         ])
     );
 
-    const routineExerciseSets = await getRoutineExerciseSets(
-        routineExercises.map((item) => item.id)
+    const sessionExercisesToInsert = routineExercises.map((routineExercise) => ({
+        workout_session_id: params.sessionId,
+        exercise_id: routineExercise.exercise_id,
+        exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
+        position: routineExercise.position ?? 0,
+        exercise_image_url_snapshot: routineExercise.exercise?.image_url ?? null,
+        rest_seconds: settings.use_global_timers
+            ? settings.global_set_rest_seconds
+            : routineExercise.rest_seconds ?? 90,
+        exercise_rest_seconds: settings.use_global_timers
+            ? settings.global_exercise_rest_seconds
+            : routineExercise.exercise_rest_seconds ?? 120,
+        current_pr_volume:
+            prByExerciseId.get(routineExercise.exercise_id) ??
+            Number(routineExercise.current_pr_volume ?? 0),
+    }));
+
+    const { data: createdSessionExercises, error: sessionExercisesError } =
+        await supabase
+            .from("workout_session_exercises")
+            .insert(sessionExercisesToInsert)
+            .select(`
+        id,
+        workout_session_id,
+        exercise_id,
+        exercise_name_snapshot,
+        exercise_image_url_snapshot,
+        exercise_rest_seconds,
+        position,
+        rest_seconds,
+        current_pr_volume,
+        created_at
+        `);
+
+    if (sessionExercisesError) throw sessionExercisesError;
+
+    const sessionExerciseIdByExerciseId = new Map(
+        (createdSessionExercises ?? []).map((item) => [
+            item.exercise_id,
+            item.id,
+        ])
     );
 
-    for (const routineExercise of routineExercises) {
-        const sessionExercise = await createWorkoutSessionExercise({
-            sessionId: params.sessionId,
-            exerciseId: routineExercise.exercise_id,
-            exerciseName: routineExercise.exercise?.name ?? "Exercise",
-            exerciseImageUrl: routineExercise.exercise?.image_url ?? null,
-            position: routineExercise.position ?? 0,
-            userId: params.userId,
-            routineSetRestSeconds: routineExercise.rest_seconds ?? 90,
-            routineExerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
-            routineCurrentPrVolume:
-                prByExerciseId.get(routineExercise.exercise_id) ??
-                Number(routineExercise.current_pr_volume ?? 0),
-        });
+    const workoutSetsToInsert = routineExercises.flatMap((routineExercise) => {
+        const sessionExerciseId = sessionExerciseIdByExerciseId.get(
+            routineExercise.exercise_id
+        );
 
-        const templateSets = routineExerciseSets[routineExercise.id] ?? [];
+        if (!sessionExerciseId) return [];
 
-        if (!templateSets.length) continue;
+        const templateSets =
+            (routineExercise.routine_exercise_sets ?? []) as RoutineExerciseSet[];
 
-        const workoutSets = templateSets.map((set) => ({
+        return templateSets.map((set) => ({
             workout_session_id: params.sessionId,
-            workout_session_exercise_id: sessionExercise.id,
+            workout_session_exercise_id: sessionExerciseId,
             exercise_id: routineExercise.exercise_id,
-            exercise_name_snapshot: routineExercise.exercise?.name ?? "Exercise",
+            exercise_name_snapshot:
+                routineExercise.exercise?.name ?? "Exercise",
             reps: set.reps,
             weight: set.weight ?? 0,
             is_completed: false,
+            is_pr: false,
         }));
+    });
 
+    if (workoutSetsToInsert.length > 0) {
         const { error: setsError } = await supabase
             .from("workout_sets")
-            .insert(workoutSets);
+            .insert(workoutSetsToInsert);
 
         if (setsError) throw setsError;
     }
+
+    return createdSessionExercises ?? [];
 }
 
 export async function deleteWorkoutSessionExercise(
@@ -627,7 +662,7 @@ export async function getOrCreateWorkoutAfterDiscard(params: {
         await discardWorkoutSession(params.activeSessionId);
     }
 
-    return createNewWorkoutSessionFromRoutine({
+    return createWorkoutSession({
         userId: params.userId,
         routineId: params.routineId,
     });
@@ -776,4 +811,43 @@ async function createWorkoutSessionExercise(params: {
     if (error) throw error;
 
     return data;
+}
+
+async function getRoutineExercisesWithSets(routineId: string) {
+    const { data, error } = await supabase
+        .from("routine_exercises")
+        .select(`
+            id,
+            exercise_id,
+            position,
+            rest_seconds,
+            exercise_rest_seconds,
+            current_pr_volume,
+            exercise:exercises (
+                name,
+                image_url
+            ),
+            routine_exercise_sets (
+                id,
+                routine_exercise_id,
+                reps,
+                weight,
+                is_pr,
+                created_at
+            )
+        `)
+        .eq("routine_id", routineId)
+        .order("position", { ascending: true })
+        .order("created_at", {
+            ascending: true,
+            referencedTable: "routine_exercise_sets",
+        });
+
+    if (error) throw error;
+
+    return (data ?? []).map((item: any) => ({
+        ...item,
+        exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
+        routine_exercise_sets: item.routine_exercise_sets ?? [],
+    }));
 }
