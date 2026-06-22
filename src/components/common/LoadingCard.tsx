@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+import { colors, spacing, typography } from "../../theme";
 
 type Props = {
     title?: string;
@@ -19,23 +20,21 @@ export default function LoadingCard({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: "#161B22",
+        backgroundColor: colors.card,
         borderWidth: 1,
-        borderColor: "#30363D",
+        borderColor: colors.cardBorder,
         borderRadius: 16,
-        padding: 20,
-        marginVertical: 16,
+        padding: spacing.xl,
+        marginVertical: spacing.lg,
     },
-
     title: {
-        color: "#FFFFFF",
-        fontSize: 18,
+        color: colors.text,
+        fontSize: typography.subtitle,
         fontWeight: "800",
     },
-
     message: {
-        color: "#9CA3AF",
-        marginTop: 6,
+        color: colors.textSecondary,
+        marginTop: spacing.sm,
         lineHeight: 20,
     },
 });

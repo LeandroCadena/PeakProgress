@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
+import { colors, spacing, typography, componentStyles } from "../../theme";
 import WorkoutSetRow from "./WorkoutSetRow";
 import RestTimeEditor from "./RestTimeEditor";
 
@@ -121,70 +122,65 @@ export default function WorkoutExerciseCard({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
+        backgroundColor: colors.card,
+        padding: spacing.lg,
+        borderRadius: componentStyles.cardRadius,
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
     },
     cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
+        color: colors.text,
+        fontSize: typography.subtitle,
         fontWeight: "700",
-    },
-    cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
-        marginBottom: 14,
     },
     setTableHeader: {
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 12,
-        marginBottom: 8,
-        gap: 8,
+        marginTop: spacing.md,
+        marginBottom: spacing.sm,
+        gap: spacing.sm,
     },
     setHeaderText: {
         flex: 1,
-        color: "#9CA3AF",
+        color: colors.textSecondary,
         fontWeight: "700",
-        fontSize: 12,
+        fontSize: typography.small,
     },
     setNumberHeader: {
         width: 28,
-        color: "#9CA3AF",
-        fontSize: 12,
+        color: colors.textSecondary,
+        fontSize: typography.small,
         fontWeight: "700",
     },
     addSetRow: {
         backgroundColor: "#102A1A",
-        paddingVertical: 12,
+        paddingVertical: spacing.md,
         borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#4CAF50",
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.success,
         alignItems: "center",
-        marginTop: 6,
+        marginTop: spacing.sm,
     },
     addSetText: {
-        color: "#4CAF50",
+        color: colors.success,
         fontWeight: "800",
     },
     deleteExerciseButton: {
-        backgroundColor: "#EF4444",
-        paddingVertical: 10,
+        backgroundColor: colors.danger,
+        paddingVertical: spacing.sm,
         borderRadius: 10,
         alignItems: "center",
-        marginTop: 12,
+        marginTop: spacing.md,
     },
     deleteExerciseText: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "700",
     },
     exerciseImage: {
         width: "100%",
         height: 130,
         borderRadius: 12,
-        marginBottom: 12,
-        backgroundColor: "#0B0F14",
+        marginBottom: spacing.md,
+        backgroundColor: colors.background,
     },
 });

@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { colors, spacing, typography } from "../../theme";
 
 type Props = {
     visible: boolean;
@@ -64,9 +65,54 @@ const styles = StyleSheet.create({
     overlay: {
         flex: 1,
         backgroundColor: "rgba(0,0,0,0.65)",
-        alignItems: "center",
         justifyContent: "center",
-        padding: 24,
+        padding: spacing.xl,
+    },
+    modal: {
+        backgroundColor: colors.card,
+        borderWidth: 1,
+        borderColor: colors.cardBorder,
+        borderRadius: 18,
+        padding: spacing.xl,
+    },
+    title: {
+        color: colors.text,
+        fontSize: typography.subtitle,
+        fontWeight: "800",
+    },
+    text: {
+        color: colors.textSecondary,
+        marginTop: spacing.sm,
+        lineHeight: 20,
+    },
+    primaryButton: {
+        backgroundColor: colors.primary,
+        paddingVertical: spacing.md,
+        borderRadius: 12,
+        marginTop: spacing.lg,
+    },
+    dangerButton: {
+        backgroundColor: colors.danger,
+        paddingVertical: spacing.md,
+        borderRadius: 12,
+        marginTop: spacing.sm,
+    },
+    secondaryButton: {
+        borderWidth: 1,
+        borderColor: colors.cardBorder,
+        paddingVertical: spacing.md,
+        borderRadius: 12,
+        marginTop: spacing.sm,
+    },
+    buttonText: {
+        color: colors.text,
+        fontWeight: "700",
+        textAlign: "center",
+    },
+    secondaryButtonText: {
+        color: colors.textSecondary,
+        fontWeight: "700",
+        textAlign: "center",
     },
     content: {
         width: "100%",
@@ -75,16 +121,6 @@ const styles = StyleSheet.create({
         padding: 22,
         borderWidth: 1,
         borderColor: "#30363D",
-    },
-    title: {
-        color: "#FFFFFF",
-        fontSize: 22,
-        fontWeight: "800",
-        marginBottom: 10,
-    },
-    text: {
-        color: "#9CA3AF",
-        marginBottom: 12,
     },
     routineName: {
         color: "#FFFFFF",
@@ -97,25 +133,9 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         marginBottom: 18,
     },
-    primaryButton: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: "center",
-        marginTop: 12,
-    },
     primaryText: {
         color: "#FFFFFF",
         fontWeight: "800",
-    },
-    dangerButton: {
-        backgroundColor: "#2A1111",
-        borderWidth: 1,
-        borderColor: "#EF4444",
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: "center",
-        marginTop: 10,
     },
     dangerText: {
         color: "#EF4444",

@@ -1,4 +1,5 @@
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
+import { colors, spacing, typography, componentStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 
@@ -98,18 +99,23 @@ const styles = StyleSheet.create({
     setTableRow: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        marginBottom: 8,
+        gap: spacing.sm,
+        marginBottom: spacing.sm,
+    },
+    setNumber: {
+        width: 28,
+        color: colors.textSecondary,
+        fontWeight: "700",
     },
     setInput: {
         flex: 1,
-        backgroundColor: "#0B0F14",
-        color: "#FFFFFF",
-        paddingVertical: 10,
-        paddingHorizontal: 12,
+        backgroundColor: colors.inputBackground,
+        color: colors.text,
+        paddingVertical: spacing.sm + 2,
+        paddingHorizontal: spacing.md,
         borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#30363D",
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
     },
     disabledInput: {
         opacity: 0.5,
@@ -118,42 +124,39 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 42,
         borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#4CAF50",
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.success,
         alignItems: "center",
         justifyContent: "center",
     },
     checkboxChecked: {
-        backgroundColor: "#4CAF50",
+        backgroundColor: colors.success,
     },
     checkboxText: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "800",
     },
     deleteSetButton: {
-        backgroundColor: "#EF4444",
-        paddingVertical: 6,
-        paddingHorizontal: 10,
+        backgroundColor: colors.danger,
+        paddingVertical: spacing.sm - 2,
+        paddingHorizontal: spacing.md - 2,
         borderRadius: 8,
     },
     deleteSetText: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "700",
-        fontSize: 12,
+        fontSize: typography.small,
     },
     personalRecordRow: {
-        backgroundColor: "#3A2A00",
-        borderColor: "#FBBF24",
-        borderWidth: 1,
+        backgroundColor: colors.warningDark,
+        borderColor: colors.warning,
+        borderWidth: componentStyles.borderWidth,
+        borderRadius: 10,
+        padding: spacing.xs,
     },
     personalRecordText: {
-        color: "#FBBF24",
+        color: colors.warning,
         fontWeight: "800",
-        marginTop: 6,
-    },
-    setNumber: {
-        width: 28,
-        color: "#9CA3AF",
-        fontWeight: "700",
+        marginTop: spacing.sm,
     },
 });

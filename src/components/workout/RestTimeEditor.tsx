@@ -1,4 +1,5 @@
 import { View, Text, TextInput, StyleSheet } from "react-native";
+import { colors, spacing, typography, componentStyles } from "../../theme";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 
 type Props = {
@@ -38,23 +39,23 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        marginTop: 10,
-        marginBottom: 10,
+        gap: spacing.sm,
+        marginTop: spacing.sm,
+        marginBottom: spacing.sm,
     },
     label: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
         fontWeight: "700",
         flex: 1,
     },
     input: {
-        backgroundColor: "#0B0F14",
-        color: "#FFFFFF",
-        borderWidth: 1,
-        borderColor: "#30363D",
+        backgroundColor: colors.inputBackground,
+        color: colors.text,
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
         borderRadius: 10,
-        paddingVertical: 8,
-        paddingHorizontal: 10,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md - 2,
         width: 70,
         textAlign: "center",
     },
@@ -62,6 +63,7 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     unit: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
+        fontSize: typography.caption,
     },
 });

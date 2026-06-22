@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 import RestTimeEditor from "../workout/RestTimeEditor";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
+import { colors, spacing, typography } from "../../theme";
 
 type Props = {
     item: RoutineExercise;
@@ -113,98 +114,98 @@ export default function RoutineExerciseCard({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: "#161B22",
-        padding: 16,
+        backgroundColor: colors.card,
+        padding: spacing.lg,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: "#30363D",
+        borderColor: colors.cardBorder,
     },
     cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 17,
+        color: colors.text,
+        fontSize: typography.subtitle,
         fontWeight: "700",
     },
     cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
+        color: colors.textSecondary,
+        marginTop: spacing.sm,
     },
     cardActions: {
         flexDirection: "row",
-        gap: 10,
-        marginTop: 14,
+        gap: spacing.md,
+        marginTop: spacing.lg,
     },
     editButton: {
         flex: 1,
-        backgroundColor: "#2563EB",
-        paddingVertical: 10,
+        backgroundColor: colors.primaryPressed,
+        paddingVertical: spacing.md,
         borderRadius: 10,
     },
     deleteButton: {
         flex: 1,
-        backgroundColor: "#EF4444",
-        paddingVertical: 10,
+        backgroundColor: colors.danger,
+        paddingVertical: spacing.md,
         borderRadius: 10,
     },
     actionText: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "700",
         textAlign: "center",
     },
     moveActions: {
         flexDirection: "row",
-        gap: 8,
-        marginTop: 12,
+        gap: spacing.sm,
+        marginTop: spacing.md,
     },
     moveButton: {
         flex: 1,
-        backgroundColor: "#374151",
-        paddingVertical: 10,
+        backgroundColor: colors.inputBorder,
+        paddingVertical: spacing.md,
         borderRadius: 10,
     },
     moveText: {
-        color: "#FFFFFF",
+        color: colors.text,
         textAlign: "center",
         fontWeight: "800",
-        fontSize: 16,
+        fontSize: typography.body,
     },
     setHeader: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        marginTop: 14,
-        marginBottom: 6,
+        gap: spacing.sm,
+        marginTop: spacing.lg,
+        marginBottom: spacing.sm,
     },
     setNumberHeader: {
         width: 28,
-        color: "#9CA3AF",
-        fontSize: 12,
+        color: colors.textSecondary,
+        fontSize: typography.caption,
         fontWeight: "700",
     },
     setHeaderText: {
         flex: 1,
-        color: "#9CA3AF",
-        fontSize: 12,
+        color: colors.textSecondary,
+        fontSize: typography.caption,
         fontWeight: "700",
     },
     addSetButton: {
-        backgroundColor: "#102A1A",
+        backgroundColor: colors.successDark,
         borderWidth: 1,
-        borderColor: "#4CAF50",
+        borderColor: colors.success,
         borderRadius: 10,
-        paddingVertical: 10,
-        marginTop: 10,
+        paddingVertical: spacing.md,
+        marginTop: spacing.md,
         alignItems: "center",
     },
 
     addSetText: {
-        color: "#4CAF50",
+        color: colors.success,
         fontWeight: "700",
     },
     exerciseImage: {
         width: "100%",
         height: 130,
         borderRadius: 12,
-        marginBottom: 12,
-        backgroundColor: "#0B0F14",
+        marginBottom: spacing.md,
+        backgroundColor: colors.background,
     },
 });
