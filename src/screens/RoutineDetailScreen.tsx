@@ -1,14 +1,12 @@
-import {
-    Text,
-    StyleSheet,
-    Pressable,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
 import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
 import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
 import RoutineHeader from "../components/routine/RoutineHeader";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
+import AppButton from "../components/common/AppButton";
+import { spacing } from "../theme";
 
 type RouteParams = {
     RoutineDetail: {
@@ -73,29 +71,19 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onDelete={deleteRoutine}
             />
 
-            <Pressable
-                style={[
-                    styles.startButton,
-                    (isEditingRoutine || isStartingWorkout) &&
-                    styles.startButtonDisabled,
-                ]}
-                disabled={isEditingRoutine || isStartingWorkout}
-                onPress={startWorkout}
-            >
-                <Text
-                    style={[
-                        styles.startButtonText,
-                        (isEditingRoutine || isStartingWorkout) &&
-                        styles.startButtonTextDisabled,
-                    ]}
-                >
-                    {isEditingRoutine
+            <AppButton
+                title={
+                    isEditingRoutine
                         ? "Save Changes First"
                         : isStartingWorkout
                             ? "Starting..."
-                            : "Start Workout"}
-                </Text>
-            </Pressable>
+                            : "Start Workout"
+                }
+                variant="primary"
+                disabled={isEditingRoutine || isStartingWorkout}
+                onPress={startWorkout}
+                style={styles.actionButton}
+            />
 
             <RoutineExerciseSection
                 routineExercises={routineExercises}
@@ -113,21 +101,28 @@ export default function RoutineDetailScreen({ navigation }: any) {
             />
 
             {isEditingRoutine ? (
-                <Pressable
-                    style={styles.addExerciseButton}
+                <AppButton
+                    title="+ Add Exercise"
+                    variant="success"
                     onPress={() =>
                         navigation.navigate("ExercisePicker", {
                             mode: "routine",
                             routineId,
-                            currentCount: routineExercises.length > 0
-                                ? Math.max(...routineExercises.map((item) => item.position ?? 0)) + 1
-                                : 0,
-                            currentExerciseIds: routineExercises.map((item) => item.exercise_id),
+                            currentCount:
+                                routineExercises.length > 0
+                                    ? Math.max(
+                                        ...routineExercises.map(
+                                            (item) => item.position ?? 0
+                                        )
+                                    ) + 1
+                                    : 0,
+                            currentExerciseIds: routineExercises.map(
+                                (item) => item.exercise_id
+                            ),
                         })
                     }
-                >
-                    <Text style={styles.addExerciseButtonText}>+ Add Exercise</Text>
-                </Pressable>
+                    style={styles.actionButton}
+                />
             ) : null
             }
 
@@ -151,37 +146,7 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         marginBottom: 20,
     },
-    startButton: {
-        backgroundColor: "#2563EB",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    startButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
-        fontSize: 16,
-    },
-    addExerciseButton: {
-        backgroundColor: "#102A1A",
-        paddingVertical: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#4CAF50",
-        alignItems: "center",
-        marginTop: 12,
-    },
-    addExerciseButtonText: {
-        color: "#4CAF50",
-        fontWeight: "800",
-    },
-    startButtonDisabled: {
-        backgroundColor: "#374151",
-        opacity: 0.7,
-    },
-
-    startButtonTextDisabled: {
-        color: "#9CA3AF",
+    actionButton: {
+        marginTop: spacing.md,
     },
 });

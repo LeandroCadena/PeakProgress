@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-    View,
     Text,
     StyleSheet,
     TextInput,
@@ -19,6 +18,7 @@ import { Routine } from "../types/routine";
 import { createWorkoutSession, getActiveWorkoutSession, getOrCreateWorkoutAfterDiscard } from "../services/workoutService";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
+import ScreenContainer from "../components/common/ScreenContainer";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -202,7 +202,7 @@ export default function RoutinesScreen({ navigation }: any) {
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer>
             {activeSession ? (
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
@@ -291,17 +291,11 @@ export default function RoutinesScreen({ navigation }: any) {
                     isStarting={Boolean(startingRoutineId)}
                 />
             ) : null}
-        </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
         color: "#FFFFFF",
         fontSize: 30,

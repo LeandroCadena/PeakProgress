@@ -8,6 +8,7 @@ import {
 } from "../services/settingsService";
 import { setSoundsEnabled } from "../utils/sounds";
 import { setNotificationsEnabled } from "../utils/notifications";
+import ScreenContainer from "../components/common/ScreenContainer";
 
 export default function SettingsScreen() {
     const { user } = useAuth();
@@ -55,15 +56,15 @@ export default function SettingsScreen() {
 
     if (!settings) {
         return (
-            <View style={styles.container}>
+            <ScreenContainer>
                 <Text style={styles.title}>Settings</Text>
                 <Text style={styles.text}>Loading...</Text>
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer>
             <Text style={styles.title}>Settings</Text>
 
             <View style={styles.card}>
@@ -185,17 +186,11 @@ export default function SettingsScreen() {
                     </Pressable>
                 </View>
             </View>
-        </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
         color: "#FFFFFF",
         fontSize: 30,

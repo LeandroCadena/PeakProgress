@@ -3,7 +3,6 @@ import {
     Text,
     StyleSheet,
     FlatList,
-    Pressable,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { WorkoutSessionRouteParams } from "../types/workout";
@@ -15,6 +14,7 @@ import LoadingCard from "../components/common/LoadingCard";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import { colors, spacing, typography } from "../theme";
 import AppButton from "../components/common/AppButton";
+import ScreenContainer from "../components/common/ScreenContainer";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -51,7 +51,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     });
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer>
             <Text style={styles.title}>{routineName}</Text>
             <Text style={styles.subtitle}>Workout Session</Text>
 
@@ -126,19 +126,13 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 onPress={finishWorkout}
                 style={styles.actionButton}
             />
-        </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
     actionButton: {
         marginBottom: spacing.md,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: spacing.xxl,
-        paddingTop: 64,
     },
     title: {
         color: colors.text,

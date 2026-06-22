@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import {
-    View,
     Text,
     StyleSheet,
     FlatList,
@@ -9,6 +8,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { getCompletedWorkoutSessions } from "../services/historyService";
+import ScreenContainer from "../components/common/ScreenContainer";
 
 type WorkoutSession = {
     routine_name_snapshot: string;
@@ -55,7 +55,7 @@ export default function HistoryScreen({ navigation }: any) {
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer>
             <Text style={styles.title}>Workout History</Text>
 
             <FlatList
@@ -93,17 +93,11 @@ export default function HistoryScreen({ navigation }: any) {
                     );
                 }}
             />
-        </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
         color: "#FFFFFF",
         fontSize: 30,

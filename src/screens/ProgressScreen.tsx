@@ -1,21 +1,12 @@
 import { useCallback, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
+import { Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import {
     getExerciseProgress,
 } from "../services/progressService";
 import { ExerciseProgress } from "../types/progress";
 import { useAuth } from "../context/AuthContext";
-
-type WorkoutSet = {
-    id: string;
-    weight: number | null;
-    reps: number;
-    exercise: {
-        id: string;
-        name: string;
-    } | null;
-};
+import ScreenContainer from "../components/common/ScreenContainer";
 
 export default function ProgressScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -40,7 +31,7 @@ export default function ProgressScreen({ navigation }: any) {
     );
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer>
             <Text style={styles.title}>Progress</Text>
             <Text style={styles.subtitle}>Your personal records</Text>
 
@@ -69,17 +60,11 @@ export default function ProgressScreen({ navigation }: any) {
                     </Pressable>
                 )}
             />
-        </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
         color: "#FFFFFF",
         fontSize: 30,
