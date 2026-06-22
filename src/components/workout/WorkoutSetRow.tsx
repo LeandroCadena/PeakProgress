@@ -1,7 +1,9 @@
-import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
-import { colors, spacing, typography, componentStyles } from "../../theme";
+import { View, Pressable, Text, StyleSheet } from "react-native";
+import { colors, spacing, componentStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
+import IconButton from "../common/IconButton";
+import AppInput from "../common/AppInput";
 
 type WorkoutSetRowProps = {
     set: WorkoutSessionSet;
@@ -39,32 +41,22 @@ export default function WorkoutSetRow({
         ]}>
             <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
-            <TextInput
-                style={[
-                    styles.setInput,
-                    set.is_completed && styles.disabledInput,
-                ]}
+            <AppInput
+                style={styles.setInput}
                 keyboardType="numeric"
                 value={weightValue}
-                editable={!set.is_completed}
+                disabled={set.is_completed}
                 onChangeText={(value) => onWeightChange(sanitizeIntegerInput(value))}
-                onEndEditing={(event) =>
-                    onWeightBlur(event.nativeEvent.text)
-                }
+                onEndEditing={(event) => onWeightBlur(event.nativeEvent.text)}
             />
 
-            <TextInput
-                style={[
-                    styles.setInput,
-                    set.is_completed && styles.disabledInput,
-                ]}
+            <AppInput
+                style={styles.setInput}
                 keyboardType="numeric"
                 value={repsValue}
-                editable={!set.is_completed}
+                disabled={set.is_completed}
                 onChangeText={(value) => onRepsChange(sanitizeIntegerInput(value))}
-                onEndEditing={(event) =>
-                    onRepsBlur(event.nativeEvent.text)
-                }
+                onEndEditing={(event) => onRepsBlur(event.nativeEvent.text)}
             />
 
             {isPersonalRecord ? (
@@ -84,13 +76,12 @@ export default function WorkoutSetRow({
                 </Text>
             </Pressable>
 
-            <Pressable
-                style={styles.deleteSetButton}
-                onPress={onDelete}
+            <IconButton
+                icon="X"
+                variant="danger"
                 disabled={isTemporarySet}
-            >
-                <Text style={styles.deleteSetText}>X</Text>
-            </Pressable>
+                onPress={onDelete}
+            />
         </View>
     );
 }
@@ -109,16 +100,6 @@ const styles = StyleSheet.create({
     },
     setInput: {
         flex: 1,
-        backgroundColor: colors.inputBackground,
-        color: colors.text,
-        paddingVertical: spacing.sm + 2,
-        paddingHorizontal: spacing.md,
-        borderRadius: 10,
-        borderWidth: componentStyles.borderWidth,
-        borderColor: colors.cardBorder,
-    },
-    disabledInput: {
-        opacity: 0.5,
     },
     checkbox: {
         flex: 1,
@@ -135,17 +116,6 @@ const styles = StyleSheet.create({
     checkboxText: {
         color: colors.text,
         fontWeight: "800",
-    },
-    deleteSetButton: {
-        backgroundColor: colors.danger,
-        paddingVertical: spacing.sm - 2,
-        paddingHorizontal: spacing.md - 2,
-        borderRadius: 8,
-    },
-    deleteSetText: {
-        color: colors.text,
-        fontWeight: "700",
-        fontSize: typography.small,
     },
     personalRecordRow: {
         backgroundColor: colors.warningDark,

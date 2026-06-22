@@ -1,8 +1,11 @@
-import { View, Text, Pressable, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 import RestTimeEditor from "../workout/RestTimeEditor";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import { colors, spacing, typography } from "../../theme";
+import AppButton from "../common/AppButton";
+import Card from "../common/Card";
+import IconButton from "../common/IconButton";
 
 type Props = {
     item: RoutineExercise;
@@ -36,7 +39,7 @@ export default function RoutineExerciseCard({
     onUpdateSetRest,
 }: Props) {
     return (
-        <View style={styles.card}>
+        <Card>
             {item.exercise?.image_url ? (
                 <Image
                     source={{ uri: item.exercise.image_url }}
@@ -81,75 +84,50 @@ export default function RoutineExerciseCard({
             })}
 
             {isEditing ? (
-                <Pressable
-                    style={styles.addSetButton}
+                <AppButton
+                    title="+ Add Set"
+                    variant="success"
                     onPress={onAddSet}
-                >
-                    <Text style={styles.addSetText}>+ Add Set</Text>
-                </Pressable>
+                />
             ) : null}
 
             {isEditing ? (
                 <>
                     <View style={styles.cardActions}>
-                        <Pressable style={styles.deleteButton} onPress={onDelete}>
-                            <Text style={styles.actionText}>Delete</Text>
-                        </Pressable>
+                        <AppButton
+                            title="Remove Exercise"
+                            variant="danger"
+                            onPress={onDelete}
+                        />
                     </View>
 
                     <View style={styles.moveActions}>
-                        <Pressable style={styles.moveButton} onPress={onMoveUp}>
-                            <Text style={styles.moveText}>↑</Text>
-                        </Pressable>
+                        <IconButton
+                            icon="↑"
+                            onPress={onMoveUp}
+                        />
 
-                        <Pressable style={styles.moveButton} onPress={onMoveDown}>
-                            <Text style={styles.moveText}>↓</Text>
-                        </Pressable>
+                        <IconButton
+                            icon="↓"
+                            onPress={onMoveDown}
+                        />
                     </View>
                 </>
             ) : null}
-        </View>
+        </Card>
     );
 }
 
 const styles = StyleSheet.create({
-    card: {
-        backgroundColor: colors.card,
-        padding: spacing.lg,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: colors.cardBorder,
-    },
     cardTitle: {
         color: colors.text,
         fontSize: typography.subtitle,
         fontWeight: "700",
     },
-    cardText: {
-        color: colors.textSecondary,
-        marginTop: spacing.sm,
-    },
     cardActions: {
         flexDirection: "row",
         gap: spacing.md,
         marginTop: spacing.lg,
-    },
-    editButton: {
-        flex: 1,
-        backgroundColor: colors.primaryPressed,
-        paddingVertical: spacing.md,
-        borderRadius: 10,
-    },
-    deleteButton: {
-        flex: 1,
-        backgroundColor: colors.danger,
-        paddingVertical: spacing.md,
-        borderRadius: 10,
-    },
-    actionText: {
-        color: colors.text,
-        fontWeight: "700",
-        textAlign: "center",
     },
     moveActions: {
         flexDirection: "row",
@@ -185,20 +163,6 @@ const styles = StyleSheet.create({
         flex: 1,
         color: colors.textSecondary,
         fontSize: typography.caption,
-        fontWeight: "700",
-    },
-    addSetButton: {
-        backgroundColor: colors.successDark,
-        borderWidth: 1,
-        borderColor: colors.success,
-        borderRadius: 10,
-        paddingVertical: spacing.md,
-        marginTop: spacing.md,
-        alignItems: "center",
-    },
-
-    addSetText: {
-        color: colors.success,
         fontWeight: "700",
     },
     exerciseImage: {

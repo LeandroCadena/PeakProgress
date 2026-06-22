@@ -1,6 +1,7 @@
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { colors, spacing, typography, componentStyles } from "../../theme";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
+import AppInput from "../common/AppInput";
 
 type Props = {
     label: string;
@@ -19,11 +20,12 @@ export default function RestTimeEditor({
         <View style={styles.container}>
             <Text style={styles.label}>{label}</Text>
 
-            <TextInput
-                style={[styles.input, !editable && styles.disabledInput]}
+            <AppInput
+                style={styles.input}
                 value={String(value ?? 0)}
-                editable={editable}
+                disabled={!editable}
                 keyboardType="numeric"
+                textAlign="center"
                 onChangeText={(text) => {
                     const sanitized = sanitizeIntegerInput(text);
                     onChange(Number(sanitized || 0));
@@ -49,18 +51,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     input: {
-        backgroundColor: colors.inputBackground,
-        color: colors.text,
-        borderWidth: componentStyles.borderWidth,
-        borderColor: colors.cardBorder,
-        borderRadius: 10,
-        paddingVertical: spacing.sm,
-        paddingHorizontal: spacing.md - 2,
         width: 70,
-        textAlign: "center",
-    },
-    disabledInput: {
-        opacity: 0.6,
     },
     unit: {
         color: colors.textSecondary,

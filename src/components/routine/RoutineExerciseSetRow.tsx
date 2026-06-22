@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 import { RoutineExerciseSet } from "../../types/routine";
+import { colors, spacing } from "../../theme";
+import IconButton from "../common/IconButton";
+import AppInput from "../common/AppInput";
 
 type Props = {
     set: RoutineExerciseSet;
@@ -51,32 +54,31 @@ export default function RoutineExerciseSetRow({
         <View style={styles.row}>
             <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
-            <TextInput
-                style={[styles.input, !isEditing && styles.disabledInput]}
+            <AppInput
+                style={styles.input}
                 value={weightValue}
-                editable={isEditing}
+                disabled={!isEditing}
                 keyboardType="numeric"
                 onChangeText={handleWeightChange}
                 onEndEditing={() => onUpdate("weight", weightValue)}
             />
 
-            <TextInput
-                style={[styles.input, !isEditing && styles.disabledInput]}
+            <AppInput
+                style={styles.input}
                 value={repsValue}
-                editable={isEditing}
+                disabled={!isEditing}
                 keyboardType="numeric"
                 onChangeText={handleRepsChange}
                 onEndEditing={() => onUpdate("reps", repsValue)}
             />
 
             {isEditing ? (
-                <Pressable
-                    style={styles.deleteButton}
-                    onPress={onDelete}
+                <IconButton
+                    icon="X"
+                    variant="danger"
                     disabled={isTemporarySet}
-                >
-                    <Text style={styles.deleteText}>X</Text>
-                </Pressable>
+                    onPress={onDelete}
+                />
             ) : null}
         </View>
     );
@@ -85,34 +87,15 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        marginTop: 8,
+        gap: spacing.sm,
+        marginTop: spacing.sm,
     },
     setNumber: {
         width: 28,
-        color: "#9CA3AF",
+        color: colors.textSecondary,
         fontWeight: "700",
     },
     input: {
         flex: 1,
-        backgroundColor: "#0B0F14",
-        color: "#FFFFFF",
-        padding: 10,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    disabledInput: {
-        opacity: 0.6,
-    },
-    deleteButton: {
-        backgroundColor: "#EF4444",
-        paddingVertical: 8,
-        paddingHorizontal: 10,
-        borderRadius: 8,
-    },
-    deleteText: {
-        color: "#FFFFFF",
-        fontWeight: "800",
     },
 });

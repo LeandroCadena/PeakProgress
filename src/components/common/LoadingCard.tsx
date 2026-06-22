@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { colors, spacing, typography } from "../../theme";
+import Card from "./Card";
 
 type Props = {
     title?: string;
@@ -11,20 +12,15 @@ export default function LoadingCard({
     message = "Setting up your exercises and sets.",
 }: Props) {
     return (
-        <View style={styles.card}>
+        <Card style={styles.card}>
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.message}>{message}</Text>
-        </View>
+        </Card>
     );
 }
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: colors.cardBorder,
-        borderRadius: 16,
-        padding: spacing.xl,
         marginVertical: spacing.lg,
     },
     title: {

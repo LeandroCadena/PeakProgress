@@ -1,25 +1,21 @@
-import { View, Text, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { colors, spacing, typography } from "../../theme";
+import Card from "./Card";
 
 export default function EmptyStateCard() {
     return (
-        <View style={styles.card}>
+        <Card style={styles.card}>
             <Text style={styles.title}>No exercises found</Text>
 
             <Text style={styles.message}>
                 This workout doesn't contain any exercises yet.
             </Text>
-        </View>
+        </Card>
     );
 }
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: colors.cardBorder,
-        borderRadius: 16,
-        padding: spacing.xl,
         marginVertical: spacing.lg,
         alignItems: "center",
     },

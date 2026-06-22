@@ -13,6 +13,8 @@ import { useWorkoutSession } from "../hooks/useWorkoutSession";
 import RestTimeEditor from "../components/workout/RestTimeEditor";
 import LoadingCard from "../components/common/LoadingCard";
 import EmptyStateCard from "../components/common/EmptyStateCard";
+import { colors, spacing, typography } from "../theme";
+import AppButton from "../components/common/AppButton";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -100,103 +102,56 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 )}
             />
 
-            <Pressable
-                style={styles.addExerciseButton}
+            <AppButton
+                title="+ Add Exercise"
+                variant="success"
                 onPress={() =>
                     navigation.navigate("ExercisePicker", {
                         mode: "session",
                         sessionId,
-                        currentCount: sessionExercises.length > 0
-                            ? Math.max(...sessionExercises.map((item) => item.position ?? 0)) + 1
-                            : 0,
+                        currentCount:
+                            sessionExercises.length > 0
+                                ? Math.max(...sessionExercises.map((item) => item.position ?? 0)) + 1
+                                : 0,
                         currentExerciseIds: sessionExercises.map((item) => item.exercise_id),
                     })
                 }
-            >
-                <Text style={styles.addExerciseButtonText}>+ Add Exercise</Text>
-            </Pressable>
+                style={styles.actionButton}
+            />
 
-            <Pressable
-                style={[
-                    styles.finishButton,
-                    isFinishingWorkout && styles.buttonDisabled,
-                ]}
+            <AppButton
+                title={isFinishingWorkout ? "Finishing..." : "Finish Workout"}
+                variant="primary"
                 disabled={isFinishingWorkout}
                 onPress={finishWorkout}
-            >
-                <Text style={styles.buttonText}>
-                    {isFinishingWorkout ? "Finishing..." : "Finish Workout"}
-                </Text>
-            </Pressable>
+                style={styles.actionButton}
+            />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    actionButton: {
+        marginBottom: spacing.md,
+    },
     container: {
         flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
+        backgroundColor: colors.background,
+        padding: spacing.xxl,
         paddingTop: 64,
     },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
+        color: colors.text,
+        fontSize: typography.title,
         fontWeight: "800",
     },
     subtitle: {
-        color: "#9CA3AF",
-        marginTop: 6,
-        marginBottom: 20,
+        color: colors.textSecondary,
+        marginTop: spacing.sm,
+        marginBottom: spacing.xl,
     },
     list: {
-        gap: 14,
-        paddingBottom: 24,
-    },
-    finishButton: {
-        backgroundColor: "#2563EB",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginBottom: 12,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
-    },
-    addExerciseButton: {
-        backgroundColor: "#102A1A",
-        paddingVertical: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#4CAF50",
-        alignItems: "center",
-        marginBottom: 12,
-    },
-    addExerciseButtonText: {
-        color: "#4CAF50",
-        fontWeight: "800",
-    },
-    loadingCard: {
-        backgroundColor: "#161B22",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 16,
-        padding: 18,
-        marginTop: 20,
-    },
-
-    loadingTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "800",
-    },
-
-    loadingText: {
-        color: "#9CA3AF",
-        marginTop: 6,
-    },
-    buttonDisabled: {
-        opacity: 0.5,
+        gap: spacing.lg,
+        paddingBottom: spacing.xxl,
     },
 });

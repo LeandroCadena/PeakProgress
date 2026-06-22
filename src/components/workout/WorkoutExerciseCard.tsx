@@ -1,8 +1,10 @@
-import { View, Text, Pressable, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
-import { colors, spacing, typography, componentStyles } from "../../theme";
+import { colors, spacing, typography } from "../../theme";
 import WorkoutSetRow from "./WorkoutSetRow";
 import RestTimeEditor from "./RestTimeEditor";
+import AppButton from "../common/AppButton";
+import Card from "../common/Card";
 
 type WorkoutExerciseCardProps = {
     exercise: WorkoutSessionExercise;
@@ -52,7 +54,7 @@ export default function WorkoutExerciseCard({
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
     return (
-        <View style={styles.card}>
+        <Card>
             <Text style={styles.cardTitle}>{exerciseName}</Text>
 
             {exercise.exercise_image_url_snapshot ? (
@@ -106,28 +108,22 @@ export default function WorkoutExerciseCard({
                 );
             })}
 
-            <Pressable
-                style={styles.addSetRow}
+            <AppButton
+                title="+ Add Set"
+                variant="success"
                 onPress={() => addEmptySet(exercise.id)}
-            >
-                <Text style={styles.addSetText}>+ Add Set</Text>
-            </Pressable>
+            />
 
-            <Pressable style={styles.deleteExerciseButton} onPress={onDeleteExercise}>
-                <Text style={styles.deleteExerciseText}>Remove Exercise</Text>
-            </Pressable>
-        </View>
+            <AppButton
+                title="Remove Exercise"
+                variant="danger"
+                onPress={onDeleteExercise}
+            />
+        </Card>
     );
 }
 
 const styles = StyleSheet.create({
-    card: {
-        backgroundColor: colors.card,
-        padding: spacing.lg,
-        borderRadius: componentStyles.cardRadius,
-        borderWidth: componentStyles.borderWidth,
-        borderColor: colors.cardBorder,
-    },
     cardTitle: {
         color: colors.text,
         fontSize: typography.subtitle,
@@ -150,30 +146,6 @@ const styles = StyleSheet.create({
         width: 28,
         color: colors.textSecondary,
         fontSize: typography.small,
-        fontWeight: "700",
-    },
-    addSetRow: {
-        backgroundColor: "#102A1A",
-        paddingVertical: spacing.md,
-        borderRadius: 10,
-        borderWidth: componentStyles.borderWidth,
-        borderColor: colors.success,
-        alignItems: "center",
-        marginTop: spacing.sm,
-    },
-    addSetText: {
-        color: colors.success,
-        fontWeight: "800",
-    },
-    deleteExerciseButton: {
-        backgroundColor: colors.danger,
-        paddingVertical: spacing.sm,
-        borderRadius: 10,
-        alignItems: "center",
-        marginTop: spacing.md,
-    },
-    deleteExerciseText: {
-        color: colors.text,
         fontWeight: "700",
     },
     exerciseImage: {
