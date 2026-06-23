@@ -1,6 +1,6 @@
 import { View, Pressable, Text, StyleSheet } from "react-native";
 
-import { colors, spacing, componentStyles } from "../../theme";
+import { colors, spacing, componentStyles, typography } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
@@ -36,11 +36,11 @@ export default function WorkoutSetRow({
     isTemporarySet,
 }: WorkoutSetRowProps) {
     return (
-        <View style={[styles.setTableRow, isPersonalRecord && styles.personalRecordRow]}>
+        <View style={styles.row}>
             <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
             <AppInput
-                style={styles.setInput}
+                style={styles.weightInput}
                 keyboardType="numeric"
                 value={weightValue}
                 disabled={set.is_completed}
@@ -49,7 +49,7 @@ export default function WorkoutSetRow({
             />
 
             <AppInput
-                style={styles.setInput}
+                style={styles.repsInput}
                 keyboardType="numeric"
                 value={repsValue}
                 disabled={set.is_completed}
@@ -57,39 +57,49 @@ export default function WorkoutSetRow({
                 onEndEditing={(event) => onRepsBlur(event.nativeEvent.text)}
             />
 
-            {isPersonalRecord ? <Text style={styles.personalRecordText}>🏆 New PR</Text> : null}
-
             <Pressable
-                style={[styles.checkbox, set.is_completed && styles.checkboxChecked]}
+                style={[
+                    styles.checkbox,
+                    set.is_completed && styles.checkboxChecked,
+                    isPersonalRecord && styles.personalRecordCheckbox,
+                ]}
                 onPress={onToggleCompleted}
                 disabled={isTemporarySet}
             >
                 <Text style={styles.checkboxText}>{set.is_completed ? "✓" : ""}</Text>
             </Pressable>
-
-            <IconButton icon="X" variant="danger" disabled={isTemporarySet} onPress={onDelete} />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    setTableRow: {
+    row: {
+        width: "100%",
         flexDirection: "row",
         alignItems: "center",
-        gap: spacing.sm,
+        gap: spacing.xs,
         marginBottom: spacing.sm,
     },
     setNumber: {
-        width: 28,
+        width: 22,
         color: colors.textSecondary,
         fontWeight: "700",
     },
-    setInput: {
+    weightInput: {
         flex: 1,
+        height: 36,
+        width: 80,
+        paddingVertical: 0,
+    },
+    repsInput: {
+        flex: 1,
+        height: 36,
+        width: 80,
+        paddingVertical: 0,
     },
     checkbox: {
-        flex: 1,
-        height: 42,
+        width: 36,
+        height: 36,
         borderRadius: 10,
         borderWidth: componentStyles.borderWidth,
         borderColor: colors.success,
@@ -99,20 +109,12 @@ const styles = StyleSheet.create({
     checkboxChecked: {
         backgroundColor: colors.success,
     },
+    personalRecordCheckbox: {
+        borderColor: colors.warning,
+        backgroundColor: colors.warningDark,
+    },
     checkboxText: {
         color: colors.text,
         fontWeight: "800",
-    },
-    personalRecordRow: {
-        backgroundColor: colors.warningDark,
-        borderColor: colors.warning,
-        borderWidth: componentStyles.borderWidth,
-        borderRadius: 10,
-        padding: spacing.xs,
-    },
-    personalRecordText: {
-        color: colors.warning,
-        fontWeight: "800",
-        marginTop: spacing.sm,
     },
 });

@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { View, Text, Pressable, StyleSheet, TextInput, Alert } from "react-native";
 
+import AppButton from "../components/common/AppButton";
+import Card from "../components/common/Card";
+import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
+import { colors, componentStyles, spacing, typography } from "../theme";
+import AppInput from "../components/common/AppInput";
 
 export default function LoginScreen({ navigation }: any) {
     const { signIn } = useAuth();
@@ -18,86 +23,62 @@ export default function LoginScreen({ navigation }: any) {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>PeakProgress</Text>
-            <Text style={styles.subtitle}>Track your workouts. Build your progress.</Text>
+        <ScreenContainer>
+            <View style={styles.content}>
+                <Card style={styles.card}>
+                    <Text style={styles.title}>PeakProgress</Text>
+                    <Text style={styles.subtitle}>Track your workouts. Build your progress.</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#6B7280"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-            />
+                    <AppInput
+                        placeholder="Email"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        value={email}
+                        onChangeText={setEmail}
+                    />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#6B7280"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-            />
+                    <AppInput
+                        placeholder="Password"
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                    />
 
-            <Pressable style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Login</Text>
-            </Pressable>
+                    <AppButton title="Login" onPress={handleLogin} />
 
-            <Pressable onPress={() => navigation.navigate("Register")}>
-                <Text style={styles.link}>Create account</Text>
-            </Pressable>
-        </View>
+                    <Pressable onPress={() => navigation.navigate("Register")}>
+                        <Text style={styles.link}>Create account</Text>
+                    </Pressable>
+                </Card>
+            </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    content: {
         flex: 1,
-        backgroundColor: "#0B0F14",
-        alignItems: "center",
         justifyContent: "center",
-        padding: 24,
+    },
+    card: {
+        gap: spacing.md,
     },
     title: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontSize: 36,
         fontWeight: "800",
-        marginBottom: 8,
+        textAlign: "center",
     },
     subtitle: {
-        color: "#9CA3AF",
-        fontSize: 16,
+        color: colors.textSecondary,
+        fontSize: typography.body,
         textAlign: "center",
-        marginBottom: 32,
-    },
-    input: {
-        width: "100%",
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        marginBottom: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    button: {
-        width: "100%",
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginBottom: 18,
-        marginTop: 8,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        fontSize: 16,
-        textAlign: "center",
+        marginBottom: spacing.md,
     },
     link: {
-        color: "#4CAF50",
-        fontSize: 15,
+        color: colors.primary,
+        fontSize: typography.caption,
+        textAlign: "center",
+        marginTop: spacing.sm,
     },
 });

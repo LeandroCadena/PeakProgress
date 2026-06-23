@@ -1,8 +1,12 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 
+import AppButton from "../components/common/AppButton";
+import Card from "../components/common/Card";
+import ScreenContainer from "../components/common/ScreenContainer";
 import { getWorkoutSummary } from "../services/historyService";
+import { colors, spacing, typography } from "../theme";
 
 type RouteParams = {
     WorkoutSummary: {
@@ -37,39 +41,52 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
     }, [fetchSummary]);
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Workout Complete 🎉</Text>
-            <Text style={styles.subtitle}>{routineName}</Text>
+        <ScreenContainer>
+            <Text style={styles.title}>
+                Workout Complete 🎉
+            </Text>
 
-            <View style={styles.card}>
-                <Text style={styles.label}>Duration</Text>
-                <Text style={styles.value}>{summary?.durationMinutes ?? 0} min</Text>
+            <Text style={styles.subtitle}>
+                {routineName}
+            </Text>
+
+            <Card style={styles.heroCard}>
+                <Text style={styles.heroValue}>
+                    {summary?.totalVolume ?? 0} kg
+                </Text>
+
+                <Text style={styles.heroLabel}>
+                    Total Volume
+                </Text>
+            </Card>
+
+            <View style={styles.statsRow}>
+                <Card style={styles.statCard}>
+                    <Text style={styles.label}>Duration</Text>
+                    <Text style={styles.value}>
+                        {summary?.durationMinutes ?? 0} min
+                    </Text>
+                </Card>
+
+                <Card style={styles.statCard}>
+                    <Text style={styles.label}>Sets</Text>
+                    <Text style={styles.value}>
+                        {summary?.totalSets ?? 0}
+                    </Text>
+                </Card>
             </View>
 
-            <View style={styles.card}>
-                <Text style={styles.label}>Total Sets</Text>
-                <Text style={styles.value}>{summary?.totalSets ?? 0}</Text>
-            </View>
-
-            <View style={styles.card}>
-                <Text style={styles.label}>Total Volume</Text>
-                <Text style={styles.value}>{summary?.totalVolume ?? 0} kg</Text>
-            </View>
-
-            <Pressable style={styles.button} onPress={() => navigation.navigate("Main")}>
-                <Text style={styles.buttonText}>Back to Home</Text>
-            </Pressable>
-        </View>
+            <AppButton
+                title="Back to Home"
+                variant="primary"
+                onPress={() => navigation.navigate("Main")}
+                showChevron
+            />
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
         color: "#FFFFFF",
         fontSize: 30,
@@ -80,34 +97,35 @@ const styles = StyleSheet.create({
         marginTop: 8,
         marginBottom: 24,
     },
-    card: {
-        backgroundColor: "#161B22",
-        padding: 18,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#30363D",
-        marginBottom: 14,
+    heroCard: {
+        alignItems: "center",
+        marginBottom: spacing.lg,
+    },
+    heroValue: {
+        color: colors.success,
+        fontSize: 40,
+        fontWeight: typography.weightExtraBold,
+    },
+    heroLabel: {
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
+    },
+    statsRow: {
+        flexDirection: "row",
+        gap: spacing.md,
+        marginBottom: spacing.lg,
+    },
+    statCard: {
+        flex: 1,
     },
     label: {
-        color: "#9CA3AF",
-        fontSize: 14,
+        color: colors.textSecondary,
+        fontSize: typography.caption,
     },
     value: {
-        color: "#FFFFFF",
-        fontSize: 28,
-        fontWeight: "800",
-        marginTop: 6,
-    },
-    button: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginTop: 24,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
-        fontSize: 16,
+        color: colors.text,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
+        marginTop: spacing.xs,
     },
 });

@@ -1,10 +1,14 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList } from "react-native";
+import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
 
 import AppButton from "../components/common/AppButton";
+import AppInput from "../components/common/AppInput";
+import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import SectionTitle from "../components/common/SectionTitle";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { useExercisePicker } from "../hooks/useExercisePicker";
+import { colors, componentStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     ExercisePicker: {
@@ -39,14 +43,13 @@ export default function ExercisePickerScreen({ navigation }: any) {
     });
 
     return (
-        <ScreenContainer>
+        <ScreenContainer contentStyle={styles.screenContent}>
             <Text style={styles.title}>Add Exercise</Text>
 
             <View style={styles.searchRow}>
-                <TextInput
+                <AppInput
                     style={styles.searchInput}
                     placeholder="Search exercise"
-                    placeholderTextColor="#6B7280"
                     value={search}
                     onChangeText={setSearch}
                 />
@@ -76,12 +79,7 @@ export default function ExercisePickerScreen({ navigation }: any) {
                                 style={[styles.filterChip, isSelected && styles.filterChipActive]}
                                 onPress={() => toggleFilterId(item.id)}
                             >
-                                <Text
-                                    style={[
-                                        styles.filterText,
-                                        isSelected && styles.filterTextActive,
-                                    ]}
-                                >
+                                <Text style={[styles.filterText, isSelected && styles.filterTextActive]}>
                                     {item.name}
                                 </Text>
                             </Pressable>
@@ -90,27 +88,32 @@ export default function ExercisePickerScreen({ navigation }: any) {
                 />
             </View>
 
+            <SectionTitle>Exercises</SectionTitle>
+
             <FlatList
                 data={filteredExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.exerciseList}
                 showsVerticalScrollIndicator={false}
-                renderItem={({ item }) => {
-                    return (
-                        <ExerciseListCard
-                            exercise={item}
-                            alreadyAdded={currentExerciseIds.includes(item.id)}
-                            showAddButton
-                            onAdd={() => handleAddExercise(item.id)}
-                            onMoreInfo={() =>
-                                navigation.navigate("ExerciseDetail", {
-                                    exerciseId: item.id,
-                                })
-                            }
-                        />
-                    );
-                }}
-                ListEmptyComponent={<Text style={styles.emptyText}>No exercises found.</Text>}
+                renderItem={({ item }) => (
+                    <ExerciseListCard
+                        exercise={item}
+                        alreadyAdded={currentExerciseIds.includes(item.id)}
+                        showAddButton
+                        onAdd={() => handleAddExercise(item.id)}
+                        onMoreInfo={() =>
+                            navigation.navigate("ExerciseDetail", {
+                                exerciseId: item.id,
+                            })
+                        }
+                    />
+                )}
+                ListEmptyComponent={
+                    <EmptyStateCard
+                        title="No exercises found"
+                        message="Try changing your search or filters."
+                    />
+                }
             />
 
             <AppButton title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
@@ -119,86 +122,66 @@ export default function ExercisePickerScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+    screenContent: {
+        paddingBottom: spacing.lg,
+    },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
-        fontWeight: "800",
-        marginBottom: 20,
+        color: colors.text,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
+        marginBottom: spacing.lg,
+    },
+    searchRow: {
+        flexDirection: "row",
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+    },
+    searchInput: {
+        flex: 1,
+    },
+    filterModeButton: {
+        backgroundColor: colors.card,
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
+        borderRadius: componentStyles.buttonRadius,
+        paddingHorizontal: spacing.md,
+        justifyContent: "center",
+    },
+    filterModeText: {
+        color: colors.text,
+        fontWeight: typography.weightBold,
     },
     filtersWrapper: {
         height: 52,
-        marginBottom: 16,
+        marginBottom: spacing.md,
     },
     filters: {
-        gap: 10,
+        gap: spacing.sm,
         alignItems: "center",
     },
     filterChip: {
-        backgroundColor: "#161B22",
-        paddingVertical: 9,
-        paddingHorizontal: 14,
+        backgroundColor: colors.card,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md,
         borderRadius: 20,
-        borderWidth: 1,
-        borderColor: "#30363D",
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
         height: 38,
         justifyContent: "center",
     },
     filterChipActive: {
-        backgroundColor: "#4CAF50",
-        borderColor: "#4CAF50",
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
     },
     filterText: {
-        color: "#9CA3AF",
-        fontWeight: "700",
+        color: colors.textSecondary,
+        fontWeight: typography.weightBold,
     },
     filterTextActive: {
-        color: "#FFFFFF",
+        color: colors.text,
     },
     exerciseList: {
-        gap: 12,
-        paddingBottom: 24,
-    },
-    cancelButton: {
-        backgroundColor: "#374151",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginBottom: 12,
-    },
-    cancelButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
-    },
-    emptyText: {
-        color: "#9CA3AF",
-        textAlign: "center",
-        marginTop: 24,
-    },
-    searchRow: {
-        flexDirection: "row",
-        gap: 10,
-        marginBottom: 14,
-    },
-    searchInput: {
-        flex: 1,
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    filterModeButton: {
-        backgroundColor: "#161B22",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 12,
-        paddingHorizontal: 14,
-        justifyContent: "center",
-    },
-
-    filterModeText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
+        gap: spacing.md,
+        paddingBottom: spacing.xxl,
     },
 });

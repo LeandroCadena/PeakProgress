@@ -1,7 +1,10 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useEffect, useState, useCallback } from "react";
-import { Text, StyleSheet, TextInput, Pressable, FlatList, Alert } from "react-native";
+import { Text, StyleSheet, Pressable, FlatList, Alert, View, Image } from "react-native";
 
+import AppButton from "../components/common/AppButton";
+import Card from "../components/common/Card";
+import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
@@ -12,6 +15,7 @@ import {
     getActiveWorkoutSession,
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
+import { colors, spacing, typography } from "../theme";
 import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
@@ -194,51 +198,46 @@ export default function RoutinesScreen({ navigation }: any) {
     }
 
     return (
-        <ScreenContainer>
-            {activeSession ? (
-                <ActiveWorkoutBanner
-                    routineName={activeSession.routines?.name ?? "Workout"}
-                    elapsedText={getElapsedText(activeSession.started_at)}
-                    restRemainingText={getRestRemainingText(activeSession.rest_timer_end_at)}
-                    onPress={() =>
-                        navigation.navigate("WorkoutSession", {
-                            sessionId: activeSession.id,
-                            routineId: activeSession.routine_id,
-                            routineName: activeSession.routines?.name ?? "Workout",
-                        })
-                    }
-                />
-            ) : null}
-
-            <Text style={styles.title}>My Routines</Text>
-
-            <TextInput
-                style={styles.input}
-                placeholder="Routine name"
-                placeholderTextColor="#6B7280"
-                value={name}
-                onChangeText={setName}
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Description"
-                placeholderTextColor="#6B7280"
-                value={description}
-                onChangeText={setDescription}
-            />
-
-            <Pressable style={styles.button} onPress={createRoutine}>
-                <Text style={styles.buttonText}>Create Routine</Text>
-            </Pressable>
-
+        <ScreenContainer contentStyle={styles.screenContent}>
             <FlatList
                 data={routines}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+                ListHeaderComponent={
+                    <>
+                        <Text style={styles.title}>Routines</Text>
+
+                        {activeSession ? (
+                            <ActiveWorkoutBanner
+                                routineName={activeSession.routines?.name ?? "Workout"}
+                                elapsedText={getElapsedText(activeSession.started_at)}
+                                restRemainingText={getRestRemainingText(activeSession.rest_timer_end_at)}
+                                onPress={() =>
+                                    navigation.navigate("WorkoutSession", {
+                                        sessionId: activeSession.id,
+                                        routineId: activeSession.routine_id,
+                                        routineName: activeSession.routines?.name ?? "Workout",
+                                    })
+                                }
+                            />
+                        ) : null}
+
+                        <AppButton
+                            title="+ Create Routine"
+                            variant="primary"
+                            onPress={createRoutine}
+                        />
+                    </>
+                }
+                ListEmptyComponent={
+                    <EmptyStateCard
+                        title="No routines yet"
+                        message="Create your first routine and start building consistency."
+                    />
+                }
                 renderItem={({ item }) => (
                     <Pressable
-                        style={styles.card}
                         onPress={() =>
                             navigation.navigate("RoutineDetail", {
                                 routineId: item.id,
@@ -247,104 +246,125 @@ export default function RoutinesScreen({ navigation }: any) {
                             })
                         }
                     >
-                        <Text style={styles.cardTitle}>{item.name}</Text>
+                        <Card style={styles.routineCard}>
+                            <View style={styles.routineContent}>
+                                <Image
+                                    source={{
+                                        uri:
+                                            item.imageUrl ??
+                                            "https://placehold.co/80x80",
+                                    }}
+                                    style={styles.routineImage}
+                                />
 
-                        {item.description ? (
-                            <Text style={styles.cardDescription}>{item.description}</Text>
-                        ) : null}
-                        <Pressable
-                            style={[
-                                styles.startButton,
-                                startingRoutineId === item.id && styles.startButtonDisabled,
-                            ]}
-                            onPress={(event) => {
-                                event.stopPropagation();
-                                startWorkout(item);
-                            }}
-                            disabled={startingRoutineId === item.id}
-                        >
-                            <Text style={styles.startButtonText}>
-                                {startingRoutineId === item.id ? "Starting..." : "Start Workout"}
-                            </Text>
-                        </Pressable>
+                                <View style={styles.routineInfo}>
+                                    <Text style={styles.cardTitle}>
+                                        {item.name}
+                                    </Text>
+
+                                    <Text style={styles.cardDescription}>
+                                        {item.description?.trim() ||
+                                            "No description added yet."}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.actions}>
+                                    <AppButton
+                                        title={
+                                            startingRoutineId === item.id
+                                                ? "Starting..."
+                                                : "Start"
+                                        }
+                                        style={{
+                                            width: 90,
+                                        }}
+                                        variant="primary"
+                                        disabled={startingRoutineId === item.id}
+                                        onPress={() => startWorkout(item)}
+                                    />
+
+                                    <Text style={styles.chevron}>
+                                        ›
+                                    </Text>
+                                </View>
+                            </View>
+                        </Card>
                     </Pressable>
                 )}
+                ListFooterComponent={
+                    activeWorkout ? (
+                        <ActiveWorkoutModal
+                            visible={activeWorkoutModalVisible}
+                            routineName={getActiveRoutineName(activeWorkout) ?? "Workout"}
+                            onResume={resumeActiveWorkout}
+                            onDiscardAndStart={discardAndStartWorkout}
+                            onCancel={() => setActiveWorkoutModalVisible(false)}
+                            isStarting={Boolean(startingRoutineId)}
+                        />
+                    ) : null
+                }
             />
-
-            {activeWorkout ? (
-                <ActiveWorkoutModal
-                    visible={activeWorkoutModalVisible}
-                    routineName={getActiveRoutineName(activeWorkout) ?? "Workout"}
-                    onResume={resumeActiveWorkout}
-                    onDiscardAndStart={discardAndStartWorkout}
-                    onCancel={() => setActiveWorkoutModalVisible(false)}
-                    isStarting={Boolean(startingRoutineId)}
-                />
-            ) : null}
         </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
+    screenContent: {
+        paddingBottom: 0,
+        paddingTop: 24
+    },
+    listContent: {
+        paddingBottom: 120,
+        gap: spacing.md,
+    },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
-        fontWeight: "800",
-        marginBottom: 24,
+        color: colors.text,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
+        marginBottom: spacing.lg,
     },
-    input: {
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    button: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginBottom: 24,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        fontSize: 16,
-        textAlign: "center",
-    },
-    list: {
-        gap: 12,
-    },
-    card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
+    createCard: {
+        marginBottom: spacing.lg,
     },
     cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
+        color: colors.text,
+        fontSize: typography.subtitle,
+        fontWeight: typography.weightExtraBold,
     },
     cardDescription: {
-        color: "#9CA3AF",
-        marginTop: 6,
+        color: colors.textSecondary,
+        fontSize: typography.caption,
+        lineHeight: 20,
     },
     startButton: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 12,
-        borderRadius: 12,
+        marginTop: spacing.sm,
+    },
+    routineCard: {
+        paddingVertical: spacing.md,
+        gap: spacing.sm,
+    },
+    routineContent: {
+        flexDirection: "row",
         alignItems: "center",
-        marginTop: 12,
     },
-
-    startButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "800",
+    routineImage: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: colors.background,
     },
-    startButtonDisabled: {
-        opacity: 0.6,
+    routineInfo: {
+        flex: 1,
+        marginLeft: spacing.md,
+    },
+    actions: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.sm,
+    },
+    chevron: {
+        color: colors.textSecondary,
+        fontSize: 28,
+        fontWeight: typography.weightBold,
     },
 });

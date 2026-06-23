@@ -2,12 +2,13 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 
 import AppButton from "../components/common/AppButton";
-import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
+import ScreenContainer from "../components/common/ScreenContainer";
 import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
 import RoutineHeader from "../components/routine/RoutineHeader";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
 import { spacing } from "../theme";
+import { Ionicons } from "@expo/vector-icons";
 
 type RouteParams = {
     RoutineDetail: {
@@ -59,7 +60,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
     });
 
     return (
-        <RoutineDetailLayout>
+        <ScreenContainer scroll>
             <RoutineHeader
                 title={isEditingRoutine ? draftRoutineName : routineTitle}
                 description={isEditingRoutine ? draftRoutineDescription : editRoutineDescription}
@@ -72,19 +73,16 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onDelete={deleteRoutine}
             />
 
-            <AppButton
-                title={
-                    isEditingRoutine
-                        ? "Save Changes First"
-                        : isStartingWorkout
-                          ? "Starting..."
-                          : "Start Workout"
-                }
-                variant="primary"
-                disabled={isEditingRoutine || isStartingWorkout}
-                onPress={startWorkout}
-                style={styles.actionButton}
-            />
+            {!isEditingRoutine ? (
+                <AppButton
+                    title={isStartingWorkout ? "Starting..." : "Start Workout"}
+                    disabled={isStartingWorkout}
+                    onPress={startWorkout}
+                    style={styles.actionButton}
+                    iconLeft={<Ionicons name="barbell-outline" size={22} color="#FFFFFF" />}
+                    showChevron
+                />
+            ) : null}
 
             <RoutineExerciseSection
                 routineExercises={routineExercises}
@@ -112,8 +110,8 @@ export default function RoutineDetailScreen({ navigation }: any) {
                             currentCount:
                                 routineExercises.length > 0
                                     ? Math.max(
-                                          ...routineExercises.map((item) => item.position ?? 0)
-                                      ) + 1
+                                        ...routineExercises.map((item) => item.position ?? 0)
+                                    ) + 1
                                     : 0,
                             currentExerciseIds: routineExercises.map((item) => item.exercise_id),
                         })
@@ -131,17 +129,11 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onCancel={() => setActiveWorkoutModalVisible(false)}
                 isStarting={isStartingWorkout}
             />
-        </RoutineDetailLayout>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    title: {
-        color: "#FFFFFF",
-        fontSize: 30,
-        fontWeight: "800",
-        marginBottom: 20,
-    },
     actionButton: {
         marginTop: spacing.md,
     },

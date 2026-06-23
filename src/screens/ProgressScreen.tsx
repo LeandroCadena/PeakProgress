@@ -6,6 +6,10 @@ import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { getExerciseProgress } from "../services/progressService";
 import { ExerciseProgress } from "../types/progress";
+import Card from "../components/common/Card";
+import EmptyStateCard from "../components/common/EmptyStateCard";
+import SectionTitle from "../components/common/SectionTitle";
+import { colors, spacing, typography } from "../theme";
 
 export default function ProgressScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -32,18 +36,22 @@ export default function ProgressScreen({ navigation }: any) {
     return (
         <ScreenContainer>
             <Text style={styles.title}>Progress</Text>
-            <Text style={styles.subtitle}>Your personal records</Text>
+            <Text style={styles.subtitle}>Track your personal records.</Text>
+
+            <SectionTitle>Personal Records</SectionTitle>
 
             <FlatList
                 data={records}
                 keyExtractor={(item, index) => `${item.exerciseId}-${index}`}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
-                    <Text style={styles.emptyText}>No records yet. Complete a workout first.</Text>
+                    <EmptyStateCard
+                        title="No records yet"
+                        message="Complete a workout to start tracking personal records."
+                    />
                 }
                 renderItem={({ item }) => (
                     <Pressable
-                        style={styles.card}
                         onPress={() =>
                             navigation.navigate("ExerciseProgress", {
                                 exerciseId: item.exerciseId,
@@ -51,12 +59,17 @@ export default function ProgressScreen({ navigation }: any) {
                             })
                         }
                     >
-                        <Text style={styles.cardTitle}>{item.exerciseName}</Text>
+                        <Card>
+                            <Text style={styles.cardTitle}>{item.exerciseName}</Text>
 
-                        <Text>Best Volume: {item.bestVolume} kg</Text>
-                        <Text>
-                            {item.bestWeight} kg x {item.bestReps} reps
-                        </Text>
+                            <Text style={styles.prValue}>
+                                {item.bestWeight} kg × {item.bestReps} reps
+                            </Text>
+
+                            <Text style={styles.cardText}>
+                                Best Volume: {item.bestVolume} kg
+                            </Text>
+                        </Card>
                     </Pressable>
                 )}
             />
@@ -66,42 +79,38 @@ export default function ProgressScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
+        color: colors.text,
+        fontSize: typography.title,
         fontWeight: "800",
     },
+
     subtitle: {
-        color: "#9CA3AF",
-        marginTop: 6,
-        marginBottom: 20,
+        color: colors.textSecondary,
+        fontSize: typography.body,
+        marginTop: spacing.xs,
+        marginBottom: spacing.xl,
     },
+
     list: {
-        gap: 12,
-        paddingBottom: 24,
+        gap: spacing.md,
+        paddingBottom: spacing.xxl,
     },
-    card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
+
     cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
-    },
-    cardValue: {
-        color: "#4CAF50",
-        fontSize: 28,
+        color: colors.text,
+        fontSize: typography.subtitle,
         fontWeight: "800",
-        marginTop: 8,
     },
+
+    prValue: {
+        color: colors.primary,
+        fontSize: typography.title,
+        fontWeight: "800",
+        marginTop: spacing.sm,
+    },
+
     cardText: {
-        color: "#9CA3AF",
-        marginTop: 4,
-    },
-    emptyText: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
     },
 });

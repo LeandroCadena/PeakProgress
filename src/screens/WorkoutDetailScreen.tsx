@@ -1,8 +1,12 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
+import { Text, StyleSheet, FlatList, Alert } from "react-native";
 
+import Card from "../components/common/Card";
+import EmptyStateCard from "../components/common/EmptyStateCard";
+import ScreenContainer from "../components/common/ScreenContainer";
 import { getWorkoutSets } from "../services/historyService";
+import { colors, spacing, typography } from "../theme";
 
 type RouteParams = {
     WorkoutDetail: {
@@ -40,7 +44,7 @@ export default function WorkoutDetailScreen() {
     }, [fetchSets]);
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer>
             <Text style={styles.title}>{routineName}</Text>
             <Text style={styles.subtitle}>Workout Details</Text>
 
@@ -49,105 +53,71 @@ export default function WorkoutDetailScreen() {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
-                    <Text style={styles.emptyText}>No sets saved for this workout.</Text>
+                    <EmptyStateCard
+                        title="No sets saved"
+                        message="This workout does not have saved sets."
+                    />
                 }
-                renderItem={({ item }) => {
-                    return (
-                        <View style={styles.card}>
-                            <Text style={styles.exerciseName}>
-                                {item.exercise_name_snapshot ?? "Exercise"}
-                            </Text>
+                renderItem={({ item, index }) => (
+                    <Card style={styles.card}>
+                        <Text style={styles.exerciseName}>
+                            {item.exercise_name_snapshot ?? "Exercise"}
+                        </Text>
 
-                            <Text style={styles.setText}>
-                                {sets.map((set, index) => (
-                                    <Text key={index}>
-                                        Set {index + 1}: {item.weight ?? 0} kg x {item.reps ?? 0}{" "}
-                                        reps{"\n"}
-                                    </Text>
-                                ))}
-                            </Text>
+                        <Text style={styles.setText}>
+                            Set {index + 1}: {item.weight ?? 0} kg × {item.reps ?? 0} reps
+                        </Text>
 
-                            <Text
-                                style={[
-                                    styles.statusText,
-                                    item.is_completed ? styles.completedText : styles.skippedText,
-                                ]}
-                            >
-                                {item.is_completed ? "Completed" : "Skipped"}
-                            </Text>
-                        </View>
-                    );
-                }}
+                        <Text
+                            style={[
+                                styles.statusText,
+                                item.is_completed ? styles.completedText : styles.skippedText,
+                            ]}
+                        >
+                            {item.is_completed ? "Completed" : "Skipped"}
+                        </Text>
+                    </Card>
+                )}
             />
-        </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
-        fontWeight: "800",
+        color: colors.text,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
     },
     subtitle: {
-        color: "#9CA3AF",
-        marginTop: 6,
-        marginBottom: 20,
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
+        marginBottom: spacing.lg,
     },
     list: {
-        gap: 12,
-        paddingBottom: 24,
+        gap: spacing.md,
+        paddingBottom: spacing.xxl,
     },
     card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
-    },
-    cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
-    },
-    emptyText: {
-        color: "#9CA3AF",
-    },
-    completedText: {
-        color: "#4CAF50",
-        fontWeight: "700",
-    },
-
-    skippedText: {
-        color: "#F59E0B",
-        fontWeight: "700",
+        gap: spacing.xs,
     },
     exerciseName: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#FFFFFF",
-        marginBottom: 6,
+        fontSize: typography.body,
+        fontWeight: typography.weightBold,
+        color: colors.text,
     },
-
     setText: {
-        fontSize: 14,
-        color: "#D1D5DB",
-        marginBottom: 4,
+        fontSize: typography.caption,
+        color: colors.textSecondary,
     },
-
     statusText: {
-        fontSize: 13,
-        fontWeight: "700",
-        marginTop: 4,
+        fontSize: typography.caption,
+        fontWeight: typography.weightBold,
+    },
+    completedText: {
+        color: colors.success,
+    },
+    skippedText: {
+        color: colors.warning,
     },
 });

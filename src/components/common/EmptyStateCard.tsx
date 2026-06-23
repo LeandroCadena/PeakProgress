@@ -4,12 +4,17 @@ import { colors, spacing, typography } from "../../theme";
 
 import Card from "./Card";
 
-export default function EmptyStateCard() {
+type Props = {
+    title: string;
+    message: string;
+};
+
+export default function EmptyStateCard({ title, message }: Props) {
     return (
         <Card style={styles.card}>
-            <Text style={styles.title}>No exercises found</Text>
+            <Text style={styles.title}>{title}</Text>
 
-            <Text style={styles.message}>This workout doesn&apos;t contain any exercises yet.</Text>
+            <Text style={styles.message}>{message}</Text>
         </Card>
     );
 }

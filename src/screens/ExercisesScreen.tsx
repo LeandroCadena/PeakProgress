@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Alert, Pressable, TextInput } from "react-native";
 
+import AppInput from "../components/common/AppInput";
+import EmptyStateCard from "../components/common/EmptyStateCard";
+import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { getMuscles, getExercisesByFilter, getMuscleRegions } from "../services/exerciseService";
+import { colors, componentStyles, spacing, typography } from "../theme";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
@@ -66,14 +70,13 @@ export default function ExercisesScreen({ navigation }: any) {
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer contentStyle={styles.screenContent}>
             <Text style={styles.title}>Exercises</Text>
 
             <View style={styles.searchRow}>
-                <TextInput
+                <AppInput
                     style={styles.searchInput}
                     placeholder="Search exercise"
-                    placeholderTextColor="#6B7280"
                     value={search}
                     onChangeText={setSearch}
                 />
@@ -122,7 +125,12 @@ export default function ExercisesScreen({ navigation }: any) {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.exerciseList}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={<Text style={styles.emptyText}>No exercises found.</Text>}
+                ListEmptyComponent={
+                    <EmptyStateCard
+                        title="No exercises found"
+                        message="Try changing your search or filters."
+                    />
+                }
                 renderItem={({ item }) => (
                     <ExerciseListCard
                         exercise={item}
@@ -134,114 +142,69 @@ export default function ExercisesScreen({ navigation }: any) {
                     />
                 )}
             />
-        </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
+    screenContent: {
+        paddingBottom: spacing.lg,
     },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
-        fontWeight: "800",
-        marginBottom: 24,
-    },
-    list: {
-        gap: 12,
-        paddingBottom: 24,
-    },
-    card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
-    },
-    cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
-    },
-    filters: {
-        gap: 10,
-        marginBottom: 20,
-    },
-    filterChip: {
-        backgroundColor: "#161B22",
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    filterChipActive: {
-        backgroundColor: "#4CAF50",
-        borderColor: "#4CAF50",
-    },
-    filterText: {
-        color: "#9CA3AF",
-        fontWeight: "700",
-    },
-    filterTextActive: {
-        color: "#FFFFFF",
-    },
-    infoButton: {
-        backgroundColor: "#1F2937",
-        paddingVertical: 9,
-        paddingHorizontal: 14,
-        borderRadius: 10,
-        marginTop: 8,
-    },
-    infoButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-    },
-    exerciseList: {
-        gap: 12,
-        paddingBottom: 24,
-    },
-    emptyText: {
-        color: "#9CA3AF",
-        textAlign: "center",
-        marginTop: 24,
+        color: colors.text,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
+        marginBottom: spacing.lg,
     },
     searchRow: {
         flexDirection: "row",
-        gap: 10,
-        marginBottom: 14,
+        gap: spacing.sm,
+        marginBottom: spacing.md,
     },
     searchInput: {
         flex: 1,
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
     },
     filterModeButton: {
-        backgroundColor: "#161B22",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 12,
-        paddingHorizontal: 14,
+        backgroundColor: colors.card,
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
+        borderRadius: componentStyles.buttonRadius,
+        paddingHorizontal: spacing.md,
         justifyContent: "center",
     },
     filterModeText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
+        color: colors.text,
+        fontWeight: typography.weightBold,
     },
     filtersWrapper: {
         height: 52,
-        marginBottom: 16,
+        marginBottom: spacing.md,
+    },
+    filters: {
+        gap: spacing.sm,
+        alignItems: "center",
+    },
+    filterChip: {
+        backgroundColor: colors.card,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md,
+        borderRadius: 20,
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
+    },
+    filterChipActive: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+    },
+    filterText: {
+        color: colors.textSecondary,
+        fontWeight: typography.weightBold,
+    },
+    filterTextActive: {
+        color: colors.text,
+    },
+    exerciseList: {
+        gap: spacing.md,
+        paddingBottom: spacing.xxl,
     },
 });

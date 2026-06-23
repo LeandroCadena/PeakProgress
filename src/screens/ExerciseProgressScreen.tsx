@@ -1,9 +1,14 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, Alert } from "react-native";
+import { Text, StyleSheet, Dimensions, Alert } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 
+import Card from "../components/common/Card";
+import EmptyStateCard from "../components/common/EmptyStateCard";
+import ScreenContainer from "../components/common/ScreenContainer";
+import SectionTitle from "../components/common/SectionTitle";
 import { getExerciseProgressPoints } from "../services/progressService";
+import { colors, componentStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     ExerciseProgress: {
@@ -39,67 +44,81 @@ export default function ExerciseProgressScreen() {
 
     const chartData = points.length
         ? {
-              labels: points.map((_, index) => `${index + 1}`),
-              datasets: [
-                  {
-                      data: points.map((point) => Number(point.weight ?? 0)),
-                  },
-              ],
-          }
+            labels: points.map((_, index) => `${index + 1}`),
+            datasets: [
+                {
+                    data: points.map((point) => Number(point.weight ?? 0)),
+                },
+            ],
+        }
         : {
-              labels: ["0"],
-              datasets: [{ data: [0] }],
-          };
+            labels: ["0"],
+            datasets: [{ data: [0] }],
+        };
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer>
             <Text style={styles.title}>{exerciseName}</Text>
-            <Text style={styles.subtitle}>Weight progression</Text>
 
-            <LineChart
-                data={chartData}
-                width={Dimensions.get("window").width - 48}
-                height={240}
-                yAxisSuffix="kg"
-                chartConfig={{
-                    backgroundColor: "#161B22",
-                    backgroundGradientFrom: "#161B22",
-                    backgroundGradientTo: "#161B22",
-                    decimalPlaces: 0,
-                    color: () => "#4CAF50",
-                    labelColor: () => "#9CA3AF",
-                }}
-                bezier
-                style={styles.chart}
-            />
+            <Text style={styles.subtitle}>
+                Track your strength progression.
+            </Text>
 
-            <Text style={styles.info}>Each point represents one saved set.</Text>
-        </View>
+            <SectionTitle>Weight Progression</SectionTitle>
+
+            {points.length === 0 ? (
+                <EmptyStateCard
+                    title="No progress yet"
+                    message="Complete a workout with this exercise to start tracking progress."
+                />
+            ) : (
+                <Card>
+                    <LineChart
+                        data={chartData}
+                        width={Dimensions.get("window").width - 48}
+                        height={240}
+                        yAxisSuffix="kg"
+                        chartConfig={{
+                            backgroundColor: "#161B22",
+                            backgroundGradientFrom: "#161B22",
+                            backgroundGradientTo: "#161B22",
+                            decimalPlaces: 0,
+                            color: () => "#4CAF50",
+                            labelColor: () => "#9CA3AF",
+                        }}
+                        bezier
+                        style={styles.chart}
+                    />
+                </Card>
+            )}
+
+            <Text style={styles.info}>
+                Each point represents one completed set.
+            </Text>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
-        paddingTop: 64,
-    },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
+        color: colors.text,
+        fontSize: typography.title,
         fontWeight: "800",
     },
+
     subtitle: {
-        color: "#9CA3AF",
-        marginTop: 6,
-        marginBottom: 20,
+        color: colors.textSecondary,
+        fontSize: typography.body,
+        marginTop: spacing.xs,
+        marginBottom: spacing.xl,
     },
+
     chart: {
-        borderRadius: 16,
+        borderRadius: componentStyles.cardRadius,
     },
+
     info: {
-        color: "#9CA3AF",
-        marginTop: 16,
+        color: colors.textSecondary,
+        marginTop: spacing.md,
     },
 });

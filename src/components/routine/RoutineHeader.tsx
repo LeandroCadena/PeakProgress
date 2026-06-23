@@ -30,28 +30,19 @@ export default function RoutineHeader({
 }: Props) {
     return (
         <View style={styles.container}>
-            <View style={styles.row}>
-                {isEditing ? (
-                    <AppInput
-                        style={styles.titleInput}
-                        value={title}
-                        onChangeText={onChangeTitle}
-                        placeholder="Routine name"
-                    />
-                ) : (
+            {isEditing ? (
+                <AppInput
+                    style={styles.titleInput}
+                    value={title}
+                    onChangeText={onChangeTitle}
+                    placeholder="Routine name"
+                />
+            ) : (
+                <View style={styles.row}>
                     <Text style={styles.title}>{title}</Text>
-                )}
-
-                {isEditing ? (
-                    <View style={styles.actions}>
-                        <IconButton icon="✓" variant="success" onPress={onSave} />
-                        <IconButton icon="✕" onPress={onCancel} />
-                        <AppButton title="Delete Routine" variant="danger" onPress={onDelete} />
-                    </View>
-                ) : (
                     <IconButton icon="✎" variant="primary" onPress={onStartEdit} />
-                )}
-            </View>
+                </View>
+            )}
 
             {isEditing ? (
                 <AppInput
@@ -64,6 +55,22 @@ export default function RoutineHeader({
             ) : description ? (
                 <Text style={styles.description}>{description}</Text>
             ) : null}
+
+            {isEditing ? (
+                <>
+                    <View style={styles.editActions}>
+                        <AppButton title="Save Changes" variant="success" onPress={onSave} />
+                        <AppButton title="Cancel" variant="secondary" onPress={onCancel} />
+                    </View>
+
+                    <AppButton
+                        title="Delete Routine"
+                        variant="danger"
+                        onPress={onDelete}
+                        style={styles.deleteButton}
+                    />
+                </>
+            ) : null}
         </View>
     );
 }
@@ -72,40 +79,41 @@ const styles = StyleSheet.create({
     container: {
         marginBottom: spacing.lg,
     },
-
     row: {
         flexDirection: "row",
         alignItems: "center",
-        gap: spacing.md,
+        gap: spacing.sm,
     },
-
     title: {
         flex: 1,
         color: colors.text,
         fontSize: typography.title,
         fontWeight: "800",
     },
-
     titleInput: {
         flex: 1,
-        fontSize: 24,
-        fontWeight: "800",
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
     },
-
     description: {
         color: colors.textSecondary,
         marginTop: spacing.sm,
         lineHeight: 20,
     },
-
     descriptionInput: {
         marginTop: spacing.md,
         minHeight: 72,
         textAlignVertical: "top",
     },
-
     actions: {
         flexDirection: "row",
         gap: spacing.sm,
+    },
+    editActions: {
+        gap: spacing.sm,
+        marginTop: spacing.md,
+    },
+    deleteButton: {
+        marginTop: spacing.sm,
     },
 });

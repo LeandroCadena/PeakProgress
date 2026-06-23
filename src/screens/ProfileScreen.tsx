@@ -4,33 +4,65 @@ import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import { useAuth } from "../context/AuthContext";
 import { colors, spacing, typography } from "../theme";
+import ScreenContainer from "../components/common/ScreenContainer";
+import SectionTitle from "../components/common/SectionTitle";
 
 export default function ProfileScreen({ navigation }: any) {
     const { signOut } = useAuth();
 
     return (
-        <ScrollView style={styles.container}>
+        <ScreenContainer>
             <Text style={styles.title}>Profile</Text>
 
+            <Card style={styles.profileCard}>
+                <Text style={styles.profileName}>Athlete</Text>
+                <Text style={styles.profileSubtitle}>
+                    Track your workouts and stay consistent.
+                </Text>
+            </Card>
+
+            <SectionTitle>Account</SectionTitle>
+
             <Card style={styles.menuItem}>
-                <Pressable onPress={() => navigation.navigate("PersonalInformation")}>
+                <Pressable
+                    style={styles.menuContent}
+                    onPress={() => navigation.navigate("PersonalInformation")}
+                >
                     <Text style={styles.menuTitle}>Personal Information</Text>
-                    <Text style={styles.menuSubtitle}>Manage your profile and account</Text>
+                    <Text style={styles.chevron}>›</Text>
                 </Pressable>
+
+                <Text style={styles.menuSubtitle}>
+                    Manage your profile and account
+                </Text>
             </Card>
 
             <Card style={styles.menuItem}>
-                <Pressable onPress={() => navigation.navigate("History")}>
+                <Pressable
+                    style={styles.menuContent}
+                    onPress={() => navigation.navigate("History")}
+                >
                     <Text style={styles.menuTitle}>History</Text>
-                    <Text style={styles.menuSubtitle}>View your completed workouts</Text>
+                    <Text style={styles.chevron}>›</Text>
                 </Pressable>
+
+                <Text style={styles.menuSubtitle}>
+                    View your completed workouts
+                </Text>
             </Card>
 
             <Card style={styles.menuItem}>
-                <Pressable onPress={() => navigation.navigate("Settings")}>
+                <Pressable
+                    style={styles.menuContent}
+                    onPress={() => navigation.navigate("Settings")}
+                >
                     <Text style={styles.menuTitle}>Settings</Text>
-                    <Text style={styles.menuSubtitle}>App preferences and timers</Text>
+                    <Text style={styles.chevron}>›</Text>
                 </Pressable>
+
+                <Text style={styles.menuSubtitle}>
+                    App preferences and timers
+                </Text>
             </Card>
 
             <AppButton
@@ -39,37 +71,52 @@ export default function ProfileScreen({ navigation }: any) {
                 onPress={signOut}
                 style={styles.logoutButton}
             />
-        </ScrollView>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: spacing.xxl,
-        paddingTop: 64,
-    },
     title: {
         color: colors.text,
         fontSize: typography.title,
         fontWeight: "800",
         marginBottom: spacing.xl,
     },
+    profileCard: {
+        marginBottom: spacing.lg,
+    },
+    profileName: {
+        color: colors.text,
+        fontSize: typography.subtitle,
+        fontWeight: typography.weightExtraBold,
+    },
+    profileSubtitle: {
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
+    },
     menuItem: {
         marginBottom: spacing.md,
+    },
+    menuContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
     },
     menuTitle: {
         color: colors.text,
         fontSize: typography.body,
-        fontWeight: "800",
+        fontWeight: typography.weightBold,
     },
     menuSubtitle: {
         color: colors.textSecondary,
         marginTop: spacing.xs,
     },
+    chevron: {
+        color: colors.textSecondary,
+        fontSize: 24,
+        fontWeight: typography.weightBold,
+    },
     logoutButton: {
-        marginTop: spacing.md,
-        marginBottom: 40,
+        marginTop: spacing.lg,
     },
 });

@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { View, Text, StyleSheet, FlatList } from "react-native";
 
@@ -47,23 +48,36 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     });
 
     return (
-        <ScreenContainer>
-            <Text style={styles.title}>{routineName}</Text>
-            <Text style={styles.subtitle}>Workout Session</Text>
-
-            {!isInitializingSession && (
-                <RestTimerCard
-                    timer={timer}
-                    lastTimerDuration={lastTimerDuration}
-                    onRestart={restartLastTimer}
-                />
-            )}
-
+        <ScreenContainer contentStyle={styles.screenContent}>
             <FlatList
                 data={sessionExercises}
                 keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.list}
-                ListEmptyComponent={isInitializingSession ? <LoadingCard /> : <EmptyStateCard />}
+                ListHeaderComponent={
+                    <>
+                        <Text style={styles.title}>{routineName}</Text>
+                        <Text style={styles.subtitle}>Workout Session</Text>
+
+                        {!isInitializingSession ? (
+                            <RestTimerCard
+                                timer={timer}
+                                lastTimerDuration={lastTimerDuration}
+                                onRestart={restartLastTimer}
+                            />
+                        ) : null}
+                    </>
+                }
+                ListEmptyComponent={
+                    isInitializingSession ? (
+                        <LoadingCard />
+                    ) : (
+                        <EmptyStateCard
+                            title="No exercises yet"
+                            message="Add your first exercise to this workout."
+                        />
+                    )
+                }
                 renderItem={({ item, index }) => (
                     <View>
                         <WorkoutExerciseCard
@@ -90,53 +104,71 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                         ) : null}
                     </View>
                 )}
-            />
-
-            <AppButton
-                title="+ Add Exercise"
-                variant="success"
-                onPress={() =>
-                    navigation.navigate("ExercisePicker", {
-                        mode: "session",
-                        sessionId,
-                        currentCount:
-                            sessionExercises.length > 0
-                                ? Math.max(...sessionExercises.map((item) => item.position ?? 0)) +
-                                  1
-                                : 0,
-                        currentExerciseIds: sessionExercises.map((item) => item.exercise_id),
-                    })
+                ListFooterComponent={
+                    <AppButton
+                        title="+ Add Exercise"
+                        variant="success"
+                        onPress={() =>
+                            navigation.navigate("ExercisePicker", {
+                                mode: "session",
+                                sessionId,
+                                currentCount:
+                                    sessionExercises.length > 0
+                                        ? Math.max(
+                                            ...sessionExercises.map((item) => item.position ?? 0)
+                                        ) + 1
+                                        : 0,
+                                currentExerciseIds: sessionExercises.map((item) => item.exercise_id),
+                            })
+                        }
+                        style={styles.addExerciseButton}
+                    />
                 }
-                style={styles.actionButton}
             />
 
-            <AppButton
-                title={isFinishingWorkout ? "Finishing..." : "Finish Workout"}
-                variant="primary"
-                disabled={isFinishingWorkout}
-                onPress={finishWorkout}
-                style={styles.actionButton}
-            />
+            <View style={styles.footer}>
+                <AppButton
+                    title={isFinishingWorkout ? "Finishing..." : "Finish Workout"}
+                    variant="primary"
+                    disabled={isFinishingWorkout}
+                    onPress={finishWorkout}
+                    iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
+                    showChevron
+                />
+            </View>
         </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    actionButton: {
-        marginBottom: spacing.md,
+    screenContent: {
+        paddingBottom: 0,
     },
+
     title: {
         color: colors.text,
         fontSize: typography.title,
-        fontWeight: "800",
+        fontWeight: typography.weightExtraBold,
     },
+
     subtitle: {
         color: colors.textSecondary,
-        marginTop: spacing.sm,
+        marginTop: spacing.xs,
         marginBottom: spacing.xl,
     },
+
     list: {
-        gap: spacing.lg,
-        paddingBottom: spacing.xxl,
+        gap: spacing.md,
+        paddingBottom: 120,
+    },
+
+    addExerciseButton: {
+        marginTop: spacing.sm,
+    },
+
+    footer: {
+        paddingTop: spacing.md,
+        paddingBottom: spacing.lg,
+        backgroundColor: colors.background,
     },
 });

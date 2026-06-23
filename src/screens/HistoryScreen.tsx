@@ -2,8 +2,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Text, StyleSheet, FlatList, Pressable, Alert } from "react-native";
 
+import Card from "../components/common/Card";
+import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { getCompletedWorkoutSessions } from "../services/historyService";
+import { colors, spacing, typography } from "../theme";
 
 type WorkoutSession = {
     routine_name_snapshot: string;
@@ -58,7 +61,10 @@ export default function HistoryScreen({ navigation }: any) {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
-                    <Text style={styles.emptyText}>No completed workouts yet.</Text>
+                    <EmptyStateCard
+                        title="No completed workouts yet"
+                        message="Finish your first workout to see it here."
+                    />
                 }
                 renderItem={({ item }) => {
                     const routineName =
@@ -66,7 +72,6 @@ export default function HistoryScreen({ navigation }: any) {
 
                     return (
                         <Pressable
-                            style={styles.card}
                             onPress={() =>
                                 navigation.navigate("WorkoutDetail", {
                                     sessionId: item.id,
@@ -74,15 +79,16 @@ export default function HistoryScreen({ navigation }: any) {
                                 })
                             }
                         >
-                            <Text style={styles.cardTitle}>{routineName}</Text>
-                            <Text style={styles.cardText}>
-                                Sets: {item.total_sets ?? 0} · Volume:{" "}
-                                {Number(item.total_volume ?? 0)} kg
-                            </Text>
-                            <Text style={styles.cardText}>{formatDate(item.started_at)}</Text>
-                            <Text style={styles.cardText}>
-                                Duration: {getDuration(item.started_at, item.completed_at)}
-                            </Text>
+                            <Card style={styles.card}>
+                                <Text style={styles.cardTitle}>{routineName}</Text>
+                                <Text style={styles.cardText}>
+                                    Sets: {item.total_sets ?? 0} · Volume: {Number(item.total_volume ?? 0)} kg
+                                </Text>
+                                <Text style={styles.cardText}>{formatDate(item.started_at)}</Text>
+                                <Text style={styles.cardText}>
+                                    Duration: {getDuration(item.started_at, item.completed_at)}
+                                </Text>
+                            </Card>
                         </Pressable>
                     );
                 }}
@@ -93,32 +99,24 @@ export default function HistoryScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
-        fontWeight: "800",
-        marginBottom: 24,
+        color: colors.text,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
+        marginBottom: spacing.lg,
     },
     list: {
-        gap: 12,
-        paddingBottom: 24,
+        gap: spacing.md,
+        paddingBottom: spacing.xxl,
     },
     card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
+        gap: spacing.xs,
     },
     cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
+        color: colors.text,
+        fontSize: typography.subtitle,
+        fontWeight: typography.weightExtraBold,
     },
     cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
-    },
-    emptyText: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
     },
 });

@@ -12,6 +12,8 @@ import { getDashboardStats, getRecentWorkouts } from "../services/dashboardServi
 import { getActiveWorkoutSession } from "../services/workoutService";
 import { colors, spacing, typography } from "../theme";
 import { DashboardStats, RecentWorkout } from "../types/dashboard";
+import ScreenContainer from "../components/common/ScreenContainer";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -112,11 +114,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     return (
-        <ScrollView
-            style={styles.container}
-            contentContainerStyle={styles.content}
-            showsVerticalScrollIndicator={false}
-        >
+        <ScreenContainer scroll>
             {activeSession ? (
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
@@ -167,10 +165,10 @@ export default function HomeScreen({ navigation }: any) {
                         {stats.streakStatus === "empty"
                             ? "Start today"
                             : stats.streakStatus === "warning"
-                              ? "Keep it up"
-                              : stats.streakStatus === "expired"
-                                ? "Start again"
-                                : `${stats.streakWeeks} active weeks`}
+                                ? "Keep it up"
+                                : stats.streakStatus === "expired"
+                                    ? "Start again"
+                                    : `${stats.streakWeeks} active weeks`}
                     </Text>
                 </Card>
             </View>
@@ -180,6 +178,8 @@ export default function HomeScreen({ navigation }: any) {
                 variant="primary"
                 onPress={() => navigation.navigate("Routines")}
                 style={styles.startButton}
+                iconLeft={<Ionicons name="barbell-outline" size={22} color="#FFFFFF" />}
+                showChevron
             />
 
             {recentWorkouts.length > 0 ? (
@@ -200,7 +200,7 @@ export default function HomeScreen({ navigation }: any) {
                     ))}
                 </View>
             ) : null}
-        </ScrollView>
+        </ScreenContainer>
     );
 }
 
@@ -296,14 +296,5 @@ const styles = StyleSheet.create({
         width: 120,
         height: 120,
         marginLeft: spacing.md,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    content: {
-        padding: spacing.xxl,
-        paddingTop: 48,
-        paddingBottom: 120,
     },
 });

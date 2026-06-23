@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { colors, componentStyles, spacing, typography } from "../../theme";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -38,33 +38,36 @@ export default function WorkoutExerciseCard({
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
     return (
-        <Card>
-            <Text style={styles.cardTitle}>{exerciseName}</Text>
+        <Card style={styles.card}>
+            <View style={styles.header}>
+                {exercise.exercise_image_url_snapshot ? (
+                    <Image
+                        source={{ uri: exercise.exercise_image_url_snapshot }}
+                        style={styles.exerciseImage}
+                    />
+                ) : null}
 
-            {exercise.exercise_image_url_snapshot ? (
-                <Image
-                    source={{ uri: exercise.exercise_image_url_snapshot }}
-                    style={styles.exerciseImage}
-                />
-            ) : null}
+                <View style={styles.headerInfo}>
+                    <Text style={styles.cardTitle}>{exerciseName}</Text>
 
-            <RestTimeEditor
-                label="Rest between sets"
-                value={exercise.rest_seconds ?? 90}
-                editable={!useGlobalTimers}
-                onChange={(value) => onUpdateSetRest(exercise.id, value)}
-            />
+                    <Text style={styles.restText}>
+                        Rest between sets: {exercise.rest_seconds ?? 90} sec
+                    </Text>
+                </View>
+            </View>
+
+            <View style={styles.divider} />
 
             <View style={styles.setTableHeader}>
                 <Text style={styles.setNumberHeader}>Set</Text>
-                <Text style={styles.setHeaderText}>weights</Text>
-                <Text style={styles.setHeaderText}>reps</Text>
-                <Text style={styles.setHeaderText}>Done</Text>
-                <Text style={styles.setHeaderText}></Text>
+                <Text style={styles.setHeaderText}>Weight</Text>
+                <Text style={styles.setHeaderText}>Reps</Text>
+                <Text style={styles.doneHeader}>Done</Text>
             </View>
 
             {savedSets.map((set, index) => {
                 const isTemporarySet = set.id.startsWith("temp-");
+
                 return (
                     <WorkoutSetRow
                         key={set.id}
@@ -88,43 +91,69 @@ export default function WorkoutExerciseCard({
                 title="+ Add Set"
                 variant="success"
                 onPress={() => addEmptySet(exercise.id)}
+                style={styles.addSetButton}
             />
-
-            <AppButton title="Remove Exercise" variant="danger" onPress={onDeleteExercise} />
         </Card>
     );
 }
 
 const styles = StyleSheet.create({
+    card: {
+        gap: spacing.md,
+    },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.md,
+    },
+    exerciseImage: {
+        width: 72,
+        height: 72,
+        borderRadius: componentStyles.imageRadius,
+        backgroundColor: colors.background,
+    },
+    headerInfo: {
+        flex: 1,
+    },
     cardTitle: {
         color: colors.text,
         fontSize: typography.subtitle,
-        fontWeight: "700",
+        fontWeight: typography.weightExtraBold,
+    },
+    restText: {
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
+        fontSize: typography.caption,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: colors.cardBorder,
     },
     setTableHeader: {
         flexDirection: "row",
         alignItems: "center",
-        marginTop: spacing.md,
-        marginBottom: spacing.sm,
         gap: spacing.sm,
+    },
+    setNumberHeader: {
+        width: 22,
+        color: colors.textSecondary,
+        fontSize: typography.small,
+        fontWeight: typography.weightBold,
     },
     setHeaderText: {
         flex: 1,
         color: colors.textSecondary,
-        fontWeight: "700",
+        fontWeight: typography.weightBold,
         fontSize: typography.small,
     },
-    setNumberHeader: {
-        width: 28,
+    doneHeader: {
+        width: 36,
         color: colors.textSecondary,
+        fontWeight: typography.weightBold,
         fontSize: typography.small,
-        fontWeight: "700",
+        textAlign: "center",
     },
-    exerciseImage: {
-        width: "100%",
-        height: 130,
-        borderRadius: 12,
-        marginBottom: spacing.md,
-        backgroundColor: colors.background,
+    addSetButton: {
+        marginTop: spacing.sm,
     },
 });

@@ -4,9 +4,10 @@ import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
+import SectionTitle from "../components/common/SectionTitle";
 import { useAuth } from "../context/AuthContext";
 import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
-import { colors } from "../theme";
+import { colors, spacing, typography } from "../theme";
 import { setNotificationsEnabled } from "../utils/notifications";
 import { setSoundsEnabled } from "../utils/sounds";
 
@@ -64,31 +65,61 @@ export default function SettingsScreen() {
     }
 
     return (
-        <ScreenContainer>
+        <ScreenContainer scroll>
             <Text style={styles.title}>Settings</Text>
 
-            <Card style={styles.card}>
-                <Text style={styles.label}>Sounds</Text>
-                <Switch
-                    value={settings.sounds_enabled}
-                    onValueChange={(value) => updateSetting({ sounds_enabled: value })}
-                />
+            <Card style={styles.settingCard}>
+                <View style={styles.settingRow}>
+                    <View style={styles.settingInfo}>
+                        <Text style={styles.label}>Sounds</Text>
+                        <Text style={styles.helperText}>
+                            Play sounds during workouts
+                        </Text>
+                    </View>
+
+                    <Switch
+                        value={settings.sounds_enabled}
+                        onValueChange={(value) =>
+                            updateSetting({ sounds_enabled: value })
+                        }
+                    />
+                </View>
             </Card>
 
-            <Card style={styles.card}>
-                <Text style={styles.label}>Notifications</Text>
-                <Switch
-                    value={settings.notifications_enabled}
-                    onValueChange={(value) => updateSetting({ notifications_enabled: value })}
-                />
+            <Card style={styles.settingCard}>
+                <View style={styles.settingRow}>
+                    <View style={styles.settingInfo}>
+                        <Text style={styles.label}>Notifications</Text>
+                        <Text style={styles.helperText}>
+                            Enable notifications
+                        </Text>
+                    </View>
+
+                    <Switch
+                        value={settings.notifications_enabled}
+                        onValueChange={(value) =>
+                            updateSetting({ notifications_enabled: value })
+                        }
+                    />
+                </View>
             </Card>
 
-            <Card style={styles.card}>
-                <Text style={styles.label}>Use Global Timers</Text>
-                <Switch
-                    value={settings.use_global_timers}
-                    onValueChange={(value) => updateSetting({ use_global_timers: value })}
-                />
+            <Card style={styles.settingCard}>
+                <View style={styles.settingRow}>
+                    <View style={styles.settingInfo}>
+                        <Text style={styles.label}>Use Global Timers</Text>
+                        <Text style={styles.helperText}>
+                            Use Global Timers
+                        </Text>
+                    </View>
+
+                    <Switch
+                        value={settings.use_global_timers}
+                        onValueChange={(value) =>
+                            updateSetting({ use_global_timers: value })
+                        }
+                    />
+                </View>
             </Card>
 
             {settings.use_global_timers ? (
@@ -100,7 +131,6 @@ export default function SettingsScreen() {
                             value={String(settings.global_set_rest_seconds)}
                             keyboardType="numeric"
                             placeholder="90"
-                            placeholderTextColor="#6B7280"
                             onChangeText={(value) =>
                                 updateSetting({
                                     global_set_rest_seconds: Number(value || 0),
@@ -117,7 +147,6 @@ export default function SettingsScreen() {
                             value={String(settings.global_exercise_rest_seconds)}
                             keyboardType="numeric"
                             placeholder="120"
-                            placeholderTextColor="#6B7280"
                             onChangeText={(value) =>
                                 updateSetting({
                                     global_exercise_rest_seconds: Number(value || 0),
@@ -130,6 +159,7 @@ export default function SettingsScreen() {
             ) : null}
 
             <Card style={styles.card}>
+                <SectionTitle>Appearance</SectionTitle>
                 <Text style={styles.label}>Theme</Text>
 
                 <View style={styles.row}>
@@ -156,6 +186,7 @@ export default function SettingsScreen() {
             </Card>
 
             <Card style={styles.card}>
+                <SectionTitle>Language</SectionTitle>
                 <Text style={styles.label}>Language</Text>
 
                 <View style={styles.row}>
@@ -187,18 +218,18 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
     title: {
         color: colors.text,
-        fontSize: 30,
-        fontWeight: "800",
-        marginBottom: 20,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
+        marginBottom: spacing.lg,
     },
     text: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
     },
     card: {
         marginBottom: 14,
     },
     label: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "800",
         marginBottom: 10,
     },
@@ -210,32 +241,43 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 12,
         borderRadius: 10,
-        backgroundColor: "#0B0F14",
+        backgroundColor: colors.background,
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#30363D",
+        borderColor: colors.cardBorder,
     },
     optionButtonActive: {
-        backgroundColor: "#4CAF50",
-        borderColor: "#4CAF50",
+        backgroundColor: colors.success,
+        borderColor: colors.success,
     },
     optionText: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "700",
     },
     input: {
-        backgroundColor: "#0B0F14",
+        backgroundColor: colors.background,
         borderWidth: 1,
-        borderColor: "#30363D",
+        borderColor: colors.cardBorder,
         borderRadius: 10,
         paddingHorizontal: 12,
         paddingVertical: 12,
-        color: "#FFFFFF",
+        color: colors.text,
         marginTop: 6,
     },
-
     helperText: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
         marginTop: 8,
+    },
+    settingCard: {
+        marginBottom: spacing.md,
+    },
+    settingRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    settingInfo: {
+        flex: 1,
+        marginRight: spacing.md,
     },
 });

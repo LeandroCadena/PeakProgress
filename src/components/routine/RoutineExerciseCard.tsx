@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Pressable } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { colors, componentStyles, spacing, typography } from "../../theme";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -8,6 +8,8 @@ import IconButton from "../common/IconButton";
 import RestTimeEditor from "../workout/RestTimeEditor";
 
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
+import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
     item: RoutineExercise;
@@ -36,61 +38,76 @@ export default function RoutineExerciseCard({
     updateLocalTemplateSetValue,
     onUpdateSetRest,
 }: Props) {
+    const [isCollapsed, setIsCollapsed] = useState(true);
+
     return (
         <Card>
-            {item.exercise?.image_url ? (
-                <Image source={{ uri: item.exercise.image_url }} style={styles.exerciseImage} />
-            ) : null}
+            <Pressable style={styles.header} onPress={() => setIsCollapsed((prev) => !prev)}>
+                {item.exercise?.image_url ? (
+                    <Image source={{ uri: item.exercise.image_url }} style={styles.exerciseImage} />
+                ) : null}
 
-            <Text style={styles.cardTitle}>{item.exercise?.name ?? "Exercise"}</Text>
+                <View style={styles.headerInfo}>
+                    <Text style={styles.cardTitle}>{item.exercise?.name ?? "Exercise"}</Text>
 
-            <View style={styles.setHeader}>
-                <Text style={styles.setNumberHeader}>Set</Text>
-                <Text style={styles.setHeaderText}>Weight</Text>
-                <Text style={styles.setHeaderText}>Reps</Text>
-                {isEditing ? <Text style={styles.setHeaderText}></Text> : null}
-            </View>
-
-            <RestTimeEditor
-                label="Rest between sets"
-                value={item.rest_seconds ?? 90}
-                editable={isEditing}
-                onChange={(value) => onUpdateSetRest(item.id, value)}
-            />
-
-            {sets.map((set, index) => {
-                const isTemporarySet = set.id.startsWith("temp-");
-                return (
-                    <RoutineExerciseSetRow
-                        key={set.id}
-                        set={set}
-                        isEditing={isEditing}
-                        displaySetNumber={index + 1}
-                        onDraftChange={(field, value) =>
-                            updateLocalTemplateSetValue(set.id, field, value)
-                        }
-                        onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
-                        onDelete={() => onDeleteSet(item.id, set.id)}
-                        isTemporarySet={isTemporarySet}
+                    <RestTimeEditor
+                        label="Rest between sets"
+                        value={item.rest_seconds ?? 90}
+                        editable={isEditing}
+                        onChange={(value) => onUpdateSetRest(item.id, value)}
                     />
-                );
-            })}
+                </View>
 
-            {isEditing ? (
-                <AppButton title="+ Add Set" variant="success" onPress={onAddSet} />
-            ) : null}
-
-            {isEditing ? (
+                <Ionicons
+                    name={isCollapsed ? "chevron-down" : "chevron-up"}
+                    size={22}
+                    color={colors.text}
+                />
+            </Pressable>
+            {!isCollapsed ? (
                 <>
-                    <View style={styles.cardActions}>
-                        <AppButton title="Remove Exercise" variant="danger" onPress={onDelete} />
+                    <View style={styles.setHeader}>
+                        <Text style={styles.setNumberHeader}>Set</Text>
+                        <Text style={styles.setHeaderText}>Weight</Text>
+                        <Text style={styles.setHeaderText}>Reps</Text>
+                        {isEditing ? <View style={styles.deleteColumn} /> : null}
                     </View>
 
-                    <View style={styles.moveActions}>
-                        <IconButton icon="↑" onPress={onMoveUp} />
+                    {sets.map((set, index) => {
+                        const isTemporarySet = set.id.startsWith("temp-");
+                        return (
+                            <RoutineExerciseSetRow
+                                key={set.id}
+                                set={set}
+                                isEditing={isEditing}
+                                displaySetNumber={index + 1}
+                                onDraftChange={(field, value) =>
+                                    updateLocalTemplateSetValue(set.id, field, value)
+                                }
+                                onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
+                                onDelete={() => onDeleteSet(item.id, set.id)}
+                                isTemporarySet={isTemporarySet}
+                            />
+                        );
+                    })}
 
-                        <IconButton icon="↓" onPress={onMoveDown} />
-                    </View>
+                    {isEditing ? (
+                        <AppButton title="+ Add Set" variant="success" onPress={onAddSet} />
+                    ) : null}
+
+                    {isEditing ? (
+                        <>
+                            <View style={styles.cardActions}>
+                                <AppButton title="Remove Exercise" variant="danger" onPress={onDelete} />
+                            </View>
+
+                            <View style={styles.moveActions}>
+                                <IconButton icon="↑" onPress={onMoveUp} />
+
+                                <IconButton icon="↓" onPress={onMoveDown} />
+                            </View>
+                        </>
+                    ) : null}
                 </>
             ) : null}
         </Card>
@@ -98,10 +115,35 @@ export default function RoutineExerciseCard({
 }
 
 const styles = StyleSheet.create({
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.md,
+    },
+    exerciseImage: {
+        width: 72,
+        height: 72,
+        borderRadius: componentStyles.imageRadius,
+        backgroundColor: colors.background,
+    },
+    headerInfo: {
+        flex: 1,
+    },
     cardTitle: {
         color: colors.text,
         fontSize: typography.subtitle,
-        fontWeight: "700",
+        fontWeight: typography.weightExtraBold,
+    },
+    restText: {
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
+    },
+    setHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.sm,
+        marginTop: spacing.lg,
+        marginBottom: spacing.sm,
     },
     cardActions: {
         flexDirection: "row",
@@ -125,13 +167,6 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         fontSize: typography.body,
     },
-    setHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.sm,
-        marginTop: spacing.lg,
-        marginBottom: spacing.sm,
-    },
     setNumberHeader: {
         width: 28,
         color: colors.textSecondary,
@@ -141,14 +176,10 @@ const styles = StyleSheet.create({
     setHeaderText: {
         flex: 1,
         color: colors.textSecondary,
-        fontSize: typography.caption,
-        fontWeight: "700",
+        fontSize: typography.small,
+        fontWeight: typography.weightBold,
     },
-    exerciseImage: {
-        width: "100%",
-        height: 130,
-        borderRadius: 12,
-        marginBottom: spacing.md,
-        backgroundColor: colors.background,
+    deleteColumn: {
+        width: componentStyles.iconButtonSize,
     },
 });

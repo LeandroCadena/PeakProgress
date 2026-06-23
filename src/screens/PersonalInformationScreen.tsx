@@ -11,6 +11,7 @@ import { useProfile } from "../hooks/useProfile";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { supabase } from "../services/supabase";
 import { colors, spacing, typography } from "../theme";
+import ScreenContainer from "../components/common/ScreenContainer";
 
 export default function PersonalInformationScreen() {
     const { user } = useAuth();
@@ -98,7 +99,7 @@ export default function PersonalInformationScreen() {
     }
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScreenContainer scroll>
             <Text style={styles.title}>Personal Information</Text>
 
             <Card style={styles.card}>
@@ -237,20 +238,11 @@ export default function PersonalInformationScreen() {
                     </>
                 ) : null}
             </Card>
-        </ScrollView>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: spacing.xxl,
-        paddingTop: 64,
-    },
-    content: {
-        paddingBottom: spacing.xxl,
-    },
     title: {
         color: colors.text,
         fontSize: typography.title,

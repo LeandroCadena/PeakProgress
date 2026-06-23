@@ -4,4 +4,10 @@ export const typography = {
     body: 16,
     caption: 14,
     small: 12,
-};
+
+    weightMedium: "500",
+    weightSemiBold: "600",
+    weightBold: "700",
+    weightExtraBold: "800",
+    weightBlack: "900",
+} as const;

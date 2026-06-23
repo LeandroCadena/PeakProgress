@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-import { colors, spacing } from "../../theme";
+import { colors, componentStyles, spacing, typography } from "../../theme";
 import { RoutineExerciseSet } from "../../types/routine";
 import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
@@ -70,12 +70,14 @@ export default function RoutineExerciseSetRow({
             />
 
             {isEditing ? (
-                <IconButton
-                    icon="X"
-                    variant="danger"
-                    disabled={isTemporarySet}
-                    onPress={onDelete}
-                />
+                <View style={styles.deleteAction}>
+                    <IconButton
+                        icon="X"
+                        variant="danger"
+                        disabled={isTemporarySet}
+                        onPress={onDelete}
+                    />
+                </View>
             ) : null}
         </View>
     );
@@ -88,11 +90,14 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
     },
     setNumber: {
-        width: 28,
+        width: componentStyles.setNumberWidth,
         color: colors.textSecondary,
-        fontWeight: "700",
+        fontWeight: typography.weightBold,
     },
     input: {
         flex: 1,
+    },
+    deleteAction: {
+        width: componentStyles.iconButtonSize,
     },
 });

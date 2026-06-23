@@ -1,5 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
+import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
 
 import { colors, componentStyles, spacing } from "../../theme";
 
@@ -12,6 +13,8 @@ type Props = {
     variant?: Variant;
     style?: ViewStyle | ViewStyle[];
     children?: ReactNode;
+    iconLeft?: any;
+    showChevron?: boolean;
 };
 
 export default function AppButton({
@@ -20,6 +23,8 @@ export default function AppButton({
     disabled = false,
     variant = "primary",
     style,
+    iconLeft,
+    showChevron,
 }: Props) {
     return (
         <Pressable
@@ -27,9 +32,19 @@ export default function AppButton({
             disabled={disabled}
             onPress={onPress}
         >
-            <Text style={[styles.text, variant === "secondary" && styles.secondaryText]}>
-                {title}
-            </Text>
+            <View style={styles.content}>
+                {iconLeft ? <View style={styles.iconSlot}>{iconLeft}</View> : null}
+
+                <Text style={[styles.text, variant === "secondary" && styles.secondaryText]}>
+                    {title}
+                </Text>
+
+                {showChevron ? (
+                    <View style={styles.chevron}>
+                        <Ionicons name="chevron-forward" size={22} color={colors.text} />
+                    </View>
+                ) : null}
+            </View>
         </Pressable>
     );
 }
@@ -67,5 +82,23 @@ const styles = StyleSheet.create({
     },
     secondaryText: {
         color: colors.textSecondary,
+    },
+    content: {
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.sm,
+    },
+    chevronSpacer: {
+        width: 22,
+    },
+    iconSlot: {
+        position: "absolute",
+        left: spacing.xl,
+    },
+    chevron: {
+        position: "absolute",
+        right: spacing.xl,
     },
 });

@@ -1,8 +1,13 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, Alert } from "react-native";
+import { View, Text, Image, StyleSheet, Alert } from "react-native";
 
+import Card from "../components/common/Card";
+import LoadingCard from "../components/common/LoadingCard";
+import ScreenContainer from "../components/common/ScreenContainer";
+import SectionTitle from "../components/common/SectionTitle";
 import { getExerciseDetail } from "../services/exerciseService";
+import { colors, componentStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     ExerciseDetail: {
@@ -31,9 +36,9 @@ export default function ExerciseDetailScreen() {
 
     if (!exercise) {
         return (
-            <View style={styles.container}>
-                <Text style={styles.loadingText}>Loading exercise...</Text>
-            </View>
+            <ScreenContainer>
+                <LoadingCard />
+            </ScreenContainer>
         );
     }
 
@@ -44,7 +49,7 @@ export default function ExerciseDetailScreen() {
             .join(", ") ?? "No muscles listed";
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScreenContainer scroll>
             {exercise.image_url ? (
                 <Image source={{ uri: exercise.image_url }} style={styles.image} />
             ) : (
@@ -59,111 +64,85 @@ export default function ExerciseDetailScreen() {
                 {exercise.equipment ?? "No equipment"} · {exercise.difficulty ?? "No difficulty"}
             </Text>
 
-            <Text style={styles.sectionTitle}>Muscles</Text>
-            <Text style={styles.text}>{muscles}</Text>
+            <Card style={styles.infoCard}>
+                <SectionTitle>Muscles</SectionTitle>
+                <Text style={styles.text}>{muscles}</Text>
+            </Card>
 
             {exercise.description ? (
-                <>
-                    <Text style={styles.sectionTitle}>Description</Text>
+                <Card style={styles.infoCard}>
+                    <SectionTitle>Description</SectionTitle>
                     <Text style={styles.text}>{exercise.description}</Text>
-                </>
+                </Card>
             ) : null}
 
             {exercise.instructions ? (
-                <>
-                    <Text style={styles.sectionTitle}>Instructions</Text>
+                <Card style={styles.infoCard}>
+                    <SectionTitle>Instructions</SectionTitle>
                     <Text style={styles.text}>{exercise.instructions}</Text>
-                </>
+                </Card>
             ) : null}
 
             {exercise.tips ? (
-                <>
-                    <Text style={styles.sectionTitle}>Tips</Text>
+                <Card style={styles.infoCard}>
+                    <SectionTitle>Tips</SectionTitle>
                     <Text style={styles.text}>{exercise.tips}</Text>
-                </>
+                </Card>
             ) : null}
 
             {exercise.animation_url ? (
-                <>
-                    <Text style={styles.sectionTitle}>Execution</Text>
+                <Card style={styles.infoCard}>
+                    <SectionTitle>Execution</SectionTitle>
                     <Image source={{ uri: exercise.animation_url }} style={styles.animation} />
-                </>
+                </Card>
             ) : null}
-        </ScrollView>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#0B0F14",
-    },
-    content: {
-        padding: 24,
-        paddingTop: 64,
-        paddingBottom: 40,
-    },
-    loadingText: {
-        color: "#9CA3AF",
-        marginTop: 80,
-        textAlign: "center",
-    },
     image: {
         width: "100%",
         height: 220,
-        borderRadius: 16,
-        marginBottom: 20,
+        borderRadius: componentStyles.cardRadius,
+        marginBottom: spacing.lg,
+        backgroundColor: colors.card,
     },
     imagePlaceholder: {
         height: 220,
-        borderRadius: 16,
-        backgroundColor: "#161B22",
-        borderWidth: 1,
-        borderColor: "#30363D",
+        borderRadius: componentStyles.cardRadius,
+        backgroundColor: colors.card,
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 20,
+        marginBottom: spacing.lg,
     },
     placeholderText: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
     },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
-        fontWeight: "800",
+        color: colors.text,
+        fontSize: typography.title,
+        fontWeight: typography.weightExtraBold,
     },
     meta: {
-        color: "#9CA3AF",
-        marginTop: 8,
-        marginBottom: 20,
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
+        marginBottom: spacing.lg,
     },
-    sectionTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "700",
-        marginTop: 20,
-        marginBottom: 8,
+    infoCard: {
+        marginBottom: spacing.md,
     },
     text: {
-        color: "#D1D5DB",
+        color: colors.textSecondary,
         lineHeight: 22,
-    },
-    videoButton: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: "center",
-        marginTop: 28,
-    },
-    videoButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "800",
     },
     animation: {
         width: "100%",
         height: 220,
-        borderRadius: 16,
-        marginTop: 8,
-        backgroundColor: "#161B22",
+        borderRadius: componentStyles.cardRadius,
+        marginTop: spacing.sm,
+        backgroundColor: colors.card,
     },
 });

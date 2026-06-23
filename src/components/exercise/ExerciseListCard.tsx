@@ -1,6 +1,6 @@
 import { Image, View, Text, StyleSheet } from "react-native";
 
-import { colors } from "../../theme";
+import { colors, componentStyles, spacing, typography } from "../../theme";
 import { Exercise } from "../../types/exercise";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -22,21 +22,28 @@ export default function ExerciseListCard({
 }: Props) {
     return (
         <Card style={[styles.card, alreadyAdded ? styles.cardAdded : null]}>
-            {exercise.image_url ? (
-                <Image source={{ uri: exercise.image_url }} style={styles.image} />
-            ) : (
-                <View style={styles.imagePlaceholder}>
-                    <Text style={styles.placeholderText}>No image</Text>
+            <View style={styles.header}>
+                {exercise.image_url ? (
+                    <Image source={{ uri: exercise.image_url }} style={styles.image} />
+                ) : (
+                    <View style={styles.imagePlaceholder}>
+                        <Text style={styles.placeholderText}>No image</Text>
+                    </View>
+                )}
+
+                <View style={styles.info}>
+                    <Text style={styles.title}>{exercise.name}</Text>
+
+                    <Text style={styles.text}>
+                        {exercise.equipment ?? "No equipment"} ·{" "}
+                        {exercise.difficulty ?? "No difficulty"}
+                    </Text>
+
+                    {alreadyAdded ? (
+                        <Text style={styles.alreadyAddedText}>Already added</Text>
+                    ) : null}
                 </View>
-            )}
-
-            <Text style={styles.title}>{exercise.name}</Text>
-
-            <Text style={styles.text}>
-                {exercise.equipment ?? "No equipment"} · {exercise.difficulty ?? "No difficulty"}
-            </Text>
-
-            {alreadyAdded ? <Text style={styles.alreadyAddedText}>Already added</Text> : null}
+            </View>
 
             <View style={styles.actions}>
                 <AppButton title="More Info" variant="secondary" onPress={onMoreInfo} />
@@ -46,7 +53,7 @@ export default function ExerciseListCard({
                         title={alreadyAdded ? "Added" : "Add"}
                         variant="success"
                         disabled={alreadyAdded}
-                        onPress={onAdd ?? (() => {})}
+                        onPress={onAdd ?? (() => { })}
                     />
                 ) : null}
             </View>
@@ -56,51 +63,55 @@ export default function ExerciseListCard({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: "#161B22",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#30363D",
+        gap: spacing.md,
     },
     cardAdded: {
         borderColor: colors.success,
         backgroundColor: colors.successDark,
         borderWidth: 2,
     },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.md,
+    },
     image: {
-        width: "100%",
-        height: 140,
-        borderRadius: 12,
-        marginBottom: 12,
+        width: 72,
+        height: 72,
+        borderRadius: componentStyles.imageRadius,
+        backgroundColor: colors.background,
     },
     imagePlaceholder: {
-        height: 140,
-        borderRadius: 12,
-        backgroundColor: "#0B0F14",
+        width: 72,
+        height: 72,
+        borderRadius: componentStyles.imageRadius,
+        backgroundColor: colors.background,
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 12,
     },
     placeholderText: {
-        color: "#9CA3AF",
+        color: colors.textSecondary,
+        fontSize: typography.small,
+    },
+    info: {
+        flex: 1,
     },
     title: {
-        color: "#FFFFFF",
-        fontSize: 17,
-        fontWeight: "700",
+        color: colors.text,
+        fontSize: typography.subtitle,
+        fontWeight: typography.weightExtraBold,
     },
     text: {
-        color: "#9CA3AF",
-        marginTop: 6,
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
     },
     alreadyAddedText: {
-        color: "#4CAF50",
-        marginTop: 6,
-        fontWeight: "700",
+        color: colors.success,
+        marginTop: spacing.xs,
+        fontWeight: typography.weightBold,
     },
     actions: {
         flexDirection: "row",
-        gap: 10,
-        marginTop: 12,
+        gap: spacing.sm,
     },
 });
