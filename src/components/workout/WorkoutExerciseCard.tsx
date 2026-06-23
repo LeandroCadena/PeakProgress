@@ -5,7 +5,6 @@ import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
 
-import RestTimeEditor from "./RestTimeEditor";
 import WorkoutSetRow from "./WorkoutSetRow";
 
 type WorkoutExerciseCardProps = {

@@ -1,9 +1,11 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Alert, Image, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Alert, Image } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
+import ScreenContainer from "../components/common/ScreenContainer";
 import RecentWorkoutCard from "../components/home/RecentWorkoutCard";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import { useAuth } from "../context/AuthContext";
@@ -12,8 +14,6 @@ import { getDashboardStats, getRecentWorkouts } from "../services/dashboardServi
 import { getActiveWorkoutSession } from "../services/workoutService";
 import { colors, spacing, typography } from "../theme";
 import { DashboardStats, RecentWorkout } from "../types/dashboard";
-import ScreenContainer from "../components/common/ScreenContainer";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();

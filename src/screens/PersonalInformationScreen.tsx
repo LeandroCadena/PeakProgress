@@ -1,17 +1,17 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { Text, StyleSheet, ScrollView, Alert, View } from "react-native";
+import { Text, StyleSheet, Alert, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import IconButton from "../components/common/IconButton";
+import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { supabase } from "../services/supabase";
 import { colors, spacing, typography } from "../theme";
-import ScreenContainer from "../components/common/ScreenContainer";
 
 export default function PersonalInformationScreen() {
     const { user } = useAuth();
@@ -127,7 +127,6 @@ export default function PersonalInformationScreen() {
                             value={fullName}
                             onChangeText={setFullName}
                             placeholder="Enter your name"
-                            placeholderTextColor="#6B7280"
                         />
 
                         <AppButton
@@ -168,7 +167,6 @@ export default function PersonalInformationScreen() {
                             value={newEmail}
                             onChangeText={setNewEmail}
                             placeholder="Enter new email"
-                            placeholderTextColor="#6B7280"
                             keyboardType="email-address"
                             autoCapitalize="none"
                         />
@@ -211,7 +209,6 @@ export default function PersonalInformationScreen() {
                             value={newPassword}
                             onChangeText={setNewPassword}
                             placeholder="Enter new password"
-                            placeholderTextColor="#6B7280"
                             secureTextEntry
                         />
 
@@ -220,7 +217,6 @@ export default function PersonalInformationScreen() {
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
                             placeholder="Confirm new password"
-                            placeholderTextColor="#6B7280"
                             secureTextEntry
                         />
 

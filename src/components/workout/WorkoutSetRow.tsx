@@ -1,10 +1,9 @@
 import { View, Pressable, Text, StyleSheet } from "react-native";
 
-import { colors, spacing, componentStyles, typography } from "../../theme";
+import { colors, spacing, componentStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
-import IconButton from "../common/IconButton";
 
 type WorkoutSetRowProps = {
     set: WorkoutSessionSet;

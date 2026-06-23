@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 
@@ -8,7 +9,6 @@ import RoutineHeader from "../components/routine/RoutineHeader";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
 import { spacing } from "../theme";
-import { Ionicons } from "@expo/vector-icons";
 
 type RouteParams = {
     RoutineDetail: {

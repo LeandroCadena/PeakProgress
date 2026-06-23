@@ -1,11 +1,11 @@
-import { Text, StyleSheet, Pressable, ScrollView } from "react-native";
+import { Text, StyleSheet, Pressable } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
-import { useAuth } from "../context/AuthContext";
-import { colors, spacing, typography } from "../theme";
 import ScreenContainer from "../components/common/ScreenContainer";
 import SectionTitle from "../components/common/SectionTitle";
+import { useAuth } from "../context/AuthContext";
+import { colors, spacing, typography } from "../theme";
 
 export default function ProfileScreen({ navigation }: any) {
     const { signOut } = useAuth();

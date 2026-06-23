@@ -2,14 +2,14 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
 
-import ScreenContainer from "../components/common/ScreenContainer";
-import { useAuth } from "../context/AuthContext";
-import { getExerciseProgress } from "../services/progressService";
-import { ExerciseProgress } from "../types/progress";
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
+import ScreenContainer from "../components/common/ScreenContainer";
 import SectionTitle from "../components/common/SectionTitle";
+import { useAuth } from "../context/AuthContext";
+import { getExerciseProgress } from "../services/progressService";
 import { colors, spacing, typography } from "../theme";
+import { ExerciseProgress } from "../types/progress";
 
 export default function ProgressScreen({ navigation }: any) {
     const { user } = useAuth();

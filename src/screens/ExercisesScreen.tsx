@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert, Pressable, TextInput } from "react-native";
+import { View, Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
 
 import AppInput from "../components/common/AppInput";
 import EmptyStateCard from "../components/common/EmptyStateCard";

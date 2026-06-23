@@ -1,3 +1,5 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import { View, Text, StyleSheet, Image, Pressable } from "react-native";
 
 import { colors, componentStyles, spacing, typography } from "../../theme";
@@ -8,8 +10,6 @@ import IconButton from "../common/IconButton";
 import RestTimeEditor from "../workout/RestTimeEditor";
 
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
-import { useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
     item: RoutineExercise;

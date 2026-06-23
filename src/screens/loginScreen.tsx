@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet, TextInput, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
 
 import AppButton from "../components/common/AppButton";
+import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
-import { colors, componentStyles, spacing, typography } from "../theme";
-import AppInput from "../components/common/AppInput";
+import { colors, spacing, typography } from "../theme";
 
 export default function LoginScreen({ navigation }: any) {
     const { signIn } = useAuth();

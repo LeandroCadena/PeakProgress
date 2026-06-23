@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet, TextInput, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
 
 import AppButton from "../components/common/AppButton";
+import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { colors, componentStyles, typography } from "../theme";
-import AppInput from "../components/common/AppInput";
 
 export default function RegisterScreen({ navigation }: any) {
     const { signUp } = useAuth();
