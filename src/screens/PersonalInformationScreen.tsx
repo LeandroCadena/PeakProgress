@@ -1,10 +1,15 @@
-import { Text, StyleSheet, ScrollView, Alert, TextInput, Pressable, View } from "react-native";
+import { Text, StyleSheet, ScrollView, Alert, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
 import { useCallback, useState } from "react";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { useFocusEffect } from "@react-navigation/native";
 import { supabase } from "../services/supabase";
+import Card from "../components/common/Card";
+import IconButton from "../components/common/IconButton";
+import AppInput from "../components/common/AppInput";
+import AppButton from "../components/common/AppButton";
+import { colors, spacing, typography } from "../theme";
 
 export default function PersonalInformationScreen() {
     const { user } = useAuth();
@@ -96,10 +101,13 @@ export default function PersonalInformationScreen() {
     }
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.content}
+        >
             <Text style={styles.title}>Personal Information</Text>
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                     <View>
                         <Text style={styles.sectionTitle}>Name</Text>
@@ -109,15 +117,17 @@ export default function PersonalInformationScreen() {
                     </View>
 
                     {editingSection !== "name" ? (
-                        <Pressable onPress={() => setEditingSection("name")}>
-                            <Text style={styles.editIcon}>✎</Text>
-                        </Pressable>
+                        <IconButton
+                            icon="✎"
+                            variant="primary"
+                            onPress={() => setEditingSection("name")}
+                        />
                     ) : null}
                 </View>
 
                 {editingSection === "name" ? (
                     <>
-                        <TextInput
+                        <AppInput
                             style={styles.input}
                             value={fullName}
                             onChangeText={setFullName}
@@ -125,21 +135,22 @@ export default function PersonalInformationScreen() {
                             placeholderTextColor="#6B7280"
                         />
 
-                        <Pressable style={styles.button} onPress={handleSaveProfile}>
-                            <Text style={styles.buttonText}>Save Name</Text>
-                        </Pressable>
+                        <AppButton
+                            title="Save Name"
+                            variant="success"
+                            onPress={handleSaveProfile}
+                        />
 
-                        <Pressable
-                            style={styles.secondaryButton}
+                        <AppButton
+                            title="Cancel"
+                            variant="secondary"
                             onPress={() => setEditingSection(null)}
-                        >
-                            <Text style={styles.secondaryButtonText}>Cancel</Text>
-                        </Pressable>
+                        />
                     </>
                 ) : null}
-            </View>
+            </Card>
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                     <View>
                         <Text style={styles.sectionTitle}>Email</Text>
@@ -147,15 +158,17 @@ export default function PersonalInformationScreen() {
                     </View>
 
                     {editingSection !== "email" ? (
-                        <Pressable onPress={() => setEditingSection("email")}>
-                            <Text style={styles.editIcon}>✎</Text>
-                        </Pressable>
+                        <IconButton
+                            icon="✎"
+                            variant="primary"
+                            onPress={() => setEditingSection("email")}
+                        />
                     ) : null}
                 </View>
 
                 {editingSection === "email" ? (
                     <>
-                        <TextInput
+                        <AppInput
                             style={styles.input}
                             value={newEmail}
                             onChangeText={setNewEmail}
@@ -165,21 +178,22 @@ export default function PersonalInformationScreen() {
                             autoCapitalize="none"
                         />
 
-                        <Pressable style={styles.button} onPress={handleChangeEmail}>
-                            <Text style={styles.buttonText}>Update Email</Text>
-                        </Pressable>
+                        <AppButton
+                            title="Update Email"
+                            variant="success"
+                            onPress={handleChangeEmail}
+                        />
 
-                        <Pressable
-                            style={styles.secondaryButton}
+                        <AppButton
+                            title="Cancel"
+                            variant="secondary"
                             onPress={() => setEditingSection(null)}
-                        >
-                            <Text style={styles.secondaryButtonText}>Cancel</Text>
-                        </Pressable>
+                        />
                     </>
                 ) : null}
-            </View>
+            </Card>
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                     <View>
                         <Text style={styles.sectionTitle}>Password</Text>
@@ -187,15 +201,17 @@ export default function PersonalInformationScreen() {
                     </View>
 
                     {editingSection !== "password" ? (
-                        <Pressable onPress={() => setEditingSection("password")}>
-                            <Text style={styles.editIcon}>✎</Text>
-                        </Pressable>
+                        <IconButton
+                            icon="✎"
+                            variant="primary"
+                            onPress={() => setEditingSection("password")}
+                        />
                     ) : null}
                 </View>
 
                 {editingSection === "password" ? (
                     <>
-                        <TextInput
+                        <AppInput
                             style={styles.input}
                             value={newPassword}
                             onChangeText={setNewPassword}
@@ -204,7 +220,7 @@ export default function PersonalInformationScreen() {
                             secureTextEntry
                         />
 
-                        <TextInput
+                        <AppInput
                             style={styles.input}
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
@@ -213,19 +229,20 @@ export default function PersonalInformationScreen() {
                             secureTextEntry
                         />
 
-                        <Pressable style={styles.button} onPress={handleChangePassword}>
-                            <Text style={styles.buttonText}>Update Password</Text>
-                        </Pressable>
+                        <AppButton
+                            title="Update Password"
+                            variant="success"
+                            onPress={handleChangePassword}
+                        />
 
-                        <Pressable
-                            style={styles.secondaryButton}
+                        <AppButton
+                            title="Cancel"
+                            variant="secondary"
                             onPress={() => setEditingSection(null)}
-                        >
-                            <Text style={styles.secondaryButtonText}>Cancel</Text>
-                        </Pressable>
+                        />
                     </>
                 ) : null}
-            </View>
+            </Card>
         </ScrollView>
     );
 }
@@ -233,103 +250,39 @@ export default function PersonalInformationScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#0B0F14",
-        padding: 24,
+        backgroundColor: colors.background,
+        padding: spacing.xxl,
         paddingTop: 64,
     },
+    content: {
+        paddingBottom: spacing.xxl,
+    },
     title: {
-        color: "#FFFFFF",
-        fontSize: 30,
+        color: colors.text,
+        fontSize: typography.title,
         fontWeight: "800",
-    },
-    subtitle: {
-        color: "#9CA3AF",
-        marginTop: 8,
-        marginBottom: 24,
-    },
-    note: {
-        color: "#9CA3AF",
-        marginTop: 14,
-        lineHeight: 20,
+        marginBottom: spacing.lg,
     },
     card: {
-        backgroundColor: "#161B22",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 14,
-        padding: 16,
-        marginTop: 14,
-    },
-
-    sectionTitle: {
-        color: "#FFFFFF",
-        fontSize: 18,
-        fontWeight: "800",
-        marginBottom: 6,
-    },
-
-    helperText: {
-        color: "#9CA3AF",
-        marginBottom: 14,
-        lineHeight: 20,
-    },
-
-    label: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        marginBottom: 8,
-    },
-
-    input: {
-        backgroundColor: "#0B0F14",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        color: "#FFFFFF",
-        marginBottom: 14,
-    },
-
-    button: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-    },
-
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
+        marginBottom: spacing.md,
     },
     cardHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
     },
-
-    valueText: {
-        color: "#9CA3AF",
-        marginTop: 6,
-    },
-
-    editIcon: {
-        color: "#4CAF50",
-        fontSize: 20,
+    sectionTitle: {
+        color: colors.text,
+        fontSize: typography.subtitle,
         fontWeight: "800",
+        marginBottom: spacing.xs,
     },
-
-    secondaryButton: {
-        paddingVertical: 12,
-        borderRadius: 12,
-        marginTop: 10,
-        borderWidth: 1,
-        borderColor: "#30363D",
+    valueText: {
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
     },
-
-    secondaryButtonText: {
-        color: "#9CA3AF",
-        fontWeight: "700",
-        textAlign: "center",
+    input: {
+        marginTop: spacing.md,
+        marginBottom: spacing.md,
     },
 });

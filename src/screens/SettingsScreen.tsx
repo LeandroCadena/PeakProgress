@@ -9,6 +9,9 @@ import {
 import { setSoundsEnabled } from "../utils/sounds";
 import { setNotificationsEnabled } from "../utils/notifications";
 import ScreenContainer from "../components/common/ScreenContainer";
+import Card from "../components/common/Card";
+import AppInput from "../components/common/AppInput";
+import { colors } from "../theme";
 
 export default function SettingsScreen() {
     const { user } = useAuth();
@@ -67,7 +70,7 @@ export default function SettingsScreen() {
         <ScreenContainer>
             <Text style={styles.title}>Settings</Text>
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <Text style={styles.label}>Sounds</Text>
                 <Switch
                     value={settings.sounds_enabled}
@@ -75,9 +78,9 @@ export default function SettingsScreen() {
                         updateSetting({ sounds_enabled: value })
                     }
                 />
-            </View>
+            </Card>
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <Text style={styles.label}>Notifications</Text>
                 <Switch
                     value={settings.notifications_enabled}
@@ -85,9 +88,9 @@ export default function SettingsScreen() {
                         updateSetting({ notifications_enabled: value })
                     }
                 />
-            </View>
+            </Card>
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <Text style={styles.label}>Use Global Timers</Text>
                 <Switch
                     value={settings.use_global_timers}
@@ -95,13 +98,13 @@ export default function SettingsScreen() {
                         updateSetting({ use_global_timers: value })
                     }
                 />
-            </View>
+            </Card>
 
             {settings.use_global_timers ? (
                 <>
-                    <View style={styles.card}>
+                    <Card style={styles.card}>
                         <Text style={styles.label}>Global Rest Between Sets</Text>
-                        <TextInput
+                        <AppInput
                             style={styles.input}
                             value={String(settings.global_set_rest_seconds)}
                             keyboardType="numeric"
@@ -114,11 +117,11 @@ export default function SettingsScreen() {
                             }
                         />
                         <Text style={styles.helperText}>Seconds between sets</Text>
-                    </View>
+                    </Card>
 
-                    <View style={styles.card}>
+                    <Card style={styles.card}>
                         <Text style={styles.label}>Global Rest Between Exercises</Text>
-                        <TextInput
+                        <AppInput
                             style={styles.input}
                             value={String(settings.global_exercise_rest_seconds)}
                             keyboardType="numeric"
@@ -131,11 +134,11 @@ export default function SettingsScreen() {
                             }
                         />
                         <Text style={styles.helperText}>Seconds before the next exercise</Text>
-                    </View>
+                    </Card>
                 </>
             ) : null}
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <Text style={styles.label}>Theme</Text>
 
                 <View style={styles.row}>
@@ -159,9 +162,9 @@ export default function SettingsScreen() {
                         <Text style={styles.optionText}>Light</Text>
                     </Pressable>
                 </View>
-            </View>
+            </Card>
 
-            <View style={styles.card}>
+            <Card style={styles.card}>
                 <Text style={styles.label}>Language</Text>
 
                 <View style={styles.row}>
@@ -185,14 +188,14 @@ export default function SettingsScreen() {
                         <Text style={styles.optionText}>Español</Text>
                     </Pressable>
                 </View>
-            </View>
+            </Card>
         </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
     title: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontSize: 30,
         fontWeight: "800",
         marginBottom: 20,
@@ -201,11 +204,6 @@ const styles = StyleSheet.create({
         color: "#9CA3AF",
     },
     card: {
-        backgroundColor: "#161B22",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 14,
-        padding: 16,
         marginBottom: 14,
     },
     label: {
