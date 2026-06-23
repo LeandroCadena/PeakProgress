@@ -1,4 +1,10 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+    colors,
+    spacing,
+    typography,
+    componentStyles,
+} from "../../theme";
 
 type Props = {
     routineName: string;
@@ -31,33 +37,38 @@ export default function ActiveWorkoutBanner({
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#102A1A",
-        borderColor: "#4CAF50",
-        borderWidth: 1,
-        borderRadius: 14,
-        padding: 14,
-        marginBottom: 16,
+        backgroundColor: colors.successDark,
+        borderColor: colors.success,
+        borderWidth: componentStyles.borderWidth,
+        borderRadius: componentStyles.cardRadius,
+        padding: spacing.lg,
+        marginBottom: spacing.lg,
+
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
     },
+
     label: {
-        color: "#4CAF50",
+        color: colors.success,
         fontWeight: "700",
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
+
     title: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "800",
-        fontSize: 16,
+        fontSize: typography.body,
     },
+
     time: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontWeight: "800",
     },
+
     restText: {
-        color: "#FBBF24",
+        color: colors.warning,
         fontWeight: "800",
-        marginTop: 4,
+        marginTop: spacing.xs,
     },
 });
