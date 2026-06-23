@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet } from "react-native";
+
 import { colors, spacing, typography } from "../../theme";
-import IconButton from "../common/IconButton";
 import Card from "../common/Card";
+import IconButton from "../common/IconButton";
 
 type Props = {
     timer: number;
@@ -9,11 +10,7 @@ type Props = {
     onRestart: () => void;
 };
 
-export default function RestTimerCard({
-    timer,
-    lastTimerDuration,
-    onRestart,
-}: Props) {
+export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: Props) {
     return (
         <Card>
             <View style={styles.header}>
@@ -31,9 +28,7 @@ export default function RestTimerCard({
             </View>
 
             {lastTimerDuration > 0 ? (
-                <Text style={styles.lastTimerText}>
-                    Last rest: {lastTimerDuration}s
-                </Text>
+                <Text style={styles.lastTimerText}>Last rest: {lastTimerDuration}s</Text>
             ) : null}
         </Card>
     );

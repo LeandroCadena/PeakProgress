@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet } from "react-native";
+
 import { WeightLog } from "../../types/profile";
-import Card from "../common/Card";
 import AppButton from "../common/AppButton";
+import Card from "../common/Card";
 
 type Props = {
     log: WeightLog;
@@ -18,11 +19,7 @@ export default function WeightLogCard({ log, onDelete }: Props) {
                 </Text>
             </View>
 
-            <AppButton
-                title="Delete"
-                variant="danger"
-                onPress={onDelete}
-            />
+            <AppButton title="Delete" variant="danger" onPress={onDelete} />
         </Card>
     );
 }

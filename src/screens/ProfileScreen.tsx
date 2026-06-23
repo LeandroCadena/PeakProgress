@@ -1,16 +1,12 @@
-import {
-    Text,
-    StyleSheet,
-    Pressable,
-    ScrollView,
-} from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { Text, StyleSheet, Pressable, ScrollView } from "react-native";
+
 import AppButton from "../components/common/AppButton";
-import { colors, spacing, typography } from "../theme";
 import Card from "../components/common/Card";
+import { useAuth } from "../context/AuthContext";
+import { colors, spacing, typography } from "../theme";
 
 export default function ProfileScreen({ navigation }: any) {
-    const { user, signOut } = useAuth();
+    const { signOut } = useAuth();
 
     return (
         <ScrollView style={styles.container}>
@@ -19,27 +15,21 @@ export default function ProfileScreen({ navigation }: any) {
             <Card style={styles.menuItem}>
                 <Pressable onPress={() => navigation.navigate("PersonalInformation")}>
                     <Text style={styles.menuTitle}>Personal Information</Text>
-                    <Text style={styles.menuSubtitle}>
-                        Manage your profile and account
-                    </Text>
+                    <Text style={styles.menuSubtitle}>Manage your profile and account</Text>
                 </Pressable>
             </Card>
 
             <Card style={styles.menuItem}>
                 <Pressable onPress={() => navigation.navigate("History")}>
                     <Text style={styles.menuTitle}>History</Text>
-                    <Text style={styles.menuSubtitle}>
-                        View your completed workouts
-                    </Text>
+                    <Text style={styles.menuSubtitle}>View your completed workouts</Text>
                 </Pressable>
             </Card>
 
             <Card style={styles.menuItem}>
                 <Pressable onPress={() => navigation.navigate("Settings")}>
                     <Text style={styles.menuTitle}>Settings</Text>
-                    <Text style={styles.menuSubtitle}>
-                        App preferences and timers
-                    </Text>
+                    <Text style={styles.menuSubtitle}>App preferences and timers</Text>
                 </Pressable>
             </Card>
 

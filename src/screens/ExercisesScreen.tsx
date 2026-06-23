@@ -1,21 +1,9 @@
-import { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    Alert,
-    Pressable,
-    Image,
-    TextInput
-} from "react-native";
-import {
-    getMuscles,
-    getExercisesByFilter,
-    getMuscleRegions
-} from "../services/exerciseService";
-import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, Alert, Pressable, TextInput } from "react-native";
+
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
+import { getMuscles, getExercisesByFilter, getMuscleRegions } from "../services/exerciseService";
+import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
     const [search, setSearch] = useState("");
@@ -24,42 +12,6 @@ export default function ExercisesScreen({ navigation }: any) {
     const [muscles, setMuscles] = useState<Muscle[]>([]);
     const [regions, setRegions] = useState<MuscleRegion[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>([]);
-
-    useEffect(() => {
-        fetchFilters();
-    }, []);
-
-    useEffect(() => {
-        fetchExercises();
-    }, [filterMode, selectedFilterIds]);
-
-    async function fetchMuscles() {
-        try {
-            const data = await getMuscles();
-            setMuscles(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    const filterOptions = filterMode === "muscle" ? muscles : regions;
-
-    const filteredExercises = exercises.filter((exercise) =>
-        exercise.name.toLowerCase().includes(search.toLowerCase())
-    );
-
-    function toggleFilterId(id: string) {
-        setSelectedFilterIds((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id)
-                : [...prev, id]
-        );
-    }
-
-    function changeFilterMode(mode: FilterMode) {
-        setFilterMode(mode);
-        setSelectedFilterIds([]);
-    }
 
     async function fetchFilters() {
         try {
@@ -75,7 +27,11 @@ export default function ExercisesScreen({ navigation }: any) {
         }
     }
 
-    async function fetchExercises() {
+    useEffect(() => {
+        fetchFilters();
+    }, []);
+
+    const fetchExercises = useCallback(async () => {
         try {
             const data = await getExercisesByFilter({
                 filterMode,
@@ -86,6 +42,27 @@ export default function ExercisesScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
+    }, [filterMode, selectedFilterIds])
+
+    useEffect(() => {
+        fetchExercises();
+    }, [fetchExercises, filterMode, selectedFilterIds]);
+
+    const filterOptions = filterMode === "muscle" ? muscles : regions;
+
+    const filteredExercises = exercises.filter((exercise) =>
+        exercise.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    function toggleFilterId(id: string) {
+        setSelectedFilterIds((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        );
+    }
+
+    function changeFilterMode(mode: FilterMode) {
+        setFilterMode(mode);
+        setSelectedFilterIds([]);
     }
 
     return (
@@ -103,9 +80,7 @@ export default function ExercisesScreen({ navigation }: any) {
 
                 <Pressable
                     style={styles.filterModeButton}
-                    onPress={() =>
-                        changeFilterMode(filterMode === "muscle" ? "region" : "muscle")
-                    }
+                    onPress={() => changeFilterMode(filterMode === "muscle" ? "region" : "muscle")}
                 >
                     <Text style={styles.filterModeText}>
                         {filterMode === "muscle" ? "Muscle" : "Region"}
@@ -125,10 +100,7 @@ export default function ExercisesScreen({ navigation }: any) {
 
                         return (
                             <Pressable
-                                style={[
-                                    styles.filterChip,
-                                    isSelected && styles.filterChipActive,
-                                ]}
+                                style={[styles.filterChip, isSelected && styles.filterChipActive]}
                                 onPress={() => toggleFilterId(item.id)}
                             >
                                 <Text
@@ -150,9 +122,7 @@ export default function ExercisesScreen({ navigation }: any) {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.exerciseList}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={
-                    <Text style={styles.emptyText}>No exercises found.</Text>
-                }
+                ListEmptyComponent={<Text style={styles.emptyText}>No exercises found.</Text>}
                 renderItem={({ item }) => (
                     <ExerciseListCard
                         exercise={item}

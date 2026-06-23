@@ -1,20 +1,16 @@
-import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-} from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { WorkoutSessionRouteParams } from "../types/workout";
+import { View, Text, StyleSheet, FlatList } from "react-native";
+
+import AppButton from "../components/common/AppButton";
+import EmptyStateCard from "../components/common/EmptyStateCard";
+import LoadingCard from "../components/common/LoadingCard";
+import ScreenContainer from "../components/common/ScreenContainer";
+import RestTimeEditor from "../components/workout/RestTimeEditor";
 import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
-import RestTimeEditor from "../components/workout/RestTimeEditor";
-import LoadingCard from "../components/common/LoadingCard";
-import EmptyStateCard from "../components/common/EmptyStateCard";
 import { colors, spacing, typography } from "../theme";
-import AppButton from "../components/common/AppButton";
-import ScreenContainer from "../components/common/ScreenContainer";
+import { WorkoutSessionRouteParams } from "../types/workout";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -67,13 +63,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 data={sessionExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
-                ListEmptyComponent={
-                    isInitializingSession ? (
-                        <LoadingCard />
-                    ) : (
-                        <EmptyStateCard />
-                    )
-                }
+                ListEmptyComponent={isInitializingSession ? <LoadingCard /> : <EmptyStateCard />}
                 renderItem={({ item, index }) => (
                     <View>
                         <WorkoutExerciseCard
@@ -111,7 +101,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                         sessionId,
                         currentCount:
                             sessionExercises.length > 0
-                                ? Math.max(...sessionExercises.map((item) => item.position ?? 0)) + 1
+                                ? Math.max(...sessionExercises.map((item) => item.position ?? 0)) +
+                                  1
                                 : 0,
                         currentExerciseIds: sessionExercises.map((item) => item.exercise_id),
                     })

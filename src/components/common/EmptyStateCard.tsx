@@ -1,5 +1,7 @@
 import { Text, StyleSheet } from "react-native";
+
 import { colors, spacing, typography } from "../../theme";
+
 import Card from "./Card";
 
 export default function EmptyStateCard() {
@@ -7,9 +9,7 @@ export default function EmptyStateCard() {
         <Card style={styles.card}>
             <Text style={styles.title}>No exercises found</Text>
 
-            <Text style={styles.message}>
-                This workout doesn't contain any exercises yet.
-            </Text>
+            <Text style={styles.message}>This workout doesn&apos;t contain any exercises yet.</Text>
         </Card>
     );
 }

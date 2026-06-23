@@ -1,24 +1,18 @@
-import { useEffect, useState } from "react";
-import {
-    Text,
-    StyleSheet,
-    TextInput,
-    Pressable,
-    FlatList,
-    Alert,
-} from "react-native";
-import { useAuth } from "../context/AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import {
-    getRoutines,
-    createRoutine as createRoutineService,
-} from "../services/routineService";
-import { Routine } from "../types/routine";
-import { createWorkoutSession, getActiveWorkoutSession, getOrCreateWorkoutAfterDiscard } from "../services/workoutService";
+import { useEffect, useState, useCallback } from "react";
+import { Text, StyleSheet, TextInput, Pressable, FlatList, Alert } from "react-native";
+
+import ScreenContainer from "../components/common/ScreenContainer";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
-import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
+import { getRoutines, createRoutine as createRoutineService } from "../services/routineService";
+import {
+    createWorkoutSession,
+    getActiveWorkoutSession,
+    getOrCreateWorkoutAfterDiscard,
+} from "../services/workoutService";
+import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -42,11 +36,22 @@ export default function RoutinesScreen({ navigation }: any) {
         return () => clearInterval(intervalId);
     }, []);
 
+    const fetchActiveSession = useCallback(async () => {
+        if (!user) return;
+
+        try {
+            const data = await getActiveWorkoutSession(user.id);
+            setActiveSession(data);
+        } catch (error) {
+            console.log("Active workout error:", error);
+        }
+    }, [user])
+
     useFocusEffect(
         useCallback(() => {
             fetchRoutines();
             fetchActiveSession();
-        }, [])
+        }, [fetchActiveSession])
     );
 
     async function fetchRoutines() {
@@ -91,7 +96,7 @@ export default function RoutinesScreen({ navigation }: any) {
         }
         if (startingRoutineId === routine.id) return;
 
-        setStartingRoutineId(routine.id)
+        setStartingRoutineId(routine.id);
 
         try {
             const active = await getActiveWorkoutSession(user.id);
@@ -117,17 +122,6 @@ export default function RoutinesScreen({ navigation }: any) {
             Alert.alert("Error", error.message);
         } finally {
             setStartingRoutineId(null);
-        }
-    }
-
-    async function fetchActiveSession() {
-        if (!user) return;
-
-        try {
-            const data = await getActiveWorkoutSession(user.id);
-            setActiveSession(data);
-        } catch (error) {
-            console.log("Active workout error:", error);
         }
     }
 
@@ -183,9 +177,7 @@ export default function RoutinesScreen({ navigation }: any) {
     function getActiveRoutineName(active: any) {
         if (!active) return "Workout";
 
-        return Array.isArray(active.routines)
-            ? active.routines[0]?.name
-            : active.routines?.name;
+        return Array.isArray(active.routines) ? active.routines[0]?.name : active.routines?.name;
     }
 
     function getRestRemainingText(restTimerEndAt?: string | null) {
@@ -272,9 +264,7 @@ export default function RoutinesScreen({ navigation }: any) {
                             disabled={startingRoutineId === item.id}
                         >
                             <Text style={styles.startButtonText}>
-                                {startingRoutineId === item.id
-                                    ? "Starting..."
-                                    : "Start Workout"}
+                                {startingRoutineId === item.id ? "Starting..." : "Start Workout"}
                             </Text>
                         </Pressable>
                     </Pressable>

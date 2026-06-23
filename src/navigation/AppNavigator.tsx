@@ -1,22 +1,23 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 
-import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
-import MainTabs from "./MainTabs";
 import { useAuth } from "../context/AuthContext";
-import RoutineDetailScreen from "../screens/RoutineDetailScreen";
-import WorkoutSessionScreen from "../screens/WorkoutSessionScreen";
-import WorkoutDetailScreen from "../screens/WorkoutDetailScreen";
-import WorkoutSummaryScreen from "../screens/WorkoutSummaryScreen";
-import ExerciseProgressScreen from "../screens/ExerciseProgressScreen";
 import ExerciseDetailScreen from "../screens/ExerciseDetailScreen";
 import ExercisePickerScreen from "../screens/ExercisePickerScreen";
+import ExerciseProgressScreen from "../screens/ExerciseProgressScreen";
 import ExercisesScreen from "../screens/ExercisesScreen";
 import HistoryScreen from "../screens/HistoryScreen";
-import SettingsScreen from "../screens/SettingsScreen";
+import LoginScreen from "../screens/LoginScreen";
 import PersonalInformationScreen from "../screens/PersonalInformationScreen";
+import RegisterScreen from "../screens/RegisterScreen";
+import RoutineDetailScreen from "../screens/RoutineDetailScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+import WorkoutDetailScreen from "../screens/WorkoutDetailScreen";
+import WorkoutSessionScreen from "../screens/WorkoutSessionScreen";
+import WorkoutSummaryScreen from "../screens/WorkoutSummaryScreen";
+
+import MainTabs from "./MainTabs";
 
 export type RootStackParamList = {
     Login: undefined;
@@ -95,7 +96,10 @@ export default function AppNavigator() {
                         <Stack.Screen name="Main" component={MainTabs} />
                         <Stack.Screen name="History" component={HistoryScreen} />
                         <Stack.Screen name="Settings" component={SettingsScreen} />
-                        <Stack.Screen name="PersonalInformation" component={PersonalInformationScreen} />
+                        <Stack.Screen
+                            name="PersonalInformation"
+                            component={PersonalInformationScreen}
+                        />
                         <Stack.Screen name="RoutineDetail" component={RoutineDetailScreen} />
                         <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
                         <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />

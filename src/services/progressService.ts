@@ -1,5 +1,6 @@
-import { supabase } from "./supabase";
 import { ExerciseProgress } from "../types/progress";
+
+import { supabase } from "./supabase";
 
 export type WorkoutSetProgress = {
     id: string;
@@ -16,7 +17,8 @@ export type WorkoutSetProgress = {
 export async function getExerciseProgress(userId: string): Promise<ExerciseProgress[]> {
     const { data, error } = await supabase
         .from("user_exercise_records")
-        .select(`
+        .select(
+            `
         exercise_id,
         best_volume,
         best_weight,
@@ -24,16 +26,15 @@ export async function getExerciseProgress(userId: string): Promise<ExerciseProgr
         exercises (
             name
         )
-        `)
+        `
+        )
         .eq("user_id", userId)
         .order("best_volume", { ascending: false });
 
     if (error) throw error;
 
     return (data ?? []).map((item: any) => {
-        const exercise = Array.isArray(item.exercises)
-            ? item.exercises[0]
-            : item.exercises;
+        const exercise = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises;
 
         return {
             exerciseId: item.exercise_id,
@@ -57,13 +58,11 @@ export async function getExerciseProgressPoints(exerciseId: string) {
     return data ?? [];
 }
 
-export async function getBestExerciseVolume(params: {
-    exerciseId: string;
-    userId: string;
-}) {
+export async function getBestExerciseVolume(params: { exerciseId: string; userId: string }) {
     const { data, error } = await supabase
         .from("workout_sets")
-        .select(`
+        .select(
+            `
         weight,
         reps,
         workout_sessions!inner (
@@ -71,7 +70,8 @@ export async function getBestExerciseVolume(params: {
             completed_at,
             discarded_at
         )
-        `)
+        `
+        )
         .eq("exercise_id", params.exerciseId)
         .eq("workout_sessions.user_id", params.userId)
         .not("workout_sessions.completed_at", "is", null)
@@ -85,13 +85,11 @@ export async function getBestExerciseVolume(params: {
     }, 0);
 }
 
-export async function getUserExerciseRecord(params: {
-    userId: string;
-    exerciseId: string;
-}) {
+export async function getUserExerciseRecord(params: { userId: string; exerciseId: string }) {
     const { data, error } = await supabase
         .from("user_exercise_records")
-        .select(`
+        .select(
+            `
         id,
         user_id,
         exercise_id,
@@ -99,7 +97,8 @@ export async function getUserExerciseRecord(params: {
         best_weight,
         best_reps,
         best_set_id
-        `)
+        `
+        )
         .eq("user_id", params.userId)
         .eq("exercise_id", params.exerciseId)
         .maybeSingle();
@@ -109,10 +108,7 @@ export async function getUserExerciseRecord(params: {
     return data;
 }
 
-export async function getUserExerciseBestVolume(params: {
-    userId: string;
-    exerciseId: string;
-}) {
+export async function getUserExerciseBestVolume(params: { userId: string; exerciseId: string }) {
     const record = await getUserExerciseRecord(params);
 
     return Number(record?.best_volume ?? 0);
@@ -126,22 +122,20 @@ export async function upsertUserExerciseRecord(params: {
     bestReps: number;
     bestSetId: string;
 }) {
-    const { error } = await supabase
-        .from("user_exercise_records")
-        .upsert(
-            {
-                user_id: params.userId,
-                exercise_id: params.exerciseId,
-                best_volume: params.bestVolume,
-                best_weight: params.bestWeight,
-                best_reps: params.bestReps,
-                best_set_id: params.bestSetId,
-                updated_at: new Date().toISOString(),
-            },
-            {
-                onConflict: "user_id,exercise_id",
-            }
-        );
+    const { error } = await supabase.from("user_exercise_records").upsert(
+        {
+            user_id: params.userId,
+            exercise_id: params.exerciseId,
+            best_volume: params.bestVolume,
+            best_weight: params.bestWeight,
+            best_reps: params.bestReps,
+            best_set_id: params.bestSetId,
+            updated_at: new Date().toISOString(),
+        },
+        {
+            onConflict: "user_id,exercise_id",
+        }
+    );
 
     if (error) throw error;
 }

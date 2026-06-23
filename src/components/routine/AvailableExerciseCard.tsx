@@ -1,6 +1,7 @@
 import { Pressable, Text, StyleSheet } from "react-native";
-import Card from "../common/Card";
+
 import { colors, spacing, typography } from "../../theme";
+import Card from "../common/Card";
 
 type AvailableExercise = {
     id: string;

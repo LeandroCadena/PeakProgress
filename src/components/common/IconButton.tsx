@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
-import { colors, componentStyles, spacing, typography } from "../../theme";
+
+import { colors, componentStyles, typography } from "../../theme";
 
 type Variant = "primary" | "secondary" | "danger" | "success";
 
@@ -20,12 +21,7 @@ export default function IconButton({
 }: Props) {
     return (
         <Pressable
-            style={[
-                styles.button,
-                styles[variant],
-                disabled && styles.disabled,
-                style,
-            ]}
+            style={[styles.button, styles[variant], disabled && styles.disabled, style]}
             disabled={disabled}
             onPress={onPress}
         >

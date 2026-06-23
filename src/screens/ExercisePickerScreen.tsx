@@ -1,16 +1,10 @@
-import {
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    Pressable,
-    FlatList,
-} from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { useExercisePicker } from "../hooks/useExercisePicker";
-import ExerciseListCard from "../components/exercise/ExerciseListCard";
-import ScreenContainer from "../components/common/ScreenContainer";
+import { View, Text, StyleSheet, TextInput, Pressable, FlatList } from "react-native";
+
 import AppButton from "../components/common/AppButton";
+import ScreenContainer from "../components/common/ScreenContainer";
+import ExerciseListCard from "../components/exercise/ExerciseListCard";
+import { useExercisePicker } from "../hooks/useExercisePicker";
 
 type RouteParams = {
     ExercisePicker: {
@@ -24,8 +18,7 @@ type RouteParams = {
 
 export default function ExercisePickerScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "ExercisePicker">>();
-    const { mode, routineId, sessionId, currentCount, currentExerciseIds } =
-        route.params;
+    const { mode, routineId, sessionId, currentCount, currentExerciseIds } = route.params;
 
     const {
         search,
@@ -60,9 +53,7 @@ export default function ExercisePickerScreen({ navigation }: any) {
 
                 <Pressable
                     style={styles.filterModeButton}
-                    onPress={() =>
-                        changeFilterMode(filterMode === "muscle" ? "region" : "muscle")
-                    }
+                    onPress={() => changeFilterMode(filterMode === "muscle" ? "region" : "muscle")}
                 >
                     <Text style={styles.filterModeText}>
                         {filterMode === "muscle" ? "Muscle" : "Region"}
@@ -82,10 +73,7 @@ export default function ExercisePickerScreen({ navigation }: any) {
 
                         return (
                             <Pressable
-                                style={[
-                                    styles.filterChip,
-                                    isSelected && styles.filterChipActive,
-                                ]}
+                                style={[styles.filterChip, isSelected && styles.filterChipActive]}
                                 onPress={() => toggleFilterId(item.id)}
                             >
                                 <Text
@@ -122,16 +110,10 @@ export default function ExercisePickerScreen({ navigation }: any) {
                         />
                     );
                 }}
-                ListEmptyComponent={
-                    <Text style={styles.emptyText}>No exercises found.</Text>
-                }
+                ListEmptyComponent={<Text style={styles.emptyText}>No exercises found.</Text>}
             />
 
-            <AppButton
-                title="Cancel"
-                variant="secondary"
-                onPress={() => navigation.goBack()}
-            />
+            <AppButton title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
         </ScreenContainer>
     );
 }

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, Alert } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, StyleSheet, Dimensions, Alert } from "react-native";
 import { LineChart } from "react-native-chart-kit";
+
 import { getExerciseProgressPoints } from "../services/progressService";
 
 type RouteParams = {
@@ -23,18 +24,18 @@ export default function ExerciseProgressScreen() {
 
     const [points, setPoints] = useState<ProgressPoint[]>([]);
 
-    async function fetchExerciseProgress() {
+    const fetchExerciseProgress = useCallback(async () => {
         try {
             const data = await getExerciseProgressPoints(exerciseId);
             setPoints(data);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [exerciseId])
 
     useEffect(() => {
         fetchExerciseProgress();
-    }, []);
+    }, [fetchExerciseProgress]);
 
     const chartData = points.length
         ? {
@@ -72,9 +73,7 @@ export default function ExerciseProgressScreen() {
                 style={styles.chart}
             />
 
-            <Text style={styles.info}>
-                Each point represents one saved set.
-            </Text>
+            <Text style={styles.info}>Each point represents one saved set.</Text>
         </View>
     );
 }

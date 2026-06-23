@@ -1,7 +1,9 @@
 import { View, Text, StyleSheet } from "react-native";
-import RoutineExerciseCard from "./RoutineExerciseCard";
-import RestTimeEditor from "../workout/RestTimeEditor";
+
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
+import RestTimeEditor from "../workout/RestTimeEditor";
+
+import RoutineExerciseCard from "./RoutineExerciseCard";
 
 type Props = {
     routineExercises: RoutineExercise[];
@@ -10,20 +12,12 @@ type Props = {
     onMoveUp: (index: number) => void;
     onMoveDown: (index: number) => void;
     routineExerciseSets: Record<string, RoutineExerciseSet[]>;
-    onUpdateSet: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) => void;
+    onUpdateSet: (setId: string, field: "weight" | "reps", value: string) => void;
     onAddSet: (routineExerciseId: string) => void;
     onDeleteSet: (routineExerciseId: string, setId: string) => void;
     onUpdateSetRest: (routineExerciseId: string, value: number) => void;
     onUpdateExerciseRest: (routineExerciseId: string, value: number) => void;
-    updateLocalTemplateSetValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) => void;
+    updateLocalTemplateSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
 };
 
 export default function RoutineExerciseSection({

@@ -1,7 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
-let currentRestNotificationId: string | null = null;
 let notificationsEnabled = true;
 
 export function setNotificationsEnabled(value: boolean) {
@@ -22,7 +21,7 @@ export async function scheduleRestFinishedNotification(seconds: number) {
 
     await cancelRestFinishedNotification();
 
-    currentRestNotificationId = await Notifications.scheduleNotificationAsync({
+    await Notifications.scheduleNotificationAsync({
         content: {
             title: "Rest finished",
             body: "Time for your next set.",
@@ -38,12 +37,11 @@ export async function scheduleRestFinishedNotification(seconds: number) {
 export async function cancelRestFinishedNotification() {
     if (Platform.OS === "web") return;
 
-    const hadPendingNotification = (await Notifications.getAllScheduledNotificationsAsync()).length > 0;
+    const hadPendingNotification =
+        (await Notifications.getAllScheduledNotificationsAsync()).length > 0;
 
     await Notifications.cancelAllScheduledNotificationsAsync();
     await Notifications.dismissAllNotificationsAsync();
-
-    currentRestNotificationId = null;
 
     return hadPendingNotification;
 }

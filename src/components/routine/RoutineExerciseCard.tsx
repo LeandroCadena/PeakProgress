@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, Image } from "react-native";
-import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
-import RestTimeEditor from "../workout/RestTimeEditor";
-import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
+
 import { colors, spacing, typography } from "../../theme";
+import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
 import IconButton from "../common/IconButton";
+import RestTimeEditor from "../workout/RestTimeEditor";
+
+import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 
 type Props = {
     item: RoutineExercise;
@@ -18,11 +20,7 @@ type Props = {
     onAddSet: () => void;
     onDeleteSet: (routineExerciseId: string, setId: string) => void;
     onUpdateSetRest: (routineExerciseId: string, value: number) => void;
-    updateLocalTemplateSetValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) => void;
+    updateLocalTemplateSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
 };
 
 export default function RoutineExerciseCard({
@@ -41,15 +39,10 @@ export default function RoutineExerciseCard({
     return (
         <Card>
             {item.exercise?.image_url ? (
-                <Image
-                    source={{ uri: item.exercise.image_url }}
-                    style={styles.exerciseImage}
-                />
+                <Image source={{ uri: item.exercise.image_url }} style={styles.exerciseImage} />
             ) : null}
 
-            <Text style={styles.cardTitle}>
-                {item.exercise?.name ?? "Exercise"}
-            </Text>
+            <Text style={styles.cardTitle}>{item.exercise?.name ?? "Exercise"}</Text>
 
             <View style={styles.setHeader}>
                 <Text style={styles.setNumberHeader}>Set</Text>
@@ -80,37 +73,23 @@ export default function RoutineExerciseCard({
                         onDelete={() => onDeleteSet(item.id, set.id)}
                         isTemporarySet={isTemporarySet}
                     />
-                )
+                );
             })}
 
             {isEditing ? (
-                <AppButton
-                    title="+ Add Set"
-                    variant="success"
-                    onPress={onAddSet}
-                />
+                <AppButton title="+ Add Set" variant="success" onPress={onAddSet} />
             ) : null}
 
             {isEditing ? (
                 <>
                     <View style={styles.cardActions}>
-                        <AppButton
-                            title="Remove Exercise"
-                            variant="danger"
-                            onPress={onDelete}
-                        />
+                        <AppButton title="Remove Exercise" variant="danger" onPress={onDelete} />
                     </View>
 
                     <View style={styles.moveActions}>
-                        <IconButton
-                            icon="↑"
-                            onPress={onMoveUp}
-                        />
+                        <IconButton icon="↑" onPress={onMoveUp} />
 
-                        <IconButton
-                            icon="↓"
-                            onPress={onMoveDown}
-                        />
+                        <IconButton icon="↓" onPress={onMoveDown} />
                     </View>
                 </>
             ) : null}

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
+
 import { useAuth } from "../context/AuthContext";
 import {
     getProfile,
@@ -21,12 +22,7 @@ export function useProfile() {
     const [newWeight, setNewWeight] = useState("");
     const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
 
-    useEffect(() => {
-        fetchProfile();
-        fetchWeightLogs();
-    }, [user?.id]);
-
-    async function fetchProfile() {
+    const fetchProfile = useCallback(async () => {
         if (!user?.id) return;
 
         try {
@@ -42,7 +38,12 @@ export function useProfile() {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [user?.id])
+
+    useEffect(() => {
+        fetchProfile();
+        fetchWeightLogs();
+    }, [fetchProfile, user?.id]);
 
     async function saveProfile() {
         if (!user?.id) return;

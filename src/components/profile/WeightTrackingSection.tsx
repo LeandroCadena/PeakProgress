@@ -1,8 +1,11 @@
 import { View, Text, StyleSheet } from "react-native";
+
 import { WeightLog } from "../../types/profile";
-import WeightLogCard from "./WeightLogCard";
-import AppInput from "../common/AppInput";
 import AppButton from "../common/AppButton";
+import AppInput from "../common/AppInput";
+
+import WeightLogCard from "./WeightLogCard";
+
 
 type Props = {
     newWeight: string;
@@ -30,18 +33,10 @@ export default function WeightTrackingSection({
                 onChangeText={onChangeWeight}
             />
 
-            <AppButton
-                title="Add Weight Log"
-                variant="primary"
-                onPress={onAddWeight}
-            />
+            <AppButton title="Add Weight Log" variant="primary" onPress={onAddWeight} />
 
             {weightLogs.map((log) => (
-                <WeightLogCard
-                    key={log.id}
-                    log={log}
-                    onDelete={() => onDeleteWeight(log.id)}
-                />
+                <WeightLogCard key={log.id} log={log} onDelete={() => onDeleteWeight(log.id)} />
             ))}
         </View>
     );

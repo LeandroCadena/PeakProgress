@@ -1,14 +1,9 @@
-import { useCallback, useState } from "react";
-import {
-    Text,
-    StyleSheet,
-    FlatList,
-    Pressable,
-    Alert,
-} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { getCompletedWorkoutSessions } from "../services/historyService";
+import { useCallback, useState } from "react";
+import { Text, StyleSheet, FlatList, Pressable, Alert } from "react-native";
+
 import ScreenContainer from "../components/common/ScreenContainer";
+import { getCompletedWorkoutSessions } from "../services/historyService";
 
 type WorkoutSession = {
     routine_name_snapshot: string;
@@ -25,12 +20,6 @@ type WorkoutSession = {
 export default function HistoryScreen({ navigation }: any) {
     const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchSessions();
-        }, [])
-    );
-
     async function fetchSessions() {
         try {
             const data = await getCompletedWorkoutSessions();
@@ -39,6 +28,12 @@ export default function HistoryScreen({ navigation }: any) {
             Alert.alert("Error", error.message);
         }
     }
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchSessions();
+        }, [])
+    );
 
     function formatDate(value: string) {
         return new Date(value).toLocaleDateString();
@@ -67,9 +62,7 @@ export default function HistoryScreen({ navigation }: any) {
                 }
                 renderItem={({ item }) => {
                     const routineName =
-                        item.routine_name_snapshot ??
-                        item.routines?.[0]?.name ??
-                        "Routine";
+                        item.routine_name_snapshot ?? item.routines?.[0]?.name ?? "Routine";
 
                     return (
                         <Pressable
@@ -83,7 +76,8 @@ export default function HistoryScreen({ navigation }: any) {
                         >
                             <Text style={styles.cardTitle}>{routineName}</Text>
                             <Text style={styles.cardText}>
-                                Sets: {item.total_sets ?? 0} · Volume: {Number(item.total_volume ?? 0)} kg
+                                Sets: {item.total_sets ?? 0} · Volume:{" "}
+                                {Number(item.total_volume ?? 0)} kg
                             </Text>
                             <Text style={styles.cardText}>{formatDate(item.started_at)}</Text>
                             <Text style={styles.cardText}>

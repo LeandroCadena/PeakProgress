@@ -1,11 +1,7 @@
-import {
-    AudioPlayer,
-    createAudioPlayer,
-} from "expo-audio";
+import { AudioPlayer, createAudioPlayer } from "expo-audio";
 
 let timerPlayer: AudioPlayer | null = null;
 let personalRecordPlayer: AudioPlayer | null = null;
-let workoutCompletedPlayer: AudioPlayer | null = null;
 let soundsEnabled = true;
 
 export function setSoundsEnabled(value: boolean) {
@@ -15,13 +11,9 @@ export function setSoundsEnabled(value: boolean) {
 export function initializeSounds() {
     if (timerPlayer) return;
 
-    timerPlayer = createAudioPlayer(
-        require("../../assets/sounds/timer-finished.wav")
-    );
+    timerPlayer = createAudioPlayer(require("../../assets/sounds/timer-finished.wav"));
 
-    personalRecordPlayer = createAudioPlayer(
-        require("../../assets/sounds/personal-record.wav")
-    );
+    personalRecordPlayer = createAudioPlayer(require("../../assets/sounds/personal-record.wav"));
 }
 
 export function playTimerFinishedSound() {

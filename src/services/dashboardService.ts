@@ -1,32 +1,7 @@
-import { supabase } from "./supabase";
 import { DashboardStats } from "../types/dashboard";
+
 import { getWorkoutStreak, getWorkoutStreakStatus } from "./streakService";
-
-function calculateWorkoutStreak(dates: string[]) {
-    if (!dates.length) return 0;
-
-    const uniqueDays = Array.from(
-        new Set(dates.map((date) => new Date(date).toISOString().split("T")[0]))
-    ).sort((a, b) => (a > b ? -1 : 1));
-
-    let streak = 0;
-    const today = new Date();
-
-    for (let i = 0; i < uniqueDays.length; i++) {
-        const expectedDate = new Date(today);
-        expectedDate.setDate(today.getDate() - i);
-
-        const expectedDay = expectedDate.toISOString().split("T")[0];
-
-        if (uniqueDays.includes(expectedDay)) {
-            streak++;
-        } else {
-            break;
-        }
-    }
-
-    return streak;
-}
+import { supabase } from "./supabase";
 
 export async function getDashboardStats(userId: string): Promise<DashboardStats> {
     const { count: routinesCount, error: routinesError } = await supabase
@@ -45,11 +20,13 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 
     const { data: lastWorkout, error: lastWorkoutError } = await supabase
         .from("workout_sessions")
-        .select(`
+        .select(
+            `
         id,
         started_at,
         routine_name_snapshot
-        `)
+        `
+        )
         .not("completed_at", "is", null)
         .is("discarded_at", null)
         .order("started_at", { ascending: false })
@@ -77,7 +54,8 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 export async function getRecentWorkouts(userId: string) {
     const { data, error } = await supabase
         .from("workout_sessions")
-        .select(`
+        .select(
+            `
             id,
             routine_name_snapshot,
             started_at,
@@ -85,7 +63,8 @@ export async function getRecentWorkouts(userId: string) {
             workout_session_exercises (
                 id
             )
-        `)
+        `
+        )
         .eq("user_id", userId)
         .not("completed_at", "is", null)
         .order("completed_at", { ascending: false })

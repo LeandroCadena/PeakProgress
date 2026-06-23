@@ -1,7 +1,13 @@
-import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
+
 import { useAuth } from "../context/AuthContext";
-import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
+import {
+    updateRoutine,
+    deleteRoutineById,
+    getRoutineExerciseSetsByRoutineId,
+} from "../services/routineService";
 import {
     getRoutineExercises,
     deleteRoutineExercise as deleteRoutineExerciseService,
@@ -16,12 +22,7 @@ import {
     getActiveWorkoutSession,
     createWorkoutSession,
 } from "../services/workoutService";
-import {
-    updateRoutine,
-    deleteRoutineById,
-    getRoutineExerciseSetsByRoutineId,
-} from "../services/routineService";
-import { useFocusEffect } from "@react-navigation/native";
+import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 
 type Params = {
     routineId: string;
@@ -30,16 +31,21 @@ type Params = {
     navigation: any;
 };
 
-export function useRoutineDetail({ routineId, routineName, routineDescription, navigation }: Params) {
+export function useRoutineDetail({
+    routineId,
+    routineName,
+    routineDescription,
+    navigation,
+}: Params) {
     const { user } = useAuth();
 
     const [routineTitle, setRoutineTitle] = useState(routineName);
     const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
     const [routineExercisesChanged, setRoutineExercisesChanged] = useState(false);
     const [isStartingWorkout, setIsStartingWorkout] = useState(false);
-    const [templateSetDraftValues, setTemplateSetDraftValues] = useState<
-        Record<string, string>
-    >({});
+    const [templateSetDraftValues, setTemplateSetDraftValues] = useState<Record<string, string>>(
+        {}
+    );
 
     const [editRoutineVisible, setEditRoutineVisible] = useState(false);
     const [editRoutineName, setEditRoutineName] = useState(routineName);
@@ -54,14 +60,17 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
     const [activeWorkoutModalVisible, setActiveWorkoutModalVisible] = useState(false);
     const [activeWorkout, setActiveWorkout] = useState<any>(null);
+    const [now, setNow] = useState(() => Date.now());
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchRoutineExercises();
-        }, [routineId])
-    );
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setNow(Date.now());
+        }, 1000);
 
-    async function fetchRoutineExercises() {
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const fetchRoutineExercises = useCallback(async () => {
         try {
             const exercises = await getRoutineExercises(routineId);
             setRoutineExercises(exercises);
@@ -71,7 +80,13 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [routineId])
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchRoutineExercises();
+        }, [fetchRoutineExercises])
+    );
 
     async function deleteRoutineExercise(routineExerciseId: string) {
         try {
@@ -92,10 +107,8 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             draftRoutineName.trim() !== routineTitle ||
             draftRoutineDescription.trim() !== editRoutineDescription.trim();
 
-        const routineSetsChanged =
-            Object.keys(templateSetDraftValues).length > 0;
-        const shouldPersistRoutineExercises =
-            routineSetsChanged || routineExercisesChanged;
+        const routineSetsChanged = Object.keys(templateSetDraftValues).length > 0;
+        const shouldPersistRoutineExercises = routineSetsChanged || routineExercisesChanged;
 
         if (!routineInfoChanged && !shouldPersistRoutineExercises) {
             setIsEditingRoutine(false);
@@ -146,8 +159,6 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
             });
 
             await createRoutineExerciseSets(setsToInsert);
-
-            const firstSet = setsToInsert[0];
 
             await updateRoutineExerciseConfig({
                 routineExerciseId: routineExercise.id,
@@ -250,11 +261,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         }
     }
 
-    async function updateTemplateSet(
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) {
+    async function updateTemplateSet(setId: string, field: "weight" | "reps", value: string) {
         const numericValue = value.trim() === "" ? 0 : Number(value);
 
         if (Number.isNaN(numericValue)) {
@@ -280,13 +287,11 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         const lastSet = currentSets[currentSets.length - 1];
 
         const lastWeight = lastSet
-            ? templateSetDraftValues[`${lastSet.id}-weight`] ??
-            String(lastSet.weight ?? 0)
+            ? (templateSetDraftValues[`${lastSet.id}-weight`] ?? String(lastSet.weight ?? 0))
             : "0";
 
         const lastReps = lastSet
-            ? templateSetDraftValues[`${lastSet.id}-reps`] ??
-            String(lastSet.reps ?? 0)
+            ? (templateSetDraftValues[`${lastSet.id}-reps`] ?? String(lastSet.reps ?? 0))
             : "0";
 
         const tempId = `temp-${Date.now()}`;
@@ -336,9 +341,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
         setRoutineExerciseSets((prev) => ({
             ...prev,
-            [routineExerciseId]: (prev[routineExerciseId] ?? []).filter(
-                (set) => set.id !== setId
-            ),
+            [routineExerciseId]: (prev[routineExerciseId] ?? []).filter((set) => set.id !== setId),
         }));
 
         try {
@@ -349,11 +352,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
         }
     }
 
-    function updateLocalTemplateSetValue(
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) {
+    function updateLocalTemplateSetValue(setId: string, field: "weight" | "reps", value: string) {
         const key = `${field}:${setId}`;
 
         setTemplateSetDraftValues((prev) => ({
@@ -363,13 +362,11 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
     }
 
     function getActiveRoutineName(active: any) {
-        return Array.isArray(active.routines)
-            ? active.routines[0]?.name
-            : active.routines?.name;
+        return Array.isArray(active.routines) ? active.routines[0]?.name : active.routines?.name;
     }
 
     function getElapsedText(startedAt: string) {
-        const diffMs = Date.now() - new Date(startedAt).getTime();
+        const diffMs = now - new Date(startedAt).getTime();
         const minutes = Math.floor(diffMs / 60000);
         const hours = Math.floor(minutes / 60);
         const restMinutes = minutes % 60;
@@ -422,9 +419,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
         setRoutineExercises((prev) =>
             prev.map((exercise) =>
-                exercise.id === routineExerciseId
-                    ? { ...exercise, rest_seconds: value }
-                    : exercise
+                exercise.id === routineExerciseId ? { ...exercise, rest_seconds: value } : exercise
             )
         );
     }
@@ -480,7 +475,7 @@ export function useRoutineDetail({ routineId, routineName, routineDescription, n
 
         activeWorkoutModalVisible,
         activeWorkoutRoutineName: activeWorkout
-            ? getActiveRoutineName(activeWorkout) ?? "Workout"
+            ? (getActiveRoutineName(activeWorkout) ?? "Workout")
             : "Workout",
         activeWorkoutElapsedText: activeWorkout
             ? getElapsedText(activeWorkout.started_at)

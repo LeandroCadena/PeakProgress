@@ -3,7 +3,8 @@ import { supabase } from "./supabase";
 export async function getCompletedWorkoutSessions() {
     const { data, error } = await supabase
         .from("workout_sessions")
-        .select(`
+        .select(
+            `
         id,
         started_at,
         completed_at,
@@ -14,7 +15,8 @@ export async function getCompletedWorkoutSessions() {
         routines (
             name
         )
-        `)
+        `
+        )
         .not("completed_at", "is", null)
         .is("discarded_at", null)
         .order("started_at", { ascending: false });
@@ -27,13 +29,15 @@ export async function getCompletedWorkoutSessions() {
 export async function getWorkoutSets(sessionId: string) {
     const { data, error } = await supabase
         .from("workout_sets")
-        .select(`
+        .select(
+            `
         id,
         exercise_name_snapshot,
         reps,
         weight,
         is_completed
-        `)
+        `
+        )
         .eq("workout_session_id", sessionId)
         .order("exercise_name_snapshot", { ascending: true })
         .order("created_at", { ascending: true });

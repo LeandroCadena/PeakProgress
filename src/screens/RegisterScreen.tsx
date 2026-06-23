@@ -1,12 +1,6 @@
 import { useState } from "react";
-import {
-    View,
-    Text,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    Alert,
-} from "react-native";
+import { View, Text, Pressable, StyleSheet, TextInput, Alert } from "react-native";
+
 import { useAuth } from "../context/AuthContext";
 
 export default function RegisterScreen({ navigation }: any) {
@@ -18,10 +12,7 @@ export default function RegisterScreen({ navigation }: any) {
     async function handleRegister() {
         try {
             await signUp(email.trim(), password);
-            Alert.alert(
-                "Account created",
-                "Please check your email to confirm your account."
-            );
+            Alert.alert("Account created", "Please check your email to confirm your account.");
             navigation.navigate("Login");
         } catch (error: any) {
             Alert.alert("Register error", error.message);

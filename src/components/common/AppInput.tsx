@@ -1,4 +1,5 @@
 import { TextInput, StyleSheet, TextInputProps } from "react-native";
+
 import { colors, componentStyles, spacing } from "../../theme";
 
 type Props = TextInputProps & {
@@ -13,11 +14,7 @@ export default function AppInput({ style, disabled, editable, ...props }: Props)
             {...props}
             editable={isEditable}
             placeholderTextColor={colors.textSecondary}
-            style={[
-                styles.input,
-                !isEditable && styles.disabled,
-                style,
-            ]}
+            style={[styles.input, !isEditable && styles.disabled, style]}
         />
     );
 }

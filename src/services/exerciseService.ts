@@ -1,6 +1,6 @@
+import { Exercise, Muscle , FilterMode, MuscleRegion } from "../types/exercise";
+
 import { supabase } from "./supabase";
-import { Exercise, Muscle } from "../types/exercise";
-import { FilterMode, MuscleRegion } from "../types/exercise";
 
 export async function getExercises(): Promise<Exercise[]> {
     const { data, error } = await supabase
@@ -14,10 +14,7 @@ export async function getExercises(): Promise<Exercise[]> {
 }
 
 export async function getMuscles(): Promise<Muscle[]> {
-    const { data, error } = await supabase
-        .from("muscles")
-        .select("id, name")
-        .order("name");
+    const { data, error } = await supabase.from("muscles").select("id, name").order("name");
 
     if (error) throw error;
 
@@ -30,7 +27,8 @@ export async function getExercisesByFilter(params: {
 }): Promise<Exercise[]> {
     const { data, error } = await supabase
         .from("exercises")
-        .select(`
+        .select(
+            `
         id,
         name,
         equipment,
@@ -42,7 +40,8 @@ export async function getExercisesByFilter(params: {
             region_id
             )
         )
-        `)
+        `
+        )
         .order("name");
 
     if (error) throw error;
@@ -58,9 +57,10 @@ export async function getExercisesByFilter(params: {
             );
         }
 
-        return relations.some((relation: any) =>
-            relation.muscles?.region_id &&
-            params.selectedIds.includes(relation.muscles.region_id)
+        return relations.some(
+            (relation: any) =>
+                relation.muscles?.region_id &&
+                params.selectedIds.includes(relation.muscles.region_id)
         );
     });
 }
@@ -68,7 +68,8 @@ export async function getExercisesByFilter(params: {
 export async function getExerciseDetail(exerciseId: string) {
     const { data, error } = await supabase
         .from("exercises")
-        .select(`
+        .select(
+            `
         id,
         name,
         description,
@@ -84,7 +85,8 @@ export async function getExerciseDetail(exerciseId: string) {
             name
             )
         )
-        `)
+        `
+        )
         .eq("id", exerciseId)
         .single();
 
@@ -94,10 +96,7 @@ export async function getExerciseDetail(exerciseId: string) {
 }
 
 export async function getMuscleRegions(): Promise<MuscleRegion[]> {
-    const { data, error } = await supabase
-        .from("muscle_regions")
-        .select("id, name")
-        .order("name");
+    const { data, error } = await supabase.from("muscle_regions").select("id, name").order("name");
 
     if (error) throw error;
 

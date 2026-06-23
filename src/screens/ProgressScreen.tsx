@@ -1,19 +1,18 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import {
-    getExerciseProgress,
-} from "../services/progressService";
-import { ExerciseProgress } from "../types/progress";
-import { useAuth } from "../context/AuthContext";
+
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
+import { getExerciseProgress } from "../services/progressService";
+import { ExerciseProgress } from "../types/progress";
 
 export default function ProgressScreen({ navigation }: any) {
     const { user } = useAuth();
 
     const [records, setRecords] = useState<ExerciseProgress[]>([]);
 
-    async function fetchPersonalRecords() {
+    const fetchPersonalRecords = useCallback(async () => {
         if (!user?.id) return;
 
         try {
@@ -22,12 +21,12 @@ export default function ProgressScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [user])
 
     useFocusEffect(
         useCallback(() => {
             fetchPersonalRecords();
-        }, [])
+        }, [fetchPersonalRecords])
     );
 
     return (
@@ -55,8 +54,9 @@ export default function ProgressScreen({ navigation }: any) {
                         <Text style={styles.cardTitle}>{item.exerciseName}</Text>
 
                         <Text>Best Volume: {item.bestVolume} kg</Text>
-                        <Text>{item.bestWeight} kg x {item.bestReps} reps</Text>
-
+                        <Text>
+                            {item.bestWeight} kg x {item.bestReps} reps
+                        </Text>
                     </Pressable>
                 )}
             />

@@ -1,12 +1,9 @@
 import { View, Text, StyleSheet } from "react-native";
-import AppInput from "../common/AppInput";
+
+import { colors, spacing, typography } from "../../theme";
 import AppButton from "../common/AppButton";
+import AppInput from "../common/AppInput";
 import IconButton from "../common/IconButton";
-import {
-    colors,
-    spacing,
-    typography,
-} from "../../theme";
 
 type Props = {
     title: string;
@@ -29,7 +26,7 @@ export default function RoutineHeader({
     onStartEdit,
     onSave,
     onCancel,
-    onDelete
+    onDelete,
 }: Props) {
     return (
         <View style={styles.container}>
@@ -47,27 +44,12 @@ export default function RoutineHeader({
 
                 {isEditing ? (
                     <View style={styles.actions}>
-                        <IconButton
-                            icon="✓"
-                            variant="success"
-                            onPress={onSave}
-                        />
-                        <IconButton
-                            icon="✕"
-                            onPress={onCancel}
-                        />
-                        <AppButton
-                            title="Delete Routine"
-                            variant="danger"
-                            onPress={onDelete}
-                        />
+                        <IconButton icon="✓" variant="success" onPress={onSave} />
+                        <IconButton icon="✕" onPress={onCancel} />
+                        <AppButton title="Delete Routine" variant="danger" onPress={onDelete} />
                     </View>
                 ) : (
-                    <IconButton
-                        icon="✎"
-                        variant="primary"
-                        onPress={onStartEdit}
-                    />
+                    <IconButton icon="✎" variant="primary" onPress={onStartEdit} />
                 )}
             </View>
 

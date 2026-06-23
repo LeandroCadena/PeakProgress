@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+
 import AvailableExerciseCard from "./AvailableExerciseCard";
 
 type AvailableExercise = {
@@ -11,10 +12,7 @@ type Props = {
     onAddExercise: (exerciseId: string) => void;
 };
 
-export default function AvailableExerciseSection({
-    exercises,
-    onAddExercise,
-}: Props) {
+export default function AvailableExerciseSection({ exercises, onAddExercise }: Props) {
     return (
         <>
             <Text style={styles.sectionTitle}>Add exercise</Text>

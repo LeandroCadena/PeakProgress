@@ -1,27 +1,20 @@
-import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
-import { useAuth } from "../context/AuthContext";
-import {
-    getUserSettings,
-    updateUserSettings,
-    UserSettings,
-} from "../services/settingsService";
-import { setSoundsEnabled } from "../utils/sounds";
-import { setNotificationsEnabled } from "../utils/notifications";
-import ScreenContainer from "../components/common/ScreenContainer";
-import Card from "../components/common/Card";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+
 import AppInput from "../components/common/AppInput";
+import Card from "../components/common/Card";
+import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
+import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
 import { colors } from "../theme";
+import { setNotificationsEnabled } from "../utils/notifications";
+import { setSoundsEnabled } from "../utils/sounds";
 
 export default function SettingsScreen() {
     const { user } = useAuth();
     const [settings, setSettings] = useState<UserSettings | null>(null);
 
-    useEffect(() => {
-        fetchSettings();
-    }, [user?.id]);
-
-    async function fetchSettings() {
+    const fetchSettings = useCallback(async () => {
         if (!user?.id) return;
 
         try {
@@ -32,7 +25,11 @@ export default function SettingsScreen() {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [user])
+
+    useEffect(() => {
+        fetchSettings();
+    }, [user?.id, fetchSettings]);
 
     async function updateSetting(updates: Partial<UserSettings>) {
         if (!user?.id || !settings) return;
@@ -74,9 +71,7 @@ export default function SettingsScreen() {
                 <Text style={styles.label}>Sounds</Text>
                 <Switch
                     value={settings.sounds_enabled}
-                    onValueChange={(value) =>
-                        updateSetting({ sounds_enabled: value })
-                    }
+                    onValueChange={(value) => updateSetting({ sounds_enabled: value })}
                 />
             </Card>
 
@@ -84,9 +79,7 @@ export default function SettingsScreen() {
                 <Text style={styles.label}>Notifications</Text>
                 <Switch
                     value={settings.notifications_enabled}
-                    onValueChange={(value) =>
-                        updateSetting({ notifications_enabled: value })
-                    }
+                    onValueChange={(value) => updateSetting({ notifications_enabled: value })}
                 />
             </Card>
 
@@ -94,9 +87,7 @@ export default function SettingsScreen() {
                 <Text style={styles.label}>Use Global Timers</Text>
                 <Switch
                     value={settings.use_global_timers}
-                    onValueChange={(value) =>
-                        updateSetting({ use_global_timers: value })
-                    }
+                    onValueChange={(value) => updateSetting({ use_global_timers: value })}
                 />
             </Card>
 

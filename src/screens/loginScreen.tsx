@@ -1,12 +1,6 @@
 import { useState } from "react";
-import {
-    View,
-    Text,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    Alert,
-} from "react-native";
+import { View, Text, Pressable, StyleSheet, TextInput, Alert } from "react-native";
+
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen({ navigation }: any) {

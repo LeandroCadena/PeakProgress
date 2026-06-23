@@ -1,11 +1,12 @@
-import { StyleSheet } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { useRoutineDetail } from "../hooks/useRoutineDetail";
+import { StyleSheet } from "react-native";
+
+import AppButton from "../components/common/AppButton";
 import RoutineDetailLayout from "../components/routine/RoutineDetailLayout";
 import RoutineExerciseSection from "../components/routine/RoutineExerciseSection";
 import RoutineHeader from "../components/routine/RoutineHeader";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
-import AppButton from "../components/common/AppButton";
+import { useRoutineDetail } from "../hooks/useRoutineDetail";
 import { spacing } from "../theme";
 
 type RouteParams = {
@@ -76,8 +77,8 @@ export default function RoutineDetailScreen({ navigation }: any) {
                     isEditingRoutine
                         ? "Save Changes First"
                         : isStartingWorkout
-                            ? "Starting..."
-                            : "Start Workout"
+                          ? "Starting..."
+                          : "Start Workout"
                 }
                 variant="primary"
                 disabled={isEditingRoutine || isStartingWorkout}
@@ -111,20 +112,15 @@ export default function RoutineDetailScreen({ navigation }: any) {
                             currentCount:
                                 routineExercises.length > 0
                                     ? Math.max(
-                                        ...routineExercises.map(
-                                            (item) => item.position ?? 0
-                                        )
-                                    ) + 1
+                                          ...routineExercises.map((item) => item.position ?? 0)
+                                      ) + 1
                                     : 0,
-                            currentExerciseIds: routineExercises.map(
-                                (item) => item.exercise_id
-                            ),
+                            currentExerciseIds: routineExercises.map((item) => item.exercise_id),
                         })
                     }
                     style={styles.actionButton}
                 />
-            ) : null
-            }
+            ) : null}
 
             <ActiveWorkoutModal
                 visible={activeWorkoutModalVisible}
@@ -135,7 +131,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 onCancel={() => setActiveWorkoutModalVisible(false)}
                 isStarting={isStartingWorkout}
             />
-        </RoutineDetailLayout >
+        </RoutineDetailLayout>
     );
 }
 

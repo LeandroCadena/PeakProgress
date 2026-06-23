@@ -1,11 +1,11 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import HomeScreen from "../screens/HomeScreen";
-import RoutinesScreen from "../screens/RoutinesScreen";
-import ProgressScreen from "../screens/ProgressScreen";
-import ProfileScreen from "../screens/ProfileScreen";
 import ExercisesScreen from "../screens/ExercisesScreen";
+import HomeScreen from "../screens/HomeScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import ProgressScreen from "../screens/ProgressScreen";
+import RoutinesScreen from "../screens/RoutinesScreen";
 
 export type MainTabsParamList = {
     Home: undefined;

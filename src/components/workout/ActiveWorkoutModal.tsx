@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+
 import { colors, spacing, typography } from "../../theme";
 
 type Props = {
@@ -26,15 +27,11 @@ export default function ActiveWorkoutModal({
                 <View style={styles.content}>
                     <Text style={styles.title}>Workout already running</Text>
 
-                    <Text style={styles.text}>
-                        You already have an active workout.
-                    </Text>
+                    <Text style={styles.text}>You already have an active workout.</Text>
 
                     <Text style={styles.routineName}>{routineName}</Text>
 
-                    {elapsedText ? (
-                        <Text style={styles.elapsed}>{elapsedText}</Text>
-                    ) : null}
+                    {elapsedText ? <Text style={styles.elapsed}>{elapsedText}</Text> : null}
 
                     <Pressable style={styles.primaryButton} onPress={onResume}>
                         <Text style={styles.primaryText}>Resume Workout</Text>
@@ -46,9 +43,7 @@ export default function ActiveWorkoutModal({
                         disabled={isStarting}
                     >
                         <Text style={styles.dangerText}>
-                            {isStarting
-                                ? "Starting..."
-                                : "Discard and Start New"}
+                            {isStarting ? "Starting..." : "Discard and Start New"}
                         </Text>
                     </Pressable>
 

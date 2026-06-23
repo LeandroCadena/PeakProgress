@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors, spacing, typography, componentStyles } from "../../theme";
+
+import { colors, spacing, typography } from "../../theme";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
 
@@ -10,12 +11,7 @@ type Props = {
     onChange: (value: number) => void;
 };
 
-export default function RestTimeEditor({
-    label,
-    value,
-    editable,
-    onChange,
-}: Props) {
+export default function RestTimeEditor({ label, value, editable, onChange }: Props) {
     return (
         <View style={styles.container}>
             <Text style={styles.label}>{label}</Text>

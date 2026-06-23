@@ -1,14 +1,15 @@
-import { Text, StyleSheet, ScrollView, Alert, View } from "react-native";
-import { useAuth } from "../context/AuthContext";
-import { useProfile } from "../hooks/useProfile";
-import { useCallback, useState } from "react";
-import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { useFocusEffect } from "@react-navigation/native";
-import { supabase } from "../services/supabase";
+import { useCallback, useState } from "react";
+import { Text, StyleSheet, ScrollView, Alert, View } from "react-native";
+
+import AppButton from "../components/common/AppButton";
+import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import IconButton from "../components/common/IconButton";
-import AppInput from "../components/common/AppInput";
-import AppButton from "../components/common/AppButton";
+import { useAuth } from "../context/AuthContext";
+import { useProfile } from "../hooks/useProfile";
+import { updateUserEmail, updateUserPassword } from "../services/authService";
+import { supabase } from "../services/supabase";
 import { colors, spacing, typography } from "../theme";
 
 export default function PersonalInformationScreen() {
@@ -18,15 +19,11 @@ export default function PersonalInformationScreen() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [currentEmail, setCurrentEmail] = useState(user?.email ?? "");
     const [newEmail, setNewEmail] = useState("");
-    const [editingSection, setEditingSection] = useState<
-        "name" | "email" | "password" | null
-    >(null);
+    const [editingSection, setEditingSection] = useState<"name" | "email" | "password" | null>(
+        null
+    );
 
-    const {
-        fullName,
-        setFullName,
-        saveProfile,
-    } = useProfile();
+    const { fullName, setFullName, saveProfile } = useProfile();
 
     useFocusEffect(
         useCallback(() => {
@@ -62,7 +59,7 @@ export default function PersonalInformationScreen() {
             await updateUserPassword(newPassword);
             setNewPassword("");
             setConfirmPassword("");
-            setEditingSection(null)
+            setEditingSection(null);
             Alert.alert("Success", "Password updated successfully");
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -85,7 +82,7 @@ export default function PersonalInformationScreen() {
         try {
             await updateUserEmail(email);
             setNewEmail("");
-            setEditingSection(null)
+            setEditingSection(null);
             Alert.alert(
                 "Verification required",
                 "Check your new email address to confirm the change."
@@ -96,15 +93,12 @@ export default function PersonalInformationScreen() {
     }
 
     async function handleSaveProfile() {
-        await saveProfile()
-        setEditingSection(null)
+        await saveProfile();
+        setEditingSection(null);
     }
 
     return (
-        <ScrollView
-            style={styles.container}
-            contentContainerStyle={styles.content}
-        >
+        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
             <Text style={styles.title}>Personal Information</Text>
 
             <Card style={styles.card}>

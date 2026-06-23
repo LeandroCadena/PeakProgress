@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { View, StyleSheet, ViewStyle } from "react-native";
+
 import { colors, spacing } from "../../theme";
 
 type Props = {
@@ -7,15 +8,8 @@ type Props = {
     style?: ViewStyle | ViewStyle[];
 };
 
-export default function ScreenContainer({
-    children,
-    style,
-}: Props) {
-    return (
-        <View style={[styles.container, style]}>
-            {children}
-        </View>
-    );
+export default function ScreenContainer({ children, style }: Props) {
+    return <View style={[styles.container, style]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({

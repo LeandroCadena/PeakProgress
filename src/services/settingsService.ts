@@ -38,9 +38,7 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
 
 export async function updateUserSettings(params: {
     userId: string;
-    updates: Partial<
-        Omit<UserSettings, "user_id" | "updated_at">
-    >;
+    updates: Partial<Omit<UserSettings, "user_id" | "updated_at">>;
 }) {
     const { data, error } = await supabase
         .from("user_settings")

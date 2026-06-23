@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
-import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
-import { addExerciseToRoutine, addExerciseToWorkoutSession } from "../services/workoutService";
-import { getUserExerciseBestVolume } from "../services/progressService";
+
 import { useAuth } from "../context/AuthContext";
+import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
+import { getUserExerciseBestVolume } from "../services/progressService";
+import { addExerciseToRoutine, addExerciseToWorkoutSession } from "../services/workoutService";
+import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 type Params = {
     mode: "routine" | "session";
@@ -31,19 +32,6 @@ export function useExercisePicker({
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const filterOptions = filterMode === "muscle" ? muscles : regions;
 
-    useEffect(() => {
-        fetchMuscles();
-        fetchRegions();
-    }, []);
-
-    useEffect(() => {
-        fetchExercises();
-    }, [filterMode, selectedFilterIds]);
-
-    const filteredExercises = exercises.filter((exercise) =>
-        exercise.name.toLowerCase().includes(search.toLowerCase())
-    );
-
     async function fetchMuscles() {
         try {
             const data = await getMuscles();
@@ -53,7 +41,21 @@ export function useExercisePicker({
         }
     }
 
-    async function fetchExercises() {
+    async function fetchRegions() {
+        try {
+            const data = await getMuscleRegions();
+            setRegions(data);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
+    useEffect(() => {
+        fetchMuscles();
+        fetchRegions();
+    }, []);
+
+    const fetchExercises = useCallback(async () => {
         try {
             const data = await getExercisesByFilter({
                 filterMode,
@@ -64,7 +66,15 @@ export function useExercisePicker({
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [filterMode, selectedFilterIds])
+
+    useEffect(() => {
+        fetchExercises();
+    }, [fetchExercises, filterMode, selectedFilterIds]);
+
+    const filteredExercises = exercises.filter((exercise) =>
+        exercise.name.toLowerCase().includes(search.toLowerCase())
+    );
 
     async function handleAddExercise(exerciseId: string) {
         if (!user?.id) return;
@@ -84,9 +94,7 @@ export function useExercisePicker({
                     currentPrVolume,
                 });
             } else {
-                const exercise = exercises.find(
-                    (item) => item.id === exerciseId
-                );
+                const exercise = exercises.find((item) => item.id === exerciseId);
 
                 await addExerciseToWorkoutSession({
                     userId: user.id,
@@ -104,20 +112,9 @@ export function useExercisePicker({
         }
     }
 
-    async function fetchRegions() {
-        try {
-            const data = await getMuscleRegions();
-            setRegions(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
     function toggleFilterId(id: string) {
         setSelectedFilterIds((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id)
-                : [...prev, id]
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
         );
     }
 

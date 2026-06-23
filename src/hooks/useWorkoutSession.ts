@@ -1,8 +1,11 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, AppState } from "react-native";
-import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
-import { useFocusEffect } from "@react-navigation/native";
-import { playPersonalRecordSound, playTimerFinishedSound } from "../utils/sounds";
+
+import { useAuth } from "../context/AuthContext";
+import { upsertUserExerciseRecord } from "../services/progressService";
+import { getUserSettings } from "../services/settingsService";
+import { updateWorkoutStreakAfterFinish } from "../services/streakService";
 import {
     getSavedSets,
     createEmptyWorkoutSet,
@@ -19,14 +22,12 @@ import {
     updateWorkoutSetValue,
     createWorkoutSessionExercisesFromRoutine,
 } from "../services/workoutService";
+import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import {
     scheduleRestFinishedNotification,
     cancelRestFinishedNotification,
 } from "../utils/notifications";
-import { useAuth } from "../context/AuthContext";
-import { upsertUserExerciseRecord } from "../services/progressService";
-import { updateWorkoutStreakAfterFinish } from "../services/streakService";
-import { getUserSettings } from "../services/settingsService";
+import { playPersonalRecordSound, playTimerFinishedSound } from "../utils/sounds";
 
 type Params = {
     sessionId: string;
@@ -51,6 +52,77 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const timerVersionRef = useRef(0);
     const isScreenFocusedRef = useRef(false);
 
+    const ensureWorkoutSessionInitialized = useCallback(async () => {
+        if (!user?.id || !sessionId || !routineId) return;
+
+        setIsInitializingSession(true);
+
+        try {
+            const exercises = await getWorkoutSessionExercises(sessionId);
+
+            if (exercises.length > 0) {
+                setSessionExercises(exercises);
+
+                const existingSets = await getSavedSets(sessionId);
+                setSavedSets(existingSets);
+
+                return;
+            }
+
+            const createdExercises = await createWorkoutSessionExercisesFromRoutine({
+                sessionId,
+                routineId,
+                userId: user.id,
+            });
+
+            setSessionExercises(createdExercises);
+
+            const createdSets = await getSavedSets(sessionId);
+            setSavedSets(createdSets);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        } finally {
+            setIsInitializingSession(false);
+        }
+    }, [routineId, sessionId, user?.id])
+
+    const fetchSavedSets = useCallback(async () => {
+        try {
+            const data = await getSavedSets(sessionId);
+            setSavedSets(data);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }, [sessionId])
+
+    const fetchWorkoutSessionTimer = useCallback(async () => {
+        const data = await getWorkoutSessionTimer(sessionId);
+
+        setLastTimerDuration(data.last_rest_duration_seconds ?? 0);
+
+        if (!data.rest_timer_end_at) {
+            setTimer(0);
+            setTimerRunning(false);
+            setRestEndAt(null);
+            return;
+        }
+
+        const endAt = new Date(data.rest_timer_end_at).getTime();
+
+        const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+
+        setRestEndAt(remainingSeconds > 0 ? endAt : null);
+        setTimer(remainingSeconds);
+        setTimerRunning(remainingSeconds > 0);
+    }, [sessionId])
+
+    const fetchUserSettings = useCallback(async () => {
+        if (!user?.id) return;
+
+        const settings = await getUserSettings(user.id);
+        setUseGlobalTimers(settings.use_global_timers);
+    }, [user?.id])
+
     useFocusEffect(
         useCallback(() => {
             isScreenFocusedRef.current = true;
@@ -63,17 +135,14 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             return () => {
                 isScreenFocusedRef.current = false;
             };
-        }, [sessionId, routineId])
+        }, [ensureWorkoutSessionInitialized, fetchSavedSets, fetchWorkoutSessionTimer, fetchUserSettings])
     );
 
     useEffect(() => {
         if (!timerRunning || !restEndAt) return;
 
         const intervalId = setInterval(async () => {
-            const remainingSeconds = Math.max(
-                0,
-                Math.ceil((restEndAt - Date.now()) / 1000)
-            );
+            const remainingSeconds = Math.max(0, Math.ceil((restEndAt - Date.now()) / 1000));
 
             setTimer(remainingSeconds);
 
@@ -98,6 +167,20 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         return () => clearInterval(intervalId);
     }, [timerRunning, restEndAt, lastTimerDuration, sessionId]);
 
+    const syncTimerWithRestEndAt = useCallback(() => {
+        if (!restEndAt) return;
+
+        const remainingSeconds = Math.max(0, Math.ceil((restEndAt - Date.now()) / 1000));
+
+        setTimer(remainingSeconds);
+
+        if (remainingSeconds <= 0) {
+            setTimerRunning(false);
+            setRestEndAt(null);
+            cancelRestFinishedNotification();
+        }
+    }, [restEndAt])
+
     useEffect(() => {
         const subscription = AppState.addEventListener("change", (nextState) => {
             if (nextState === "active") {
@@ -106,27 +189,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         });
 
         return () => subscription.remove();
-    }, [restEndAt]);
+    }, [restEndAt, syncTimerWithRestEndAt]);
 
     useFocusEffect(
         useCallback(() => {
             syncTimerWithRestEndAt();
-        }, [restEndAt])
+        }, [syncTimerWithRestEndAt])
     );
 
     async function fetchSessionExercises() {
         try {
             const data = await getWorkoutSessionExercises(sessionId);
             setSessionExercises(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function fetchSavedSets() {
-        try {
-            const data = await getSavedSets(sessionId);
-            setSavedSets(data);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -141,15 +215,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         );
 
         const reps = Number(
-            lastSet
-                ? editingValues[`${lastSet.id}-reps`] ?? lastSet.reps ?? 0
-                : 0
+            lastSet ? (editingValues[`${lastSet.id}-reps`] ?? lastSet.reps ?? 0) : 0
         );
 
         const weight = Number(
-            lastSet
-                ? editingValues[`${lastSet.id}-weight`] ?? lastSet.weight ?? 0
-                : 0
+            lastSet ? (editingValues[`${lastSet.id}-weight`] ?? lastSet.weight ?? 0) : 0
         );
 
         const tempId = `temp-${Date.now()}`;
@@ -168,10 +238,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         setSavedSets((prev) => ({
             ...prev,
-            [workoutSessionExerciseId]: [
-                ...(prev[workoutSessionExerciseId] ?? []),
-                tempSet,
-            ],
+            [workoutSessionExerciseId]: [...(prev[workoutSessionExerciseId] ?? []), tempSet],
         }));
 
         try {
@@ -186,8 +253,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
             setSavedSets((prev) => ({
                 ...prev,
-                [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map(
-                    (set) => (set.id === tempId ? createdSet : set)
+                [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map((set) =>
+                    set.id === tempId ? createdSet : set
                 ),
             }));
         } catch (error: any) {
@@ -202,11 +269,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    async function updateSetValue(
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) {
+    async function updateSetValue(setId: string, field: "weight" | "reps", value: string) {
         updateLocalSetValue(setId, field, value);
 
         await updateWorkoutSetValue({
@@ -216,10 +279,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         });
     }
 
-    async function toggleSetCompleted(
-        workoutSessionExerciseId: string,
-        set: WorkoutSessionSet
-    ) {
+    async function toggleSetCompleted(workoutSessionExerciseId: string, set: WorkoutSessionSet) {
         const nextCompletedValue = !set.is_completed;
         const previousSets = savedSets;
 
@@ -233,17 +293,16 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         setSavedSets((prev) => ({
             ...prev,
-            [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map(
-                (currentSet) =>
-                    currentSet.id === set.id
-                        ? {
-                            ...currentSet,
-                            weight,
-                            reps,
-                            is_pr: isPr,
-                            is_completed: nextCompletedValue,
-                        }
-                        : currentSet
+            [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map((currentSet) =>
+                currentSet.id === set.id
+                    ? {
+                        ...currentSet,
+                        weight,
+                        reps,
+                        is_pr: isPr,
+                        is_completed: nextCompletedValue,
+                    }
+                    : currentSet
             ),
         }));
 
@@ -305,34 +364,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         await scheduleRestFinishedNotification(restSeconds);
     }
 
-    function syncTimerWithRestEndAt() {
-        if (!restEndAt) return;
-
-        const remainingSeconds = Math.max(
-            0,
-            Math.ceil((restEndAt - Date.now()) / 1000)
-        );
-
-        setTimer(remainingSeconds);
-
-        if (remainingSeconds <= 0) {
-            setTimerRunning(false);
-            setRestEndAt(null);
-            cancelRestFinishedNotification();
-        }
-    }
-
     function restartLastTimer() {
         if (lastTimerDuration <= 0) return;
 
         startRestTimer(lastTimerDuration);
-    }
-
-    async function fetchUserSettings() {
-        if (!user?.id) return;
-
-        const settings = await getUserSettings(user.id);
-        setUseGlobalTimers(settings.use_global_timers);
     }
 
     async function deleteSet(setId: string) {
@@ -375,9 +410,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     editingValues,
                 }),
                 updateUserExerciseRecordsFromWorkout(),
-                user?.id
-                    ? updateWorkoutStreakAfterFinish(user.id)
-                    : Promise.resolve(),
+                user?.id ? updateWorkoutStreakAfterFinish(user.id) : Promise.resolve(),
             ]);
 
             onFinish();
@@ -388,20 +421,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    function getSetInputValue(
-        setId: string,
-        field: "weight" | "reps",
-        value: number | null
-    ) {
+    function getSetInputValue(setId: string, field: "weight" | "reps", value: number | null) {
         const key = `${setId}-${field}`;
         return editingValues[key] ?? String(value ?? 0);
     }
 
-    function updateLocalSetValue(
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) {
+    function updateLocalSetValue(setId: string, field: "weight" | "reps", value: string) {
         const key = `${setId}-${field}`;
 
         setEditingValues((prev) => ({
@@ -420,10 +445,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    function getRestSecondsAfterSet(params: {
-        workoutSessionExerciseId: string;
-        setId: string;
-    }) {
+    function getRestSecondsAfterSet(params: { workoutSessionExerciseId: string; setId: string }) {
         const exerciseIndex = sessionExercises.findIndex(
             (exercise) => exercise.id === params.workoutSessionExerciseId
         );
@@ -448,10 +470,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         return 0;
     }
 
-    async function updateWorkoutSetRest(
-        workoutSessionExerciseId: string,
-        value: number
-    ) {
+    async function updateWorkoutSetRest(workoutSessionExerciseId: string, value: number) {
         setSessionExercises((prev) =>
             prev.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
@@ -465,16 +484,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 workoutSessionExerciseId,
                 restSeconds: value,
             });
-
         } catch (error) {
             console.log("updateWorkoutSetRest error", error);
         }
     }
 
-    async function updateWorkoutExerciseRest(
-        workoutSessionExerciseId: string,
-        value: number
-    ) {
+    async function updateWorkoutExerciseRest(workoutSessionExerciseId: string, value: number) {
         setSessionExercises((prev) =>
             prev.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
@@ -487,30 +502,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             workoutSessionExerciseId,
             exerciseRestSeconds: value,
         });
-    }
-
-    async function fetchWorkoutSessionTimer() {
-        const data = await getWorkoutSessionTimer(sessionId);
-
-        setLastTimerDuration(data.last_rest_duration_seconds ?? 0);
-
-        if (!data.rest_timer_end_at) {
-            setTimer(0);
-            setTimerRunning(false);
-            setRestEndAt(null);
-            return;
-        }
-
-        const endAt = new Date(data.rest_timer_end_at).getTime();
-
-        const remainingSeconds = Math.max(
-            0,
-            Math.ceil((endAt - Date.now()) / 1000)
-        );
-
-        setRestEndAt(remainingSeconds > 0 ? endAt : null);
-        setTimer(remainingSeconds);
-        setTimerRunning(remainingSeconds > 0);
     }
 
     function calculateIsPersonalRecord(params: {
@@ -529,13 +520,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     function getCurrentSetValues(set: WorkoutSessionSet) {
-        const weight = Number(
-            editingValues[`${set.id}-weight`] ?? set.weight ?? 0
-        );
+        const weight = Number(editingValues[`${set.id}-weight`] ?? set.weight ?? 0);
 
-        const reps = Number(
-            editingValues[`${set.id}-reps`] ?? set.reps ?? 0
-        );
+        const reps = Number(editingValues[`${set.id}-reps`] ?? set.reps ?? 0);
 
         return { weight, reps };
     }
@@ -561,12 +548,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         completedPrSets.forEach((set) => {
             const exerciseId = set.exercise_id!;
-            const weight = Number(
-                editingValues[`${set.id}-weight`] ?? set.weight ?? 0
-            );
-            const reps = Number(
-                editingValues[`${set.id}-reps`] ?? set.reps ?? 0
-            );
+            const weight = Number(editingValues[`${set.id}-weight`] ?? set.weight ?? 0);
+            const reps = Number(editingValues[`${set.id}-reps`] ?? set.reps ?? 0);
             const volume = weight * reps;
 
             if (!bestByExercise[exerciseId] || volume > bestByExercise[exerciseId].volume) {
@@ -588,40 +571,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 bestReps: record.reps,
                 bestSetId: record.setId,
             });
-        }
-    }
-
-    async function ensureWorkoutSessionInitialized() {
-        if (!user?.id || !sessionId || !routineId) return;
-
-        setIsInitializingSession(true);
-
-        try {
-            const exercises = await getWorkoutSessionExercises(sessionId);
-
-            if (exercises.length > 0) {
-                setSessionExercises(exercises);
-
-                const existingSets = await getSavedSets(sessionId);
-                setSavedSets(existingSets);
-
-                return;
-            }
-
-            const createdExercises = await createWorkoutSessionExercisesFromRoutine({
-                sessionId,
-                routineId,
-                userId: user.id,
-            });
-
-            setSessionExercises(createdExercises);
-
-            const createdSets = await getSavedSets(sessionId);
-            setSavedSets(createdSets);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        } finally {
-            setIsInitializingSession(false);
         }
     }
 

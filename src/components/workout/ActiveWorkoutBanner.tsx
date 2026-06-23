@@ -1,10 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import {
-    colors,
-    spacing,
-    typography,
-    componentStyles,
-} from "../../theme";
+
+import { colors, spacing, typography, componentStyles } from "../../theme";
 
 type Props = {
     routineName: string;

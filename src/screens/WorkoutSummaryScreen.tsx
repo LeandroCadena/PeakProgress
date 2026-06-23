@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+
 import { getWorkoutSummary } from "../services/historyService";
 
 type RouteParams = {
@@ -22,18 +23,18 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
 
     const [summary, setSummary] = useState<Summary | null>(null);
 
-    useEffect(() => {
-        fetchSummary();
-    }, []);
-
-    async function fetchSummary() {
+    const fetchSummary = useCallback(async () => {
         try {
             const data = await getWorkoutSummary(sessionId);
             setSummary(data);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [sessionId])
+
+    useEffect(() => {
+        fetchSummary();
+    }, [fetchSummary]);
 
     return (
         <View style={styles.container}>
@@ -55,10 +56,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
                 <Text style={styles.value}>{summary?.totalVolume ?? 0} kg</Text>
             </View>
 
-            <Pressable
-                style={styles.button}
-                onPress={() => navigation.navigate("Main")}
-            >
+            <Pressable style={styles.button} onPress={() => navigation.navigate("Main")}>
                 <Text style={styles.buttonText}>Back to Home</Text>
             </Pressable>
         </View>

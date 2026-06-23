@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet } from "react-native";
 import { ReactNode } from "react";
+import { ScrollView, StyleSheet } from "react-native";
 
 type Props = {
     children: ReactNode;
@@ -7,10 +7,7 @@ type Props = {
 
 export default function RoutineDetailLayout({ children }: Props) {
     return (
-        <ScrollView
-            style={styles.container}
-            contentContainerStyle={styles.contentContainer}
-        >
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             {children}
         </ScrollView>
     );

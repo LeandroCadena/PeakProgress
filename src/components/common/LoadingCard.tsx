@@ -1,5 +1,7 @@
 import { Text, StyleSheet } from "react-native";
+
 import { colors, spacing, typography } from "../../theme";
+
 import Card from "./Card";
 
 type Props = {

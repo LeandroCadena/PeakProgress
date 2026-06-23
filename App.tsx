@@ -5,22 +5,22 @@ import { initializeSounds } from "./src/utils/sounds";
 import { useEffect } from "react";
 
 export default function App() {
-  useEffect(() => {
-    initializeSounds();
-  }, []);
+    useEffect(() => {
+        initializeSounds();
+    }, []);
 
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
-  });
+    Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+            shouldShowBanner: true,
+            shouldShowList: true,
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+        }),
+    });
 
-  return (
-    <AuthProvider>
-      <AppNavigator />
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <AppNavigator />
+        </AuthProvider>
+    );
 }

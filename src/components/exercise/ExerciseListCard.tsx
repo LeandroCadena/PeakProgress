@@ -1,8 +1,9 @@
 import { Image, View, Text, StyleSheet } from "react-native";
-import { Exercise } from "../../types/exercise";
-import Card from "../common/Card";
-import AppButton from "../common/AppButton";
+
 import { colors } from "../../theme";
+import { Exercise } from "../../types/exercise";
+import AppButton from "../common/AppButton";
+import Card from "../common/Card";
 
 type Props = {
     exercise: Exercise;
@@ -20,12 +21,7 @@ export default function ExerciseListCard({
     onMoreInfo,
 }: Props) {
     return (
-        <Card
-            style={[
-                styles.card,
-                alreadyAdded ? styles.cardAdded : null,
-            ]}
-        >
+        <Card style={[styles.card, alreadyAdded ? styles.cardAdded : null]}>
             {exercise.image_url ? (
                 <Image source={{ uri: exercise.image_url }} style={styles.image} />
             ) : (
@@ -37,27 +33,20 @@ export default function ExerciseListCard({
             <Text style={styles.title}>{exercise.name}</Text>
 
             <Text style={styles.text}>
-                {exercise.equipment ?? "No equipment"} ·{" "}
-                {exercise.difficulty ?? "No difficulty"}
+                {exercise.equipment ?? "No equipment"} · {exercise.difficulty ?? "No difficulty"}
             </Text>
 
-            {alreadyAdded ? (
-                <Text style={styles.alreadyAddedText}>Already added</Text>
-            ) : null}
+            {alreadyAdded ? <Text style={styles.alreadyAddedText}>Already added</Text> : null}
 
             <View style={styles.actions}>
-                <AppButton
-                    title="More Info"
-                    variant="secondary"
-                    onPress={onMoreInfo}
-                />
+                <AppButton title="More Info" variant="secondary" onPress={onMoreInfo} />
 
                 {showAddButton ? (
                     <AppButton
                         title={alreadyAdded ? "Added" : "Add"}
                         variant="success"
                         disabled={alreadyAdded}
-                        onPress={onAdd ?? (() => { })}
+                        onPress={onAdd ?? (() => {})}
                     />
                 ) : null}
             </View>

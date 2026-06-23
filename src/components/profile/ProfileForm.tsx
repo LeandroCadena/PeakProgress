@@ -1,7 +1,8 @@
 import { StyleSheet, Text } from "react-native";
-import Card from "../common/Card";
-import AppInput from "../common/AppInput";
+
 import AppButton from "../common/AppButton";
+import AppInput from "../common/AppInput";
+import Card from "../common/Card";
 
 type Props = {
     fullName: string;
@@ -9,11 +10,7 @@ type Props = {
     onSave: () => void;
 };
 
-export default function ProfileForm({
-    fullName,
-    onChangeFullName,
-    onSave,
-}: Props) {
+export default function ProfileForm({ fullName, onChangeFullName, onSave }: Props) {
     return (
         <Card style={styles.card}>
             <Text style={styles.sectionTitle}>Personal Information</Text>
@@ -29,11 +26,7 @@ export default function ProfileForm({
                 placeholder="Enter your name"
             />
 
-            <AppButton
-                title="Save Profile"
-                variant="success"
-                onPress={onSave}
-            />
+            <AppButton title="Save Profile" variant="success" onPress={onSave} />
         </Card>
     );
 }

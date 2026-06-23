@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
-import { RoutineExerciseSet } from "../../types/routine";
+
 import { colors, spacing } from "../../theme";
-import IconButton from "../common/IconButton";
+import { RoutineExerciseSet } from "../../types/routine";
+import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
+import IconButton from "../common/IconButton";
 
 type Props = {
     set: RoutineExerciseSet;
@@ -25,13 +26,9 @@ export default function RoutineExerciseSetRow({
     onDelete,
     isTemporarySet,
 }: Props) {
-    const [weightValue, setWeightValue] = useState(
-        displayZeroAsEmpty(set.weight)
-    );
+    const [weightValue, setWeightValue] = useState(displayZeroAsEmpty(set.weight));
 
-    const [repsValue, setRepsValue] = useState(
-        displayZeroAsEmpty(set.reps)
-    );
+    const [repsValue, setRepsValue] = useState(displayZeroAsEmpty(set.reps));
 
     useEffect(() => {
         setWeightValue(displayZeroAsEmpty(set.weight));

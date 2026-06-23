@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
+
 import { getWorkoutSets } from "../services/historyService";
 
 type RouteParams = {
@@ -25,18 +26,18 @@ export default function WorkoutDetailScreen() {
 
     const [sets, setSets] = useState<WorkoutSet[]>([]);
 
-    useEffect(() => {
-        fetchSets();
-    }, []);
-
-    async function fetchSets() {
+    const fetchSets = useCallback(async () => {
         try {
             const data = await getWorkoutSets(sessionId);
             setSets(data as WorkoutSet[]);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [sessionId])
+
+    useEffect(() => {
+        fetchSets();
+    }, [fetchSets]);
 
     return (
         <View style={styles.container}>
@@ -52,15 +53,17 @@ export default function WorkoutDetailScreen() {
                 }
                 renderItem={({ item }) => {
                     return (
-                        <View style={styles.card}>
+                        <View style={styles.card} >
                             <Text style={styles.exerciseName}>
                                 {item.exercise_name_snapshot ?? "Exercise"}
                             </Text>
 
                             <Text style={styles.setText}>
-                                Set {sets.map((set, index) => (
-                                    <Text>Set {index + 1}</Text>
-                                ))}: {item.weight ?? 0} kg x {item.reps ?? 0} reps
+                                {sets.map((set, index) => (
+                                    <Text key={index}>
+                                        Set {index + 1}: {item.weight ?? 0} kg x {item.reps ?? 0} reps{"\n"}
+                                    </Text>
+                                ))}
                             </Text>
 
                             <Text

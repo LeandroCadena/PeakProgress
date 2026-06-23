@@ -1,9 +1,10 @@
 import { View, Pressable, Text, StyleSheet } from "react-native";
+
 import { colors, spacing, componentStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
-import IconButton from "../common/IconButton";
 import AppInput from "../common/AppInput";
+import IconButton from "../common/IconButton";
 
 type WorkoutSetRowProps = {
     set: WorkoutSessionSet;
@@ -35,10 +36,7 @@ export default function WorkoutSetRow({
     isTemporarySet,
 }: WorkoutSetRowProps) {
     return (
-        <View style={[
-            styles.setTableRow,
-            isPersonalRecord && styles.personalRecordRow,
-        ]}>
+        <View style={[styles.setTableRow, isPersonalRecord && styles.personalRecordRow]}>
             <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
             <AppInput
@@ -59,29 +57,17 @@ export default function WorkoutSetRow({
                 onEndEditing={(event) => onRepsBlur(event.nativeEvent.text)}
             />
 
-            {isPersonalRecord ? (
-                <Text style={styles.personalRecordText}>🏆 New PR</Text>
-            ) : null}
+            {isPersonalRecord ? <Text style={styles.personalRecordText}>🏆 New PR</Text> : null}
 
             <Pressable
-                style={[
-                    styles.checkbox,
-                    set.is_completed && styles.checkboxChecked,
-                ]}
+                style={[styles.checkbox, set.is_completed && styles.checkboxChecked]}
                 onPress={onToggleCompleted}
                 disabled={isTemporarySet}
             >
-                <Text style={styles.checkboxText}>
-                    {set.is_completed ? "✓" : ""}
-                </Text>
+                <Text style={styles.checkboxText}>{set.is_completed ? "✓" : ""}</Text>
             </Pressable>
 
-            <IconButton
-                icon="X"
-                variant="danger"
-                disabled={isTemporarySet}
-                onPress={onDelete}
-            />
+            <IconButton icon="X" variant="danger" disabled={isTemporarySet} onPress={onDelete} />
         </View>
     );
 }

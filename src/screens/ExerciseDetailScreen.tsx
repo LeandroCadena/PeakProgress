@@ -1,15 +1,7 @@
-import { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    Image,
-    ScrollView,
-    Pressable,
-    StyleSheet,
-    Alert,
-    Linking,
-} from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, Image, ScrollView, StyleSheet, Alert } from "react-native";
+
 import { getExerciseDetail } from "../services/exerciseService";
 
 type RouteParams = {
@@ -24,18 +16,18 @@ export default function ExerciseDetailScreen() {
 
     const [exercise, setExercise] = useState<any>(null);
 
-    async function fetchExerciseDetail() {
+    const fetchExerciseDetail = useCallback(async () => {
         try {
             const data = await getExerciseDetail(exerciseId);
             setExercise(data);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [exerciseId])
 
     useEffect(() => {
         fetchExerciseDetail();
-    }, [exerciseId]);
+    }, [exerciseId, fetchExerciseDetail]);
 
     if (!exercise) {
         return (
@@ -64,8 +56,7 @@ export default function ExerciseDetailScreen() {
             <Text style={styles.title}>{exercise.name}</Text>
 
             <Text style={styles.meta}>
-                {exercise.equipment ?? "No equipment"} ·{" "}
-                {exercise.difficulty ?? "No difficulty"}
+                {exercise.equipment ?? "No equipment"} · {exercise.difficulty ?? "No difficulty"}
             </Text>
 
             <Text style={styles.sectionTitle}>Muscles</Text>
@@ -95,10 +86,7 @@ export default function ExerciseDetailScreen() {
             {exercise.animation_url ? (
                 <>
                     <Text style={styles.sectionTitle}>Execution</Text>
-                    <Image
-                        source={{ uri: exercise.animation_url }}
-                        style={styles.animation}
-                    />
+                    <Image source={{ uri: exercise.animation_url }} style={styles.animation} />
                 </>
             ) : null}
         </ScrollView>

@@ -1,40 +1,24 @@
 import { View, Text, StyleSheet, Image } from "react-native";
-import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
+
 import { colors, spacing, typography } from "../../theme";
-import WorkoutSetRow from "./WorkoutSetRow";
-import RestTimeEditor from "./RestTimeEditor";
+import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
+
+import RestTimeEditor from "./RestTimeEditor";
+import WorkoutSetRow from "./WorkoutSetRow";
 
 type WorkoutExerciseCardProps = {
     exercise: WorkoutSessionExercise;
     savedSets: WorkoutSessionSet[];
-    getSetInputValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: number | null
-    ) => string;
-    updateLocalSetValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) => void;
-    updateSetValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string
-    ) => void;
-    toggleSetCompleted: (
-        workoutSessionExerciseId: string,
-        set: WorkoutSessionSet
-    ) => void;
+    getSetInputValue: (setId: string, field: "weight" | "reps", value: number | null) => string;
+    updateLocalSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
+    updateSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
+    toggleSetCompleted: (workoutSessionExerciseId: string, set: WorkoutSessionSet) => void;
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
     onDeleteExercise: () => void;
-    onUpdateSetRest: (
-        workoutSessionExerciseId: string,
-        value: number
-    ) => void;
+    onUpdateSetRest: (workoutSessionExerciseId: string, value: number) => void;
     useGlobalTimers: boolean;
 };
 
@@ -89,18 +73,10 @@ export default function WorkoutExerciseCard({
                         displaySetNumber={index + 1}
                         weightValue={getSetInputValue(set.id, "weight", set.weight)}
                         repsValue={getSetInputValue(set.id, "reps", set.reps)}
-                        onWeightChange={(value) =>
-                            updateLocalSetValue(set.id, "weight", value)
-                        }
-                        onRepsChange={(value) =>
-                            updateLocalSetValue(set.id, "reps", value)
-                        }
-                        onWeightBlur={(value) =>
-                            updateSetValue(set.id, "weight", value)
-                        }
-                        onRepsBlur={(value) =>
-                            updateSetValue(set.id, "reps", value)
-                        }
+                        onWeightChange={(value) => updateLocalSetValue(set.id, "weight", value)}
+                        onRepsChange={(value) => updateLocalSetValue(set.id, "reps", value)}
+                        onWeightBlur={(value) => updateSetValue(set.id, "weight", value)}
+                        onRepsBlur={(value) => updateSetValue(set.id, "reps", value)}
                         onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
                         onDelete={() => deleteSet(set.id)}
                         isTemporarySet={isTemporarySet}
@@ -114,11 +90,7 @@ export default function WorkoutExerciseCard({
                 onPress={() => addEmptySet(exercise.id)}
             />
 
-            <AppButton
-                title="Remove Exercise"
-                variant="danger"
-                onPress={onDeleteExercise}
-            />
+            <AppButton title="Remove Exercise" variant="danger" onPress={onDeleteExercise} />
         </Card>
     );
 }

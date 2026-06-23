@@ -1,24 +1,24 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+
+import AppButton from "../components/common/AppButton";
+import Card from "../components/common/Card";
+import ScreenContainer from "../components/common/ScreenContainer";
+import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import { useAuth } from "../context/AuthContext";
-import { DashboardStats } from "../types/dashboard";
+import { useProfile } from "../hooks/useProfile";
 import { getDashboardStats, getRecentWorkouts } from "../services/dashboardService";
 import { getActiveWorkoutSession } from "../services/workoutService";
-import { RecentWorkout } from "../types/dashboard";
-import { useProfile } from "../hooks/useProfile";
 import { colors, spacing, typography } from "../theme";
-import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
-import ScreenContainer from "../components/common/ScreenContainer";
-import Card from "../components/common/Card";
-import AppButton from "../components/common/AppButton";
+import { DashboardStats, RecentWorkout } from "../types/dashboard";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
     const { fullName } = useProfile();
     const [activeSession, setActiveSession] = useState<any>(null);
     const [recentWorkouts, setRecentWorkouts] = useState<RecentWorkout[]>([]);
-    const [now, setNow] = useState(Date.now());
+    const [now, setNow] = useState(() => Date.now());
 
     const [stats, setStats] = useState<DashboardStats>({
         routinesCount: 0,
@@ -38,14 +38,7 @@ export default function HomeScreen({ navigation }: any) {
         return () => clearInterval(intervalId);
     }, []);
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchDashboardStats();
-            fetchActiveSession();
-        }, [user?.id])
-    );
-
-    async function fetchDashboardStats() {
+    const fetchDashboardStats = useCallback(async () => {
         if (!user?.id) return;
 
         try {
@@ -57,19 +50,9 @@ export default function HomeScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }
+    }, [user])
 
-    function getElapsedText(startedAt: string) {
-        const diffMs = Date.now() - new Date(startedAt).getTime();
-        const minutes = Math.floor(diffMs / 60000);
-        const hours = Math.floor(minutes / 60);
-        const restMinutes = minutes % 60;
-
-        if (hours > 0) return `${hours}h ${restMinutes}m`;
-        return `${minutes}m`;
-    }
-
-    async function fetchActiveSession() {
+    const fetchActiveSession = useCallback(async () => {
         if (!user) return;
 
         try {
@@ -78,6 +61,23 @@ export default function HomeScreen({ navigation }: any) {
         } catch (error) {
             console.log("Active workout error:", error);
         }
+    }, [user])
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchDashboardStats();
+            fetchActiveSession();
+        }, [fetchDashboardStats, fetchActiveSession])
+    );
+
+    function getElapsedText(startedAt: string) {
+        const diffMs = now - new Date(startedAt).getTime();
+        const minutes = Math.floor(diffMs / 60000);
+        const hours = Math.floor(minutes / 60);
+        const restMinutes = minutes % 60;
+
+        if (hours > 0) return `${hours}h ${restMinutes}m`;
+        return `${minutes}m`;
     }
 
     function getRestRemainingText(restTimerEndAt?: string | null) {
@@ -101,9 +101,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     function getWorkoutDuration(startedAt: string, completedAt: string) {
-        const diffMs =
-            new Date(completedAt).getTime() -
-            new Date(startedAt).getTime();
+        const diffMs = new Date(completedAt).getTime() - new Date(startedAt).getTime();
 
         const minutes = Math.max(0, Math.floor(diffMs / 60000));
         const hours = Math.floor(minutes / 60);
@@ -186,11 +184,8 @@ export default function HomeScreen({ navigation }: any) {
 
                                 <Text style={styles.recentMeta}>
                                     {formatWorkoutDate(workout.completed_at)} ·{" "}
-                                    {getWorkoutDuration(
-                                        workout.started_at,
-                                        workout.completed_at
-                                    )}{" "}
-                                    · {workout.workout_session_exercises?.length ?? 0} exercises
+                                    {getWorkoutDuration(workout.started_at, workout.completed_at)} ·{" "}
+                                    {workout.workout_session_exercises?.length ?? 0} exercises
                                 </Text>
                             </View>
                         </Card>

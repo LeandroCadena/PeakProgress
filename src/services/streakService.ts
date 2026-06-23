@@ -44,9 +44,7 @@ function getPreviousWeekEndDate(weekEnd: Date) {
 export async function updateWorkoutStreakAfterFinish(userId: string) {
     const currentWeekEnd = getWeekEndDate();
     const currentWeekEndString = toDateString(currentWeekEnd);
-    const previousWeekEndString = toDateString(
-        getPreviousWeekEndDate(currentWeekEnd)
-    );
+    const previousWeekEndString = toDateString(getPreviousWeekEndDate(currentWeekEnd));
 
     const currentStreak = await getWorkoutStreak(userId);
 
@@ -118,15 +116,9 @@ export function getWorkoutStreakStatus(streak: WorkoutStreak | null) {
     }
 
     const diffMs = currentWeekEnd.getTime() - today.getTime();
-    const daysRemaining = Math.max(
-        0,
-        Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-    );
+    const daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 
-    if (
-        toDateString(lastTrainedWeekEnd) === toDateString(previousWeekEnd) &&
-        daysRemaining <= 3
-    ) {
+    if (toDateString(lastTrainedWeekEnd) === toDateString(previousWeekEnd) && daysRemaining <= 3) {
         return {
             status: "warning" as const,
             daysRemaining,
