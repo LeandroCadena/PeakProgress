@@ -1,5 +1,7 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { WeightLog } from "../../types/profile";
+import Card from "../common/Card";
+import AppButton from "../common/AppButton";
 
 type Props = {
     log: WeightLog;
@@ -8,7 +10,7 @@ type Props = {
 
 export default function WeightLogCard({ log, onDelete }: Props) {
     return (
-        <View style={styles.weightLogCard}>
+        <Card style={styles.weightLogCard}>
             <View>
                 <Text style={styles.weightValue}>{log.weight_kg} kg</Text>
                 <Text style={styles.weightDate}>
@@ -16,10 +18,12 @@ export default function WeightLogCard({ log, onDelete }: Props) {
                 </Text>
             </View>
 
-            <Pressable style={styles.deleteButton} onPress={onDelete}>
-                <Text style={styles.deleteButtonText}>Delete</Text>
-            </Pressable>
-        </View>
+            <AppButton
+                title="Delete"
+                variant="danger"
+                onPress={onDelete}
+            />
+        </Card>
     );
 }
 
@@ -43,15 +47,5 @@ const styles = StyleSheet.create({
     weightDate: {
         color: "#9CA3AF",
         marginTop: 4,
-    },
-    deleteButton: {
-        backgroundColor: "#EF4444",
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-    },
-    deleteButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
     },
 });

@@ -1,4 +1,7 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text } from "react-native";
+import Card from "../common/Card";
+import AppInput from "../common/AppInput";
+import AppButton from "../common/AppButton";
 
 type Props = {
     fullName: string;
@@ -12,7 +15,7 @@ export default function ProfileForm({
     onSave,
 }: Props) {
     return (
-        <View style={styles.card}>
+        <Card style={styles.card}>
             <Text style={styles.sectionTitle}>Personal Information</Text>
             <Text style={styles.helperText}>
                 Enter your name so we can personalize your experience.
@@ -20,28 +23,23 @@ export default function ProfileForm({
 
             <Text style={styles.label}>Name</Text>
 
-            <TextInput
-                style={styles.input}
+            <AppInput
                 value={fullName}
                 onChangeText={onChangeFullName}
                 placeholder="Enter your name"
-                placeholderTextColor="#6B7280"
             />
 
-            <Pressable style={styles.button} onPress={onSave}>
-                <Text style={styles.buttonText}>Save Profile</Text>
-            </Pressable>
-        </View>
+            <AppButton
+                title="Save Profile"
+                variant="success"
+                onPress={onSave}
+            />
+        </Card>
     );
 }
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: "#161B22",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 14,
-        padding: 16,
         marginBottom: 14,
     },
     sectionTitle: {
@@ -59,25 +57,5 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "700",
         marginBottom: 8,
-    },
-    input: {
-        backgroundColor: "#0B0F14",
-        borderWidth: 1,
-        borderColor: "#30363D",
-        borderRadius: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        color: "#FFFFFF",
-        marginBottom: 14,
-    },
-    button: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 14,
-        borderRadius: 12,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        textAlign: "center",
     },
 });

@@ -1,6 +1,8 @@
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { WeightLog } from "../../types/profile";
 import WeightLogCard from "./WeightLogCard";
+import AppInput from "../common/AppInput";
+import AppButton from "../common/AppButton";
 
 type Props = {
     newWeight: string;
@@ -21,18 +23,18 @@ export default function WeightTrackingSection({
         <View>
             <Text style={styles.sectionTitle}>Weight Tracking</Text>
 
-            <TextInput
-                style={styles.input}
+            <AppInput
                 placeholder="Weight kg"
-                placeholderTextColor="#6B7280"
                 keyboardType="numeric"
                 value={newWeight}
                 onChangeText={onChangeWeight}
             />
 
-            <Pressable style={styles.button} onPress={onAddWeight}>
-                <Text style={styles.buttonText}>Add Weight Log</Text>
-            </Pressable>
+            <AppButton
+                title="Add Weight Log"
+                variant="primary"
+                onPress={onAddWeight}
+            />
 
             {weightLogs.map((log) => (
                 <WeightLogCard
@@ -52,24 +54,5 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         marginTop: 24,
         marginBottom: 12,
-    },
-    input: {
-        backgroundColor: "#161B22",
-        color: "#FFFFFF",
-        padding: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#30363D",
-    },
-    button: {
-        backgroundColor: "#2563EB",
-        paddingVertical: 14,
-        borderRadius: 12,
-        marginTop: 12,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        textAlign: "center",
-        fontWeight: "700",
     },
 });
