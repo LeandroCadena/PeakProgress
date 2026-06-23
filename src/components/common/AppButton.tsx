@@ -43,7 +43,7 @@ export default function AppButton({
 
 const styles = StyleSheet.create({
     button: {
-        paddingVertical: spacing.md,
+        paddingVertical: spacing.lg,
         borderRadius: componentStyles.buttonRadius,
         alignItems: "center",
         justifyContent: "center",

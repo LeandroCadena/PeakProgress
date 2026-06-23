@@ -73,3 +73,25 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
         streakDaysRemaining: streakStatus.daysRemaining,
     };
 }
+
+export async function getRecentWorkouts(userId: string) {
+    const { data, error } = await supabase
+        .from("workout_sessions")
+        .select(`
+            id,
+            routine_name_snapshot,
+            started_at,
+            completed_at,
+            workout_session_exercises (
+                id
+            )
+        `)
+        .eq("user_id", userId)
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false })
+        .limit(2);
+
+    if (error) throw error;
+
+    return data ?? [];
+}

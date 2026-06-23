@@ -5,14 +5,14 @@ export const darkTheme = {
         card: "#1F2937",
         cardBorder: "#374151",
 
-        primary: "#3B82F6",
-        primaryPressed: "#2563EB",
+        primary: "#F97316",
+        primaryPressed: "#EA580C",
 
         success: "#22C55E",
         successDark: "#163122",
 
-        warning: "#F59E0B",
-        warningDark: "#3B2A12",
+        warning: "#FB923C",
+        warningDark: "#3A2413",
 
         danger: "#EF4444",
 
