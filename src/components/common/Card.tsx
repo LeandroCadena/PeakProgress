@@ -1,10 +1,10 @@
 import { ReactNode } from "react";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { colors, componentStyles, spacing } from "../../theme";
 
 type Props = {
     children: ReactNode;
-    style?: ViewStyle | ViewStyle[];
+    style?: StyleProp<ViewStyle> | ViewStyle[];
 };
 
 export default function Card({ children, style }: Props) {
@@ -17,6 +17,6 @@ const styles = StyleSheet.create({
         borderRadius: componentStyles.cardRadius,
         borderWidth: componentStyles.borderWidth,
         borderColor: colors.cardBorder,
-        padding: spacing.lg,
+        padding: componentStyles.cardPadding,
     },
 });

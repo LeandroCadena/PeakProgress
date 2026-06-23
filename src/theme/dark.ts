@@ -1,25 +1,25 @@
 export const darkTheme = {
     colors: {
-        background: "#0D1117",
+        background: "#111827",
 
-        card: "#161B22",
-        cardBorder: "#30363D",
+        card: "#1F2937",
+        cardBorder: "#374151",
 
         primary: "#3B82F6",
         primaryPressed: "#2563EB",
 
         success: "#22C55E",
-        successDark: "#102A1A",
+        successDark: "#163122",
 
         warning: "#F59E0B",
-        warningDark: "#3A2A00",
+        warningDark: "#3B2A12",
 
         danger: "#EF4444",
 
-        text: "#FFFFFF",
+        text: "#F9FAFB",
         textSecondary: "#9CA3AF",
 
-        inputBackground: "#0B0F14",
+        inputBackground: "#111827",
         inputBorder: "#374151",
     },
 };

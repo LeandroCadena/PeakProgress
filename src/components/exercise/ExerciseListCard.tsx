@@ -1,7 +1,8 @@
-import { Image, View, Text, Pressable, StyleSheet } from "react-native";
+import { Image, View, Text, StyleSheet } from "react-native";
 import { Exercise } from "../../types/exercise";
 import Card from "../common/Card";
 import AppButton from "../common/AppButton";
+import { colors } from "../../theme";
 
 type Props = {
     exercise: Exercise;
@@ -22,7 +23,7 @@ export default function ExerciseListCard({
         <Card
             style={[
                 styles.card,
-                alreadyAdded && styles.cardAdded,
+                alreadyAdded ? styles.cardAdded : null,
             ]}
         >
             {exercise.image_url ? (
@@ -73,8 +74,9 @@ const styles = StyleSheet.create({
         borderColor: "#30363D",
     },
     cardAdded: {
-        backgroundColor: "#1F2937",
-        borderColor: "#4CAF50",
+        borderColor: colors.success,
+        backgroundColor: colors.successDark,
+        borderWidth: 2,
     },
     image: {
         width: "100%",
