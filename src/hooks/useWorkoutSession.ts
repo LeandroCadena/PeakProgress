@@ -84,7 +84,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         } finally {
             setIsInitializingSession(false);
         }
-    }, [routineId, sessionId, user?.id])
+    }, [routineId, sessionId, user?.id]);
 
     const fetchSavedSets = useCallback(async () => {
         try {
@@ -93,7 +93,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [sessionId])
+    }, [sessionId]);
 
     const fetchWorkoutSessionTimer = useCallback(async () => {
         const data = await getWorkoutSessionTimer(sessionId);
@@ -114,14 +114,14 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         setRestEndAt(remainingSeconds > 0 ? endAt : null);
         setTimer(remainingSeconds);
         setTimerRunning(remainingSeconds > 0);
-    }, [sessionId])
+    }, [sessionId]);
 
     const fetchUserSettings = useCallback(async () => {
         if (!user?.id) return;
 
         const settings = await getUserSettings(user.id);
         setUseGlobalTimers(settings.use_global_timers);
-    }, [user?.id])
+    }, [user?.id]);
 
     useFocusEffect(
         useCallback(() => {
@@ -135,7 +135,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             return () => {
                 isScreenFocusedRef.current = false;
             };
-        }, [ensureWorkoutSessionInitialized, fetchSavedSets, fetchWorkoutSessionTimer, fetchUserSettings])
+        }, [
+            ensureWorkoutSessionInitialized,
+            fetchSavedSets,
+            fetchWorkoutSessionTimer,
+            fetchUserSettings,
+        ])
     );
 
     useEffect(() => {
@@ -179,7 +184,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             setRestEndAt(null);
             cancelRestFinishedNotification();
         }
-    }, [restEndAt])
+    }, [restEndAt]);
 
     useEffect(() => {
         const subscription = AppState.addEventListener("change", (nextState) => {
@@ -296,12 +301,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map((currentSet) =>
                 currentSet.id === set.id
                     ? {
-                        ...currentSet,
-                        weight,
-                        reps,
-                        is_pr: isPr,
-                        is_completed: nextCompletedValue,
-                    }
+                          ...currentSet,
+                          weight,
+                          reps,
+                          is_pr: isPr,
+                          is_completed: nextCompletedValue,
+                      }
                     : currentSet
             ),
         }));

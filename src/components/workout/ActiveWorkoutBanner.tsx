@@ -33,12 +33,12 @@ export default function ActiveWorkoutBanner({
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#143021",
+        backgroundColor: colors.successDark,
         borderColor: colors.success,
         borderWidth: componentStyles.borderWidth,
         borderRadius: componentStyles.cardRadius,
-        paddingVertical: spacing.lg,
-        paddingHorizontal: spacing.xl,
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.lg,
         marginBottom: spacing.lg,
         flexDirection: "row",
         justifyContent: "space-between",
@@ -46,21 +46,24 @@ const styles = StyleSheet.create({
     },
     label: {
         color: colors.success,
-        fontWeight: "700",
+        fontWeight: "800",
+        fontSize: typography.small,
         marginBottom: spacing.xs,
     },
     title: {
         color: colors.text,
-        fontWeight: "800",
+        fontWeight: "900",
         fontSize: typography.body,
     },
     time: {
         color: colors.text,
-        fontWeight: "800",
+        fontWeight: "900",
+        fontSize: typography.caption,
     },
     restText: {
         color: colors.warning,
         fontWeight: "800",
         marginTop: spacing.xs,
+        fontSize: typography.small,
     },
 });

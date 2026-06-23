@@ -45,7 +45,7 @@ export default function RoutinesScreen({ navigation }: any) {
         } catch (error) {
             console.log("Active workout error:", error);
         }
-    }, [user])
+    }, [user]);
 
     useFocusEffect(
         useCallback(() => {

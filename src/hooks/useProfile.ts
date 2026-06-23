@@ -38,7 +38,7 @@ export function useProfile() {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [user?.id])
+    }, [user?.id]);
 
     useEffect(() => {
         fetchProfile();

@@ -25,7 +25,7 @@ export default function SettingsScreen() {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [user])
+    }, [user]);
 
     useEffect(() => {
         fetchSettings();

@@ -6,7 +6,6 @@ import AppInput from "../common/AppInput";
 
 import WeightLogCard from "./WeightLogCard";
 
-
 type Props = {
     newWeight: string;
     onChangeWeight: (value: string) => void;

@@ -31,7 +31,7 @@ export default function ExerciseProgressScreen() {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [exerciseId])
+    }, [exerciseId]);
 
     useEffect(() => {
         fetchExerciseProgress();
@@ -39,17 +39,17 @@ export default function ExerciseProgressScreen() {
 
     const chartData = points.length
         ? {
-            labels: points.map((_, index) => `${index + 1}`),
-            datasets: [
-                {
-                    data: points.map((point) => Number(point.weight ?? 0)),
-                },
-            ],
-        }
+              labels: points.map((_, index) => `${index + 1}`),
+              datasets: [
+                  {
+                      data: points.map((point) => Number(point.weight ?? 0)),
+                  },
+              ],
+          }
         : {
-            labels: ["0"],
-            datasets: [{ data: [0] }],
-        };
+              labels: ["0"],
+              datasets: [{ data: [0] }],
+          };
 
     return (
         <View style={styles.container}>

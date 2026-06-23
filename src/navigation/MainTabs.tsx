@@ -21,10 +21,7 @@ export default function MainTabs() {
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
-                headerStyle: {
-                    backgroundColor: "#0B0F14",
-                },
-                headerTintColor: "#FFFFFF",
+                headerShown: false,
                 tabBarStyle: {
                     backgroundColor: "#0B0F14",
                     borderTopColor: "#30363D",

@@ -21,7 +21,7 @@ export default function ProgressScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [user])
+    }, [user]);
 
     useFocusEffect(
         useCallback(() => {

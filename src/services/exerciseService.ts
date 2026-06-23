@@ -1,4 +1,4 @@
-import { Exercise, Muscle , FilterMode, MuscleRegion } from "../types/exercise";
+import { Exercise, Muscle, FilterMode, MuscleRegion } from "../types/exercise";
 
 import { supabase } from "./supabase";
 

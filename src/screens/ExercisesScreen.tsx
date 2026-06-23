@@ -42,7 +42,7 @@ export default function ExercisesScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [filterMode, selectedFilterIds])
+    }, [filterMode, selectedFilterIds]);
 
     useEffect(() => {
         fetchExercises();

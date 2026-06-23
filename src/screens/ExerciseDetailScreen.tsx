@@ -23,7 +23,7 @@ export default function ExerciseDetailScreen() {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [exerciseId])
+    }, [exerciseId]);
 
     useEffect(() => {
         fetchExerciseDetail();

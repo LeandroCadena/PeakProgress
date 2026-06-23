@@ -33,7 +33,7 @@ export default function WorkoutDetailScreen() {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [sessionId])
+    }, [sessionId]);
 
     useEffect(() => {
         fetchSets();
@@ -53,7 +53,7 @@ export default function WorkoutDetailScreen() {
                 }
                 renderItem={({ item }) => {
                     return (
-                        <View style={styles.card} >
+                        <View style={styles.card}>
                             <Text style={styles.exerciseName}>
                                 {item.exercise_name_snapshot ?? "Exercise"}
                             </Text>
@@ -61,7 +61,8 @@ export default function WorkoutDetailScreen() {
                             <Text style={styles.setText}>
                                 {sets.map((set, index) => (
                                     <Text key={index}>
-                                        Set {index + 1}: {item.weight ?? 0} kg x {item.reps ?? 0} reps{"\n"}
+                                        Set {index + 1}: {item.weight ?? 0} kg x {item.reps ?? 0}{" "}
+                                        reps{"\n"}
                                     </Text>
                                 ))}
                             </Text>

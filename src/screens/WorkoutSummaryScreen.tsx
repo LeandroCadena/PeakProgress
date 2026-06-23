@@ -30,7 +30,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [sessionId])
+    }, [sessionId]);
 
     useEffect(() => {
         fetchSummary();

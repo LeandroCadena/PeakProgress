@@ -1,10 +1,10 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert, Image, ScrollView } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
-import ScreenContainer from "../components/common/ScreenContainer";
+import RecentWorkoutCard from "../components/home/RecentWorkoutCard";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
@@ -50,7 +50,7 @@ export default function HomeScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [user])
+    }, [user]);
 
     const fetchActiveSession = useCallback(async () => {
         if (!user) return;
@@ -61,7 +61,7 @@ export default function HomeScreen({ navigation }: any) {
         } catch (error) {
             console.log("Active workout error:", error);
         }
-    }, [user])
+    }, [user]);
 
     useFocusEffect(
         useCallback(() => {
@@ -112,7 +112,11 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     return (
-        <ScreenContainer>
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+        >
             {activeSession ? (
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
@@ -133,11 +137,21 @@ export default function HomeScreen({ navigation }: any) {
                 {fullName?.trim() ? `${fullName.trim()} 👋` : "Athlete 👋"}
             </Text>
 
-            <Text style={styles.heroText}>
-                Let&apos;s get{"\n"}
-                <Text style={styles.heroHighlight}>stronger</Text>
-                {"\n"}today.
-            </Text>
+            <View style={styles.heroSection}>
+                <View style={styles.heroContent}>
+                    <Text style={styles.heroText}>
+                        Let&apos;s get{"\n"}
+                        <Text style={styles.heroHighlight}>stronger</Text>
+                        {"\n"}today.
+                    </Text>
+                </View>
+
+                <Image
+                    source={require("../../assets/gym-time-logo.png")}
+                    style={styles.heroLogo}
+                    resizeMode="contain"
+                />
+            </View>
 
             <View style={styles.statsRow}>
                 <Card style={styles.statCard}>
@@ -153,10 +167,10 @@ export default function HomeScreen({ navigation }: any) {
                         {stats.streakStatus === "empty"
                             ? "Start today"
                             : stats.streakStatus === "warning"
-                                ? "Keep it up"
-                                : stats.streakStatus === "expired"
-                                    ? "Start again"
-                                    : `${stats.streakWeeks} active weeks`}
+                              ? "Keep it up"
+                              : stats.streakStatus === "expired"
+                                ? "Start again"
+                                : `${stats.streakWeeks} active weeks`}
                     </Text>
                 </Card>
             </View>
@@ -176,23 +190,17 @@ export default function HomeScreen({ navigation }: any) {
                     </View>
 
                     {recentWorkouts.map((workout) => (
-                        <Card key={workout.id} style={styles.recentCard}>
-                            <View>
-                                <Text style={styles.recentTitle}>
-                                    {workout.routine_name_snapshot ?? "Workout"}
-                                </Text>
-
-                                <Text style={styles.recentMeta}>
-                                    {formatWorkoutDate(workout.completed_at)} ·{" "}
-                                    {getWorkoutDuration(workout.started_at, workout.completed_at)} ·{" "}
-                                    {workout.workout_session_exercises?.length ?? 0} exercises
-                                </Text>
-                            </View>
-                        </Card>
+                        <RecentWorkoutCard
+                            key={workout.id}
+                            title={workout.routine_name_snapshot ?? "Workout"}
+                            date={formatWorkoutDate(workout.completed_at)}
+                            duration={getWorkoutDuration(workout.started_at, workout.completed_at)}
+                            exercisesCount={workout.workout_session_exercises?.length ?? 0}
+                        />
                     ))}
                 </View>
             ) : null}
-        </ScreenContainer>
+        </ScrollView>
     );
 }
 
@@ -210,10 +218,9 @@ const styles = StyleSheet.create({
     },
     heroText: {
         color: colors.text,
-        fontSize: 46,
+        fontSize: 38,
         fontWeight: "900",
-        lineHeight: 52,
-        marginBottom: spacing.xl,
+        lineHeight: 44,
         letterSpacing: -1,
     },
     heroHighlight: {
@@ -248,37 +255,55 @@ const styles = StyleSheet.create({
     recentSection: {
         marginTop: spacing.lg,
     },
-
     sectionHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: spacing.md,
     },
-
     sectionTitle: {
         color: colors.text,
         fontSize: typography.subtitle,
         fontWeight: "800",
     },
-
     sectionAction: {
         color: colors.primary,
         fontWeight: "800",
     },
-
     recentCard: {
         marginBottom: spacing.md,
     },
-
     recentTitle: {
         color: colors.text,
         fontWeight: "800",
         fontSize: typography.body,
     },
-
     recentMeta: {
         color: colors.textSecondary,
         marginTop: spacing.xs,
+    },
+    heroSection: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: spacing.xl,
+    },
+    heroContent: {
+        flex: 1,
+        paddingRight: spacing.md,
+    },
+    heroLogo: {
+        width: 120,
+        height: 120,
+        marginLeft: spacing.md,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: colors.background,
+    },
+    content: {
+        padding: spacing.xxl,
+        paddingTop: 48,
+        paddingBottom: 120,
     },
 });

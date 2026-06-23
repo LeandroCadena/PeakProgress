@@ -80,7 +80,7 @@ export function useRoutineDetail({
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [routineId])
+    }, [routineId]);
 
     useFocusEffect(
         useCallback(() => {
@@ -431,9 +431,9 @@ export function useRoutineDetail({
             prev.map((exercise) =>
                 exercise.id === routineExerciseId
                     ? {
-                        ...exercise,
-                        exercise_rest_seconds: value,
-                    }
+                          ...exercise,
+                          exercise_rest_seconds: value,
+                      }
                     : exercise
             )
         );
