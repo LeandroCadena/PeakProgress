@@ -1,5 +1,6 @@
 import { Pressable, Text, StyleSheet } from "react-native";
-import { Exercise } from "../../types/exercise";
+import Card from "../common/Card";
+import { colors, spacing, typography } from "../../theme";
 
 type AvailableExercise = {
     id: string;
@@ -13,28 +14,29 @@ type Props = {
 
 export default function AvailableExerciseCard({ exercise, onPress }: Props) {
     return (
-        <Pressable style={styles.addCard} onPress={onPress}>
-            <Text style={styles.cardTitle}>{exercise.name}</Text>
-            <Text style={styles.cardText}>Tap to add</Text>
+        <Pressable onPress={onPress}>
+            <Card style={styles.addCard}>
+                <Text style={styles.cardTitle}>{exercise.name}</Text>
+                <Text style={styles.cardText}>Tap to add</Text>
+            </Card>
         </Pressable>
     );
 }
 
 const styles = StyleSheet.create({
     addCard: {
-        backgroundColor: "#102A1A",
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#4CAF50",
+        borderColor: colors.success,
+        backgroundColor: colors.successDark,
     },
+
     cardTitle: {
-        color: "#FFFFFF",
-        fontSize: 17,
+        color: colors.text,
+        fontSize: typography.body,
         fontWeight: "700",
     },
+
     cardText: {
-        color: "#9CA3AF",
-        marginTop: 6,
+        color: colors.textSecondary,
+        marginTop: spacing.xs,
     },
 });

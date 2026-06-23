@@ -1,5 +1,7 @@
 import { Image, View, Text, Pressable, StyleSheet } from "react-native";
 import { Exercise } from "../../types/exercise";
+import Card from "../common/Card";
+import AppButton from "../common/AppButton";
 
 type Props = {
     exercise: Exercise;
@@ -17,7 +19,12 @@ export default function ExerciseListCard({
     onMoreInfo,
 }: Props) {
     return (
-        <View style={[styles.card, alreadyAdded && styles.cardAdded]}>
+        <Card
+            style={[
+                styles.card,
+                alreadyAdded && styles.cardAdded,
+            ]}
+        >
             {exercise.image_url ? (
                 <Image source={{ uri: exercise.image_url }} style={styles.image} />
             ) : (
@@ -38,31 +45,22 @@ export default function ExerciseListCard({
             ) : null}
 
             <View style={styles.actions}>
-                <Pressable style={styles.infoButton} onPress={onMoreInfo}>
-                    <Text style={styles.infoButtonText}>More Info</Text>
-                </Pressable>
+                <AppButton
+                    title="More Info"
+                    variant="secondary"
+                    onPress={onMoreInfo}
+                />
 
                 {showAddButton ? (
-                    <Pressable
-                        style={[
-                            styles.addButton,
-                            alreadyAdded && styles.addButtonDisabled,
-                        ]}
+                    <AppButton
+                        title={alreadyAdded ? "Added" : "Add"}
+                        variant="success"
                         disabled={alreadyAdded}
-                        onPress={onAdd}
-                    >
-                        <Text
-                            style={[
-                                styles.addButtonText,
-                                alreadyAdded && styles.addButtonTextDisabled,
-                            ]}
-                        >
-                            {alreadyAdded ? "Added" : "Add"}
-                        </Text>
-                    </Pressable>
+                        onPress={onAdd ?? (() => { })}
+                    />
                 ) : null}
             </View>
-        </View>
+        </Card>
     );
 }
 
@@ -113,34 +111,5 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         gap: 10,
         marginTop: 12,
-    },
-    infoButton: {
-        flex: 1,
-        backgroundColor: "#1F2937",
-        paddingVertical: 10,
-        borderRadius: 10,
-        alignItems: "center",
-    },
-    infoButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-    },
-    addButton: {
-        flex: 1,
-        backgroundColor: "#4CAF50",
-        paddingVertical: 10,
-        borderRadius: 10,
-        alignItems: "center",
-    },
-    addButtonDisabled: {
-        backgroundColor: "#374151",
-        opacity: 0.7,
-    },
-    addButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-    },
-    addButtonTextDisabled: {
-        color: "#9CA3AF",
     },
 });
