@@ -1,18 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Alert, Image } from "react-native";
+import { View, Text, StyleSheet, Alert, Image, Pressable } from "react-native";
 
 import AppButton from "../components/common/AppButton";
-import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
-import RecentWorkoutCard from "../components/home/RecentWorkoutCard";
+import StatCard from "../components/common/StatCard";
+import RoutineCard from "../components/routine/RoutineCard";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
 import { getDashboardStats, getRecentWorkouts } from "../services/dashboardService";
 import { getActiveWorkoutSession } from "../services/workoutService";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing, typography } from "../theme";
 import { DashboardStats, RecentWorkout } from "../types/dashboard";
 
 export default function HomeScreen({ navigation }: any) {
@@ -113,8 +113,18 @@ export default function HomeScreen({ navigation }: any) {
         return `${minutes}m`;
     }
 
+    function getWorkoutSubtitle(startedAt: string, completedAt: string, count: number) {
+        const date = formatWorkoutDate(completedAt);
+
+        const duration = getWorkoutDuration(startedAt, completedAt);
+
+        return `${date} · ${duration} · ${count} exercises`;
+    }
+
     return (
         <ScreenContainer scroll>
+            <Text style={sharedStyles.screenTitle}>Home</Text>
+
             {activeSession ? (
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
@@ -129,20 +139,18 @@ export default function HomeScreen({ navigation }: any) {
                     }
                 />
             ) : null}
-            <Text style={styles.greeting}>Good to see you,</Text>
+            <Text style={sharedStyles.mutedText}>Good to see you,</Text>
 
-            <Text style={styles.name}>
+            <Text style={sharedStyles.sectionTitle}>
                 {fullName?.trim() ? `${fullName.trim()} 👋` : "Athlete 👋"}
             </Text>
 
             <View style={styles.heroSection}>
-                <View style={styles.heroContent}>
-                    <Text style={styles.heroText}>
-                        Let&apos;s get{"\n"}
-                        <Text style={styles.heroHighlight}>stronger</Text>
-                        {"\n"}today.
-                    </Text>
-                </View>
+                <Text style={styles.heroText}>
+                    Let&apos;s get{"\n"}
+                    <Text style={styles.heroHighlight}>stronger</Text>
+                    <Text> today.</Text>
+                </Text>
 
                 <Image
                     source={require("../../assets/gym-time-logo.png")}
@@ -152,50 +160,53 @@ export default function HomeScreen({ navigation }: any) {
             </View>
 
             <View style={styles.statsRow}>
-                <Card style={styles.statCard}>
-                    <Text style={styles.statValue}>{stats.completedWorkouts}</Text>
-                    <Text style={styles.statTitle}>Workouts</Text>
-                    <Text style={styles.statSubtitle}>Completed</Text>
-                </Card>
+                <StatCard value={stats.completedWorkouts} label="Workouts" helper="Completed" />
 
-                <Card style={styles.statCard}>
-                    <Text style={styles.statValue}>{stats.streakWorkouts}</Text>
-                    <Text style={styles.statTitle}>Last 14 Days</Text>
-                    <Text style={styles.statSubtitle}>
-                        {stats.streakStatus === "empty"
+                <StatCard
+                    value={stats.streakWorkouts}
+                    label="Last 14 Days"
+                    helper={
+                        stats.streakStatus === "empty"
                             ? "Start today"
                             : stats.streakStatus === "warning"
-                                ? "Keep it up"
-                                : stats.streakStatus === "expired"
-                                    ? "Start again"
-                                    : `${stats.streakWeeks} active weeks`}
-                    </Text>
-                </Card>
+                              ? "Keep it up"
+                              : stats.streakStatus === "expired"
+                                ? "Start again"
+                                : `${stats.streakWeeks} active weeks`
+                    }
+                />
             </View>
 
             <AppButton
                 title="Start Workout"
                 variant="primary"
                 onPress={() => navigation.navigate("Routines")}
-                style={styles.startButton}
-                iconLeft={<Ionicons name="barbell-outline" size={22} color="#FFFFFF" />}
+                iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
                 showChevron
             />
 
             {recentWorkouts.length > 0 ? (
                 <View style={styles.recentSection}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Recent Workouts</Text>
-                        <Text style={styles.sectionAction}>View All</Text>
+                        <Text style={sharedStyles.sectionTitle}>Recent Workouts</Text>
+                        <View style={styles.sectionButton}>
+                            <Pressable onPress={() => navigation.navigate("History")}>
+                                <Text style={styles.sectionAction}>View All</Text>
+                            </Pressable>
+                            <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+                        </View>
                     </View>
 
                     {recentWorkouts.map((workout) => (
-                        <RecentWorkoutCard
+                        <RoutineCard
                             key={workout.id}
                             title={workout.routine_name_snapshot ?? "Workout"}
-                            date={formatWorkoutDate(workout.completed_at)}
-                            duration={getWorkoutDuration(workout.started_at, workout.completed_at)}
-                            exercisesCount={workout.workout_session_exercises?.length ?? 0}
+                            subtitle={getWorkoutSubtitle(
+                                workout.started_at,
+                                workout.completed_at,
+                                workout.workout_session_exercises?.length ?? 0
+                            )}
+                            onPress={() => {}}
                         />
                     ))}
                 </View>
@@ -205,82 +216,38 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    greeting: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        marginBottom: spacing.xs,
-    },
-    name: {
-        color: colors.text,
-        fontSize: 24,
-        fontWeight: "800",
-        marginBottom: spacing.lg,
-    },
     heroText: {
         color: colors.text,
-        fontSize: 38,
-        fontWeight: "900",
-        lineHeight: 44,
-        letterSpacing: -1,
+        fontSize: 30,
+        fontWeight: typography.weightBold,
+        lineHeight: spacing.xxl,
     },
     heroHighlight: {
-        color: colors.primary,
-    },
-    startButton: {
-        marginTop: spacing.xl,
-        marginBottom: spacing.lg,
+        color: colors.success,
     },
     statsRow: {
         flexDirection: "row",
         gap: spacing.md,
-    },
-    statCard: {
-        flex: 1,
-    },
-    statValue: {
-        color: colors.text,
-        fontSize: 32,
-        fontWeight: "900",
-    },
-    statTitle: {
-        color: colors.text,
-        fontWeight: "800",
-        marginTop: spacing.xs,
-    },
-    statSubtitle: {
-        color: colors.textSecondary,
-        marginTop: spacing.xs,
-        fontSize: typography.caption,
+        marginBottom: spacing.lg,
     },
     recentSection: {
         marginTop: spacing.lg,
+        gap: spacing.md,
     },
     sectionHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: spacing.md,
-    },
-    sectionTitle: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: "800",
+        alignItems: "baseline",
     },
     sectionAction: {
         color: colors.primary,
-        fontWeight: "800",
+        fontWeight: typography.weightBold,
+        fontSize: typography.caption,
     },
-    recentCard: {
-        marginBottom: spacing.md,
-    },
-    recentTitle: {
-        color: colors.text,
-        fontWeight: "800",
-        fontSize: typography.body,
-    },
-    recentMeta: {
-        color: colors.textSecondary,
-        marginTop: spacing.xs,
+    sectionButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.xs,
     },
     heroSection: {
         flexDirection: "row",
@@ -288,13 +255,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginBottom: spacing.xl,
     },
-    heroContent: {
-        flex: 1,
-        paddingRight: spacing.md,
-    },
     heroLogo: {
         width: 120,
         height: 120,
         marginLeft: spacing.md,
+    },
+    chevron: {
+        position: "absolute",
+        right: spacing.md,
     },
 });

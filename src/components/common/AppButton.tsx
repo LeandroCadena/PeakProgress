@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
 
-import { colors, componentStyles, spacing } from "../../theme";
+import { colors, componentStyles, spacing, typography } from "../../theme";
 
 type Variant = "primary" | "success" | "danger" | "secondary";
 
@@ -77,7 +77,8 @@ const styles = StyleSheet.create({
     },
     text: {
         color: colors.text,
-        fontWeight: "800",
+        fontWeight: typography.weightSemiBold,
+        fontSize: typography.subtitle,
         textAlign: "center",
     },
     secondaryText: {
@@ -99,6 +100,6 @@ const styles = StyleSheet.create({
     },
     chevron: {
         position: "absolute",
-        right: spacing.xl,
+        right: spacing.md,
     },
 });

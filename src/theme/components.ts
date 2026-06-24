@@ -8,9 +8,9 @@ export const componentStyles = {
     imageRadius: 12,
 
     buttonHeight: 48,
-    iconButtonSize: 44,
+    iconButtonSize: 32,
 
-    cardPadding: 16,
+    cardPadding: 10,
 
     exerciseImageHeight: 130,
     setNumberWidth: 28,

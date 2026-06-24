@@ -6,7 +6,7 @@ import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { getMuscles, getExercisesByFilter, getMuscleRegions } from "../services/exerciseService";
-import { colors, componentStyles, spacing, typography } from "../theme";
+import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
@@ -71,7 +71,7 @@ export default function ExercisesScreen({ navigation }: any) {
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
-            <Text style={styles.title}>Exercises</Text>
+            <Text style={sharedStyles.screenTitle}>Exercises</Text>
 
             <View style={styles.searchRow}>
                 <AppInput
@@ -149,12 +149,6 @@ export default function ExercisesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     screenContent: {
         paddingBottom: spacing.lg,
-    },
-    title: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-        marginBottom: spacing.lg,
     },
     searchRow: {
         flexDirection: "row",

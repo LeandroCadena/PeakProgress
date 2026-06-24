@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 
 import { colors, spacing, typography } from "../../theme";
 import Card from "../common/Card";
-import IconButton from "../common/IconButton";
 
 type Props = {
     timer: number;
@@ -17,19 +17,20 @@ export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: P
                 <View>
                     <Text style={styles.label}>Rest Timer</Text>
                     <Text style={styles.timer}>{timer}s</Text>
+                    {lastTimerDuration > 0 ? (
+                        <Text style={styles.lastTimerText}>Last rest: {lastTimerDuration}s</Text>
+                    ) : null}
                 </View>
 
-                <IconButton
-                    icon="↻"
-                    variant="primary"
-                    disabled={lastTimerDuration <= 0}
-                    onPress={onRestart}
-                />
+                <Pressable style={styles.restartButton} onPress={onRestart}>
+                    <Ionicons
+                        name="reload-outline"
+                        size={32}
+                        color={colors.text}
+                        style={styles.restartIcon}
+                    />
+                </Pressable>
             </View>
-
-            {lastTimerDuration > 0 ? (
-                <Text style={styles.lastTimerText}>Last rest: {lastTimerDuration}s</Text>
-            ) : null}
         </Card>
     );
 }
@@ -48,10 +49,22 @@ const styles = StyleSheet.create({
     timer: {
         color: colors.text,
         fontSize: 36,
-        fontWeight: "800",
+        fontWeight: typography.weightExtraBold,
     },
     lastTimerText: {
         color: colors.textSecondary,
         marginTop: spacing.sm,
+    },
+    restartButton: {
+        width: 60,
+        height: 50,
+        borderRadius: 22,
+        borderWidth: 1,
+        backgroundColor: colors.primary,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    restartIcon: {
+        marginTop: 1,
     },
 });

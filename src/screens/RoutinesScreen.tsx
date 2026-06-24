@@ -1,11 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useEffect, useState, useCallback } from "react";
-import { Text, StyleSheet, Pressable, FlatList, Alert, View, Image } from "react-native";
+import { Text, StyleSheet, FlatList, Alert } from "react-native";
 
 import AppButton from "../components/common/AppButton";
-import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import RoutineCard from "../components/routine/RoutineCard";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import { useAuth } from "../context/AuthContext";
@@ -15,7 +15,7 @@ import {
     getActiveWorkoutSession,
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
-import { colors, spacing, typography } from "../theme";
+import { sharedStyles, spacing } from "../theme";
 import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
@@ -198,7 +198,7 @@ export default function RoutinesScreen({ navigation }: any) {
     }
 
     return (
-        <ScreenContainer contentStyle={styles.screenContent}>
+        <ScreenContainer>
             <FlatList
                 data={routines}
                 keyExtractor={(item) => item.id}
@@ -206,13 +206,15 @@ export default function RoutinesScreen({ navigation }: any) {
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={
                     <>
-                        <Text style={styles.title}>Routines</Text>
+                        <Text style={sharedStyles.screenTitle}>Routines</Text>
 
                         {activeSession ? (
                             <ActiveWorkoutBanner
                                 routineName={activeSession.routines?.name ?? "Workout"}
                                 elapsedText={getElapsedText(activeSession.started_at)}
-                                restRemainingText={getRestRemainingText(activeSession.rest_timer_end_at)}
+                                restRemainingText={getRestRemainingText(
+                                    activeSession.rest_timer_end_at
+                                )}
                                 onPress={() =>
                                     navigation.navigate("WorkoutSession", {
                                         sessionId: activeSession.id,
@@ -224,6 +226,7 @@ export default function RoutinesScreen({ navigation }: any) {
                         ) : null}
 
                         <AppButton
+                            style={styles.startButton}
                             title="+ Create Routine"
                             variant="primary"
                             onPress={createRoutine}
@@ -237,7 +240,9 @@ export default function RoutinesScreen({ navigation }: any) {
                     />
                 }
                 renderItem={({ item }) => (
-                    <Pressable
+                    <RoutineCard
+                        title={item.name}
+                        subtitle={item.description ?? ""}
                         onPress={() =>
                             navigation.navigate("RoutineDetail", {
                                 routineId: item.id,
@@ -245,51 +250,10 @@ export default function RoutinesScreen({ navigation }: any) {
                                 routineDescription: item.description ?? "",
                             })
                         }
-                    >
-                        <Card style={styles.routineCard}>
-                            <View style={styles.routineContent}>
-                                <Image
-                                    source={{
-                                        uri:
-                                            item.imageUrl ??
-                                            "https://placehold.co/80x80",
-                                    }}
-                                    style={styles.routineImage}
-                                />
-
-                                <View style={styles.routineInfo}>
-                                    <Text style={styles.cardTitle}>
-                                        {item.name}
-                                    </Text>
-
-                                    <Text style={styles.cardDescription}>
-                                        {item.description?.trim() ||
-                                            "No description added yet."}
-                                    </Text>
-                                </View>
-
-                                <View style={styles.actions}>
-                                    <AppButton
-                                        title={
-                                            startingRoutineId === item.id
-                                                ? "Starting..."
-                                                : "Start"
-                                        }
-                                        style={{
-                                            width: 90,
-                                        }}
-                                        variant="primary"
-                                        disabled={startingRoutineId === item.id}
-                                        onPress={() => startWorkout(item)}
-                                    />
-
-                                    <Text style={styles.chevron}>
-                                        ›
-                                    </Text>
-                                </View>
-                            </View>
-                        </Card>
-                    </Pressable>
+                        showButton={true}
+                        buttonTitle="Start"
+                        onPressButton={() => startWorkout(item)}
+                    />
                 )}
                 ListFooterComponent={
                     activeWorkout ? (
@@ -309,62 +273,10 @@ export default function RoutinesScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    screenContent: {
-        paddingBottom: 0,
-        paddingTop: 24
-    },
     listContent: {
-        paddingBottom: 120,
         gap: spacing.md,
     },
-    title: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-        marginBottom: spacing.lg,
-    },
-    createCard: {
-        marginBottom: spacing.lg,
-    },
-    cardTitle: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: typography.weightExtraBold,
-    },
-    cardDescription: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        lineHeight: 20,
-    },
     startButton: {
-        marginTop: spacing.sm,
-    },
-    routineCard: {
-        paddingVertical: spacing.md,
-        gap: spacing.sm,
-    },
-    routineContent: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    routineImage: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: colors.background,
-    },
-    routineInfo: {
-        flex: 1,
-        marginLeft: spacing.md,
-    },
-    actions: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.sm,
-    },
-    chevron: {
-        color: colors.textSecondary,
-        fontSize: 28,
-        fontWeight: typography.weightBold,
+        marginBottom: spacing.sm,
     },
 });

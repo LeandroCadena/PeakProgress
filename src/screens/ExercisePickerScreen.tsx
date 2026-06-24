@@ -5,10 +5,9 @@ import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
-import SectionTitle from "../components/common/SectionTitle";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { useExercisePicker } from "../hooks/useExercisePicker";
-import { colors, componentStyles, spacing, typography } from "../theme";
+import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     ExercisePicker: {
@@ -30,10 +29,12 @@ export default function ExercisePickerScreen({ navigation }: any) {
         filteredExercises,
         handleAddExercise,
         filterMode,
+        showAdded,
         changeFilterMode,
         filterOptions,
         selectedFilterIds,
         toggleFilterId,
+        toggleShowAdded,
     } = useExercisePicker({
         mode,
         routineId,
@@ -44,7 +45,7 @@ export default function ExercisePickerScreen({ navigation }: any) {
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
-            <Text style={styles.title}>Add Exercise</Text>
+            <Text style={sharedStyles.screenTitle}>Add Exercise</Text>
 
             <View style={styles.searchRow}>
                 <AppInput
@@ -61,6 +62,10 @@ export default function ExercisePickerScreen({ navigation }: any) {
                     <Text style={styles.filterModeText}>
                         {filterMode === "muscle" ? "Muscle" : "Region"}
                     </Text>
+                </Pressable>
+
+                <Pressable style={styles.filterModeButton} onPress={toggleShowAdded}>
+                    <Text style={styles.filterModeText}>{showAdded ? "All" : "Not Added"}</Text>
                 </Pressable>
             </View>
 
@@ -79,7 +84,12 @@ export default function ExercisePickerScreen({ navigation }: any) {
                                 style={[styles.filterChip, isSelected && styles.filterChipActive]}
                                 onPress={() => toggleFilterId(item.id)}
                             >
-                                <Text style={[styles.filterText, isSelected && styles.filterTextActive]}>
+                                <Text
+                                    style={[
+                                        styles.filterText,
+                                        isSelected && styles.filterTextActive,
+                                    ]}
+                                >
                                     {item.name}
                                 </Text>
                             </Pressable>
@@ -88,26 +98,41 @@ export default function ExercisePickerScreen({ navigation }: any) {
                 />
             </View>
 
-            <SectionTitle>Exercises</SectionTitle>
+            <Text style={sharedStyles.sectionTitle}>Exercises</Text>
 
             <FlatList
                 data={filteredExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.exerciseList}
                 showsVerticalScrollIndicator={false}
-                renderItem={({ item }) => (
-                    <ExerciseListCard
-                        exercise={item}
-                        alreadyAdded={currentExerciseIds.includes(item.id)}
-                        showAddButton
-                        onAdd={() => handleAddExercise(item.id)}
-                        onMoreInfo={() =>
-                            navigation.navigate("ExerciseDetail", {
-                                exerciseId: item.id,
-                            })
-                        }
-                    />
-                )}
+                renderItem={({ item }) =>
+                    //To Improve query on future
+                    !currentExerciseIds.includes(item.id) && !showAdded ? (
+                        <ExerciseListCard
+                            exercise={item}
+                            alreadyAdded={currentExerciseIds.includes(item.id)}
+                            showAddButton
+                            onAdd={() => handleAddExercise(item.id)}
+                            onMoreInfo={() =>
+                                navigation.navigate("ExerciseDetail", {
+                                    exerciseId: item.id,
+                                })
+                            }
+                        />
+                    ) : showAdded ? (
+                        <ExerciseListCard
+                            exercise={item}
+                            alreadyAdded={currentExerciseIds.includes(item.id)}
+                            showAddButton
+                            onAdd={() => handleAddExercise(item.id)}
+                            onMoreInfo={() =>
+                                navigation.navigate("ExerciseDetail", {
+                                    exerciseId: item.id,
+                                })
+                            }
+                        />
+                    ) : null
+                }
                 ListEmptyComponent={
                     <EmptyStateCard
                         title="No exercises found"
@@ -125,18 +150,13 @@ const styles = StyleSheet.create({
     screenContent: {
         paddingBottom: spacing.lg,
     },
-    title: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-        marginBottom: spacing.lg,
-    },
     searchRow: {
         flexDirection: "row",
         gap: spacing.sm,
         marginBottom: spacing.md,
     },
     searchInput: {
+        width: 50,
         flex: 1,
     },
     filterModeButton: {

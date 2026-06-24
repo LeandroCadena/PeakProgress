@@ -5,9 +5,8 @@ import { View, Text, Image, StyleSheet, Alert } from "react-native";
 import Card from "../components/common/Card";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
-import SectionTitle from "../components/common/SectionTitle";
 import { getExerciseDetail } from "../services/exerciseService";
-import { colors, componentStyles, spacing, typography } from "../theme";
+import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     ExerciseDetail: {
@@ -65,34 +64,34 @@ export default function ExerciseDetailScreen() {
             </Text>
 
             <Card style={styles.infoCard}>
-                <SectionTitle>Muscles</SectionTitle>
+                <Text style={sharedStyles.screenTitle}>Muscles</Text>
                 <Text style={styles.text}>{muscles}</Text>
             </Card>
 
             {exercise.description ? (
                 <Card style={styles.infoCard}>
-                    <SectionTitle>Description</SectionTitle>
+                    <Text style={sharedStyles.screenTitle}>Description</Text>
                     <Text style={styles.text}>{exercise.description}</Text>
                 </Card>
             ) : null}
 
             {exercise.instructions ? (
                 <Card style={styles.infoCard}>
-                    <SectionTitle>Instructions</SectionTitle>
+                    <Text style={sharedStyles.screenTitle}>Instructions</Text>
                     <Text style={styles.text}>{exercise.instructions}</Text>
                 </Card>
             ) : null}
 
             {exercise.tips ? (
                 <Card style={styles.infoCard}>
-                    <SectionTitle>Tips</SectionTitle>
+                    <Text style={sharedStyles.screenTitle}>Tips</Text>
                     <Text style={styles.text}>{exercise.tips}</Text>
                 </Card>
             ) : null}
 
             {exercise.animation_url ? (
                 <Card style={styles.infoCard}>
-                    <SectionTitle>Execution</SectionTitle>
+                    <Text style={sharedStyles.screenTitle}>Execution</Text>
                     <Image source={{ uri: exercise.animation_url }} style={styles.animation} />
                 </Card>
             ) : null}

@@ -6,7 +6,7 @@ import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { getCompletedWorkoutSessions } from "../services/historyService";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing } from "../theme";
 
 type WorkoutSession = {
     routine_name_snapshot: string;
@@ -54,7 +54,7 @@ export default function HistoryScreen({ navigation }: any) {
 
     return (
         <ScreenContainer>
-            <Text style={styles.title}>Workout History</Text>
+            <Text style={sharedStyles.screenTitle}>Workout History</Text>
 
             <FlatList
                 data={sessions}
@@ -80,9 +80,10 @@ export default function HistoryScreen({ navigation }: any) {
                             }
                         >
                             <Card style={styles.card}>
-                                <Text style={styles.cardTitle}>{routineName}</Text>
+                                <Text style={sharedStyles.cardTitle}>{routineName}</Text>
                                 <Text style={styles.cardText}>
-                                    Sets: {item.total_sets ?? 0} · Volume: {Number(item.total_volume ?? 0)} kg
+                                    Sets: {item.total_sets ?? 0} · Volume:{" "}
+                                    {Number(item.total_volume ?? 0)} kg
                                 </Text>
                                 <Text style={styles.cardText}>{formatDate(item.started_at)}</Text>
                                 <Text style={styles.cardText}>
@@ -98,23 +99,12 @@ export default function HistoryScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    title: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-        marginBottom: spacing.lg,
-    },
     list: {
         gap: spacing.md,
         paddingBottom: spacing.xxl,
     },
     card: {
         gap: spacing.xs,
-    },
-    cardTitle: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: typography.weightExtraBold,
     },
     cardText: {
         color: colors.textSecondary,

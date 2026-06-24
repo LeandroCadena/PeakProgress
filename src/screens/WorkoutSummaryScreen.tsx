@@ -5,8 +5,9 @@ import { View, Text, StyleSheet, Alert } from "react-native";
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
+import StatCard from "../components/common/StatCard";
 import { getWorkoutSummary } from "../services/historyService";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     WorkoutSummary: {
@@ -42,38 +43,20 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
 
     return (
         <ScreenContainer>
-            <Text style={styles.title}>
-                Workout Complete 🎉
-            </Text>
+            <Text style={styles.title}>Workout Complete 🎉</Text>
 
-            <Text style={styles.subtitle}>
-                {routineName}
-            </Text>
+            <Text style={sharedStyles.screenTitle}>{routineName}</Text>
 
             <Card style={styles.heroCard}>
-                <Text style={styles.heroValue}>
-                    {summary?.totalVolume ?? 0} kg
-                </Text>
+                <Text style={styles.heroValue}>{summary?.totalVolume ?? 0} kg</Text>
 
-                <Text style={styles.heroLabel}>
-                    Total Volume
-                </Text>
+                <Text style={styles.heroLabel}>Total Volume</Text>
             </Card>
 
             <View style={styles.statsRow}>
-                <Card style={styles.statCard}>
-                    <Text style={styles.label}>Duration</Text>
-                    <Text style={styles.value}>
-                        {summary?.durationMinutes ?? 0} min
-                    </Text>
-                </Card>
+                <StatCard label="Duration" value={`${summary?.durationMinutes ?? 0} min`} />
 
-                <Card style={styles.statCard}>
-                    <Text style={styles.label}>Sets</Text>
-                    <Text style={styles.value}>
-                        {summary?.totalSets ?? 0}
-                    </Text>
-                </Card>
+                <StatCard label="Sets" value={summary?.totalSets ?? 0} />
             </View>
 
             <AppButton
@@ -88,14 +71,9 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
     title: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontSize: 30,
         fontWeight: "800",
-    },
-    subtitle: {
-        color: "#9CA3AF",
-        marginTop: 8,
-        marginBottom: 24,
     },
     heroCard: {
         alignItems: "center",
@@ -114,18 +92,5 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         gap: spacing.md,
         marginBottom: spacing.lg,
-    },
-    statCard: {
-        flex: 1,
-    },
-    label: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-    },
-    value: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-        marginTop: spacing.xs,
     },
 });

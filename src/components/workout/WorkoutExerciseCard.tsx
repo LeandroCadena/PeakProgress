@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
-import { colors, componentStyles, spacing, typography } from "../../theme";
+import { colors, sharedStyles, spacing, typography } from "../../theme";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
+import ExerciseCardHeader from "../exercise/ExerciseCardHeader";
 
 import WorkoutSetRow from "./WorkoutSetRow";
 
@@ -38,22 +39,14 @@ export default function WorkoutExerciseCard({
 
     return (
         <Card style={styles.card}>
-            <View style={styles.header}>
-                {exercise.exercise_image_url_snapshot ? (
-                    <Image
-                        source={{ uri: exercise.exercise_image_url_snapshot }}
-                        style={styles.exerciseImage}
-                    />
-                ) : null}
+            <ExerciseCardHeader
+                imageUrl={exercise.exercise_image_url_snapshot}
+                title={exerciseName}
+            />
 
-                <View style={styles.headerInfo}>
-                    <Text style={styles.cardTitle}>{exerciseName}</Text>
-
-                    <Text style={styles.restText}>
-                        Rest between sets: {exercise.rest_seconds ?? 90} sec
-                    </Text>
-                </View>
-            </View>
+            <Text style={sharedStyles.mutedText}>
+                Rest between sets: {exercise.rest_seconds ?? 90} sec
+            </Text>
 
             <View style={styles.divider} />
 
@@ -99,30 +92,6 @@ export default function WorkoutExerciseCard({
 const styles = StyleSheet.create({
     card: {
         gap: spacing.md,
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-    },
-    exerciseImage: {
-        width: 72,
-        height: 72,
-        borderRadius: componentStyles.imageRadius,
-        backgroundColor: colors.background,
-    },
-    headerInfo: {
-        flex: 1,
-    },
-    cardTitle: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: typography.weightExtraBold,
-    },
-    restText: {
-        color: colors.textSecondary,
-        marginTop: spacing.xs,
-        fontSize: typography.caption,
     },
     divider: {
         height: 1,

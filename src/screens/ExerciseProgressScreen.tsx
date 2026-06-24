@@ -6,9 +6,8 @@ import { LineChart } from "react-native-chart-kit";
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
-import SectionTitle from "../components/common/SectionTitle";
 import { getExerciseProgressPoints } from "../services/progressService";
-import { colors, componentStyles, spacing, typography } from "../theme";
+import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     ExerciseProgress: {
@@ -44,27 +43,25 @@ export default function ExerciseProgressScreen() {
 
     const chartData = points.length
         ? {
-            labels: points.map((_, index) => `${index + 1}`),
-            datasets: [
-                {
-                    data: points.map((point) => Number(point.weight ?? 0)),
-                },
-            ],
-        }
+              labels: points.map((_, index) => `${index + 1}`),
+              datasets: [
+                  {
+                      data: points.map((point) => Number(point.weight ?? 0)),
+                  },
+              ],
+          }
         : {
-            labels: ["0"],
-            datasets: [{ data: [0] }],
-        };
+              labels: ["0"],
+              datasets: [{ data: [0] }],
+          };
 
     return (
         <ScreenContainer>
             <Text style={styles.title}>{exerciseName}</Text>
 
-            <Text style={styles.subtitle}>
-                Track your strength progression.
-            </Text>
+            <Text style={sharedStyles.screenSubtitle}>Track your strength progression.</Text>
 
-            <SectionTitle>Weight Progression</SectionTitle>
+            <Text style={sharedStyles.screenTitle}>Weight Progression</Text>
 
             {points.length === 0 ? (
                 <EmptyStateCard
@@ -92,9 +89,7 @@ export default function ExerciseProgressScreen() {
                 </Card>
             )}
 
-            <Text style={styles.info}>
-                Each point represents one completed set.
-            </Text>
+            <Text style={styles.info}>Each point represents one completed set.</Text>
         </ScreenContainer>
     );
 }
@@ -105,18 +100,9 @@ const styles = StyleSheet.create({
         fontSize: typography.title,
         fontWeight: "800",
     },
-
-    subtitle: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        marginTop: spacing.xs,
-        marginBottom: spacing.xl,
-    },
-
     chart: {
         borderRadius: componentStyles.cardRadius,
     },
-
     info: {
         color: colors.textSecondary,
         marginTop: spacing.md,

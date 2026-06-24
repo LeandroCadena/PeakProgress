@@ -4,10 +4,9 @@ import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
-import SectionTitle from "../components/common/SectionTitle";
 import { useAuth } from "../context/AuthContext";
 import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing } from "../theme";
 import { setNotificationsEnabled } from "../utils/notifications";
 import { setSoundsEnabled } from "../utils/sounds";
 
@@ -58,7 +57,7 @@ export default function SettingsScreen() {
     if (!settings) {
         return (
             <ScreenContainer>
-                <Text style={styles.title}>Settings</Text>
+                <Text style={sharedStyles.screenTitle}>Settings</Text>
                 <Text style={styles.text}>Loading...</Text>
             </ScreenContainer>
         );
@@ -66,22 +65,18 @@ export default function SettingsScreen() {
 
     return (
         <ScreenContainer scroll>
-            <Text style={styles.title}>Settings</Text>
+            <Text style={sharedStyles.screenTitle}>Settings</Text>
 
             <Card style={styles.settingCard}>
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
                         <Text style={styles.label}>Sounds</Text>
-                        <Text style={styles.helperText}>
-                            Play sounds during workouts
-                        </Text>
+                        <Text style={styles.helperText}>Play sounds during workouts</Text>
                     </View>
 
                     <Switch
                         value={settings.sounds_enabled}
-                        onValueChange={(value) =>
-                            updateSetting({ sounds_enabled: value })
-                        }
+                        onValueChange={(value) => updateSetting({ sounds_enabled: value })}
                     />
                 </View>
             </Card>
@@ -90,16 +85,12 @@ export default function SettingsScreen() {
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
                         <Text style={styles.label}>Notifications</Text>
-                        <Text style={styles.helperText}>
-                            Enable notifications
-                        </Text>
+                        <Text style={styles.helperText}>Enable notifications</Text>
                     </View>
 
                     <Switch
                         value={settings.notifications_enabled}
-                        onValueChange={(value) =>
-                            updateSetting({ notifications_enabled: value })
-                        }
+                        onValueChange={(value) => updateSetting({ notifications_enabled: value })}
                     />
                 </View>
             </Card>
@@ -108,16 +99,12 @@ export default function SettingsScreen() {
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
                         <Text style={styles.label}>Use Global Timers</Text>
-                        <Text style={styles.helperText}>
-                            Use Global Timers
-                        </Text>
+                        <Text style={styles.helperText}>Use Global Timers</Text>
                     </View>
 
                     <Switch
                         value={settings.use_global_timers}
-                        onValueChange={(value) =>
-                            updateSetting({ use_global_timers: value })
-                        }
+                        onValueChange={(value) => updateSetting({ use_global_timers: value })}
                     />
                 </View>
             </Card>
@@ -159,7 +146,7 @@ export default function SettingsScreen() {
             ) : null}
 
             <Card style={styles.card}>
-                <SectionTitle>Appearance</SectionTitle>
+                <Text style={sharedStyles.screenTitle}>Appearance</Text>
                 <Text style={styles.label}>Theme</Text>
 
                 <View style={styles.row}>
@@ -186,7 +173,7 @@ export default function SettingsScreen() {
             </Card>
 
             <Card style={styles.card}>
-                <SectionTitle>Language</SectionTitle>
+                <Text style={sharedStyles.screenTitle}>Language</Text>
                 <Text style={styles.label}>Language</Text>
 
                 <View style={styles.row}>
@@ -216,12 +203,6 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-    title: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-        marginBottom: spacing.lg,
-    },
     text: {
         color: colors.textSecondary,
     },

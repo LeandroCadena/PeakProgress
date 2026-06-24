@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet } from "react-native";
 
+import { sharedStyles } from "../../theme";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
-import SectionTitle from "../common/SectionTitle";
+import EmptyStateCard from "../common/EmptyStateCard";
 import RestTimeEditor from "../workout/RestTimeEditor";
 
 import RoutineExerciseCard from "./RoutineExerciseCard";
@@ -37,12 +38,13 @@ export default function RoutineExerciseSection({
 }: Props) {
     return (
         <>
-            <SectionTitle>
-                Current exercises
-            </SectionTitle>
+            <Text style={sharedStyles.sectionTitle}>Current exercises</Text>
 
             {routineExercises.length === 0 ? (
-                <Text style={styles.emptyText}>No exercises added yet.</Text>
+                <EmptyStateCard
+                    title={"No exercises added yet."}
+                    message={"Add your first exercise now"}
+                />
             ) : (
                 <View style={styles.list}>
                     {routineExercises.map((item, index) => (
@@ -78,9 +80,6 @@ export default function RoutineExerciseSection({
 }
 
 const styles = StyleSheet.create({
-    emptyText: {
-        color: "#9CA3AF",
-    },
     list: {
         gap: 12,
         paddingBottom: 12,

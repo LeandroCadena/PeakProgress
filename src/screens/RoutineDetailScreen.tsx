@@ -110,13 +110,12 @@ export default function RoutineDetailScreen({ navigation }: any) {
                             currentCount:
                                 routineExercises.length > 0
                                     ? Math.max(
-                                        ...routineExercises.map((item) => item.position ?? 0)
-                                    ) + 1
+                                          ...routineExercises.map((item) => item.position ?? 0)
+                                      ) + 1
                                     : 0,
                             currentExerciseIds: routineExercises.map((item) => item.exercise_id),
                         })
                     }
-                    style={styles.actionButton}
                 />
             ) : null}
 
@@ -135,6 +134,6 @@ export default function RoutineDetailScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
     actionButton: {
-        marginTop: spacing.md,
+        marginBottom: spacing.lg,
     },
 });

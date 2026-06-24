@@ -1,6 +1,6 @@
 import { Image, View, Text, StyleSheet } from "react-native";
 
-import { colors, componentStyles, spacing, typography } from "../../theme";
+import { colors, componentStyles, sharedStyles, spacing, typography } from "../../theme";
 import { Exercise } from "../../types/exercise";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -21,7 +21,7 @@ export default function ExerciseListCard({
     onMoreInfo,
 }: Props) {
     return (
-        <Card style={[styles.card, alreadyAdded ? styles.cardAdded : null]}>
+        <Card style={alreadyAdded ? styles.cardAdded : null}>
             <View style={styles.header}>
                 {exercise.image_url ? (
                     <Image source={{ uri: exercise.image_url }} style={styles.image} />
@@ -32,7 +32,7 @@ export default function ExerciseListCard({
                 )}
 
                 <View style={styles.info}>
-                    <Text style={styles.title}>{exercise.name}</Text>
+                    <Text style={sharedStyles.screenTitle}>{exercise.name}</Text>
 
                     <Text style={styles.text}>
                         {exercise.equipment ?? "No equipment"} ·{" "}
@@ -46,14 +46,20 @@ export default function ExerciseListCard({
             </View>
 
             <View style={styles.actions}>
-                <AppButton title="More Info" variant="secondary" onPress={onMoreInfo} />
+                <AppButton
+                    title="More Info"
+                    variant="secondary"
+                    onPress={onMoreInfo}
+                    style={styles.actionButton}
+                />
 
                 {showAddButton ? (
                     <AppButton
                         title={alreadyAdded ? "Added" : "Add"}
                         variant="success"
                         disabled={alreadyAdded}
-                        onPress={onAdd ?? (() => { })}
+                        onPress={onAdd ?? (() => {})}
+                        style={styles.actionButton}
                     />
                 ) : null}
             </View>
@@ -62,28 +68,23 @@ export default function ExerciseListCard({
 }
 
 const styles = StyleSheet.create({
-    card: {
-        gap: spacing.md,
-    },
     cardAdded: {
         borderColor: colors.success,
         backgroundColor: colors.successDark,
-        borderWidth: 2,
     },
     header: {
         flexDirection: "row",
-        alignItems: "center",
         gap: spacing.md,
     },
     image: {
-        width: 72,
-        height: 72,
+        width: 92,
+        height: 92,
         borderRadius: componentStyles.imageRadius,
         backgroundColor: colors.background,
     },
     imagePlaceholder: {
-        width: 72,
-        height: 72,
+        width: 92,
+        height: 92,
         borderRadius: componentStyles.imageRadius,
         backgroundColor: colors.background,
         alignItems: "center",
@@ -94,16 +95,10 @@ const styles = StyleSheet.create({
         fontSize: typography.small,
     },
     info: {
-        flex: 1,
-    },
-    title: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: typography.weightExtraBold,
+        justifyContent: "flex-start",
     },
     text: {
         color: colors.textSecondary,
-        marginTop: spacing.xs,
     },
     alreadyAddedText: {
         color: colors.success,
@@ -111,7 +106,11 @@ const styles = StyleSheet.create({
         fontWeight: typography.weightBold,
     },
     actions: {
+        marginTop: spacing.lg,
         flexDirection: "row",
         gap: spacing.sm,
+    },
+    actionButton: {
+        flex: 1,
     },
 });

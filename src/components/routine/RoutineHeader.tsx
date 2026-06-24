@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { sharedStyles, spacing } from "../../theme";
 import AppButton from "../common/AppButton";
 import AppInput from "../common/AppInput";
 import IconButton from "../common/IconButton";
@@ -31,44 +31,44 @@ export default function RoutineHeader({
     return (
         <View style={styles.container}>
             {isEditing ? (
-                <AppInput
-                    style={styles.titleInput}
-                    value={title}
-                    onChangeText={onChangeTitle}
-                    placeholder="Routine name"
-                />
+                <View style={styles.row}>
+                    <AppInput
+                        style={sharedStyles.screenTitle}
+                        value={title}
+                        onChangeText={onChangeTitle}
+                        placeholder="Routine name"
+                    />
+                    <IconButton icon="✎" variant="secondary" onPress={onCancel} />
+                </View>
             ) : (
                 <View style={styles.row}>
-                    <Text style={styles.title}>{title}</Text>
+                    <Text style={sharedStyles.screenTitle}>{title}</Text>
                     <IconButton icon="✎" variant="primary" onPress={onStartEdit} />
                 </View>
             )}
 
             {isEditing ? (
                 <AppInput
-                    style={styles.descriptionInput}
+                    style={sharedStyles.screenSubtitle}
                     value={description}
                     onChangeText={onChangeDescription}
                     placeholder="Description"
                     multiline
                 />
             ) : description ? (
-                <Text style={styles.description}>{description}</Text>
+                <Text style={sharedStyles.screenSubtitle}>{description}</Text>
             ) : null}
 
             {isEditing ? (
                 <>
-                    <View style={styles.editActions}>
-                        <AppButton title="Save Changes" variant="success" onPress={onSave} />
-                        <AppButton title="Cancel" variant="secondary" onPress={onCancel} />
-                    </View>
-
                     <AppButton
-                        title="Delete Routine"
-                        variant="danger"
-                        onPress={onDelete}
-                        style={styles.deleteButton}
+                        style={styles.actionButton}
+                        title="Save Changes"
+                        variant="success"
+                        onPress={onSave}
                     />
+
+                    <AppButton title="Delete Routine" variant="danger" onPress={onDelete} />
                 </>
             ) : null}
         </View>
@@ -81,39 +81,10 @@ const styles = StyleSheet.create({
     },
     row: {
         flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.sm,
+        alignItems: "flex-start",
+        justifyContent: "space-between",
     },
-    title: {
-        flex: 1,
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: "800",
-    },
-    titleInput: {
-        flex: 1,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-    },
-    description: {
-        color: colors.textSecondary,
-        marginTop: spacing.sm,
-        lineHeight: 20,
-    },
-    descriptionInput: {
-        marginTop: spacing.md,
-        minHeight: 72,
-        textAlignVertical: "top",
-    },
-    actions: {
-        flexDirection: "row",
-        gap: spacing.sm,
-    },
-    editActions: {
-        gap: spacing.sm,
-        marginTop: spacing.md,
-    },
-    deleteButton: {
-        marginTop: spacing.sm,
+    actionButton: {
+        marginBottom: spacing.lg,
     },
 });

@@ -1,15 +1,15 @@
 export const darkTheme = {
     colors: {
-        background: "#111827",
+        background: "#0a0f1a",
 
-        card: "#1F2937",
+        card: "#0d1422",
         cardBorder: "#374151",
 
-        primary: "#F97316",
+        primary: "#f95e16",
         primaryPressed: "#EA580C",
 
         success: "#22C55E",
-        successDark: "#163122",
+        successDark: "#102519",
 
         warning: "#FB923C",
         warningDark: "#3A2413",

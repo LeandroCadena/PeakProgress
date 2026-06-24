@@ -11,7 +11,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { supabase } from "../services/supabase";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing, typography } from "../theme";
 
 export default function PersonalInformationScreen() {
     const { user } = useAuth();
@@ -105,7 +105,7 @@ export default function PersonalInformationScreen() {
             <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                     <View>
-                        <Text style={styles.sectionTitle}>Name</Text>
+                        <Text style={sharedStyles.screenTitle}>Name</Text>
                         <Text style={styles.valueText}>
                             {fullName?.trim() || "Enter your name"}
                         </Text>
@@ -147,7 +147,7 @@ export default function PersonalInformationScreen() {
             <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                     <View>
-                        <Text style={styles.sectionTitle}>Email</Text>
+                        <Text style={sharedStyles.screenTitle}>Email</Text>
                         <Text style={styles.valueText}>{currentEmail}</Text>
                     </View>
 
@@ -189,7 +189,7 @@ export default function PersonalInformationScreen() {
             <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                     <View>
-                        <Text style={styles.sectionTitle}>Password</Text>
+                        <Text style={sharedStyles.screenTitle}>Password</Text>
                         <Text style={styles.valueText}>••••••••</Text>
                     </View>
 
@@ -252,12 +252,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-    },
-    sectionTitle: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: "800",
-        marginBottom: spacing.xs,
     },
     valueText: {
         color: colors.textSecondary,

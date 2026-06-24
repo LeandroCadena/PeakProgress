@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     title: {
         color: colors.text,
         fontSize: typography.title,
-        fontWeight: "700",
+        fontWeight: typography.weightBold,
         textAlign: "center",
     },
     subtitle: {

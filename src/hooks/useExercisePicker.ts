@@ -27,6 +27,7 @@ export function useExercisePicker({
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
     const [filterMode, setFilterMode] = useState<FilterMode>("region");
+    const [showAdded, setShowAdded] = useState(true);
     const [selectedFilterIds, setSelectedFilterIds] = useState<string[]>([]);
     const [regions, setRegions] = useState<MuscleRegion[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -69,8 +70,9 @@ export function useExercisePicker({
     }, [filterMode, selectedFilterIds]);
 
     useEffect(() => {
+        console.log(showAdded);
         fetchExercises();
-    }, [fetchExercises, filterMode, selectedFilterIds]);
+    }, [fetchExercises, filterMode, selectedFilterIds, showAdded]);
 
     const filteredExercises = exercises.filter((exercise) =>
         exercise.name.toLowerCase().includes(search.toLowerCase())
@@ -123,14 +125,21 @@ export function useExercisePicker({
         setSelectedFilterIds([]);
     }
 
+    function toggleShowAdded() {
+        setShowAdded(!showAdded);
+        setSelectedFilterIds([]);
+    }
+
     return {
         search,
         setSearch,
         filterMode,
         changeFilterMode,
+        showAdded,
         filterOptions,
         selectedFilterIds,
         toggleFilterId,
+        toggleShowAdded,
         filteredExercises,
         handleAddExercise,
     };

@@ -52,7 +52,7 @@ export default function RoutineExerciseSetRow({
             <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
             <AppInput
-                style={styles.input}
+                style={styles.setRow}
                 value={weightValue}
                 disabled={!isEditing}
                 keyboardType="numeric"
@@ -61,7 +61,7 @@ export default function RoutineExerciseSetRow({
             />
 
             <AppInput
-                style={styles.input}
+                style={styles.setRow}
                 value={repsValue}
                 disabled={!isEditing}
                 keyboardType="numeric"
@@ -94,8 +94,11 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontWeight: typography.weightBold,
     },
-    input: {
+    setRow: {
         flex: 1,
+        height: 36,
+        width: 80,
+        paddingVertical: 0,
     },
     deleteAction: {
         width: componentStyles.iconButtonSize,

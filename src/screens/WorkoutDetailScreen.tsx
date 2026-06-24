@@ -6,7 +6,7 @@ import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { getWorkoutSets } from "../services/historyService";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     WorkoutDetail: {
@@ -44,9 +44,9 @@ export default function WorkoutDetailScreen() {
     }, [fetchSets]);
 
     return (
-        <ScreenContainer>
-            <Text style={styles.title}>{routineName}</Text>
-            <Text style={styles.subtitle}>Workout Details</Text>
+        <ScreenContainer style={styles.container}>
+            <Text style={sharedStyles.screenTitle}>{routineName}</Text>
+            <Text style={sharedStyles.screenSubtitle}>Workout Details</Text>
 
             <FlatList
                 data={sets}
@@ -60,11 +60,11 @@ export default function WorkoutDetailScreen() {
                 }
                 renderItem={({ item, index }) => (
                     <Card style={styles.card}>
-                        <Text style={styles.exerciseName}>
+                        <Text style={sharedStyles.cardTitle}>
                             {item.exercise_name_snapshot ?? "Exercise"}
                         </Text>
 
-                        <Text style={styles.setText}>
+                        <Text style={sharedStyles.mutedText}>
                             Set {index + 1}: {item.weight ?? 0} kg × {item.reps ?? 0} reps
                         </Text>
 
@@ -84,15 +84,8 @@ export default function WorkoutDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-    title: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-    },
-    subtitle: {
-        color: colors.textSecondary,
-        marginTop: spacing.xs,
-        marginBottom: spacing.lg,
+    container: {
+        paddingBottom: 0,
     },
     list: {
         gap: spacing.md,
@@ -100,15 +93,6 @@ const styles = StyleSheet.create({
     },
     card: {
         gap: spacing.xs,
-    },
-    exerciseName: {
-        fontSize: typography.body,
-        fontWeight: typography.weightBold,
-        color: colors.text,
-    },
-    setText: {
-        fontSize: typography.caption,
-        color: colors.textSecondary,
     },
     statusText: {
         fontSize: typography.caption,

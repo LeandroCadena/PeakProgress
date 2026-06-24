@@ -1,6 +1,6 @@
 import { Text, StyleSheet } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { colors, sharedStyles, spacing } from "../../theme";
 
 import Card from "./Card";
 
@@ -15,7 +15,7 @@ export default function LoadingCard({
 }: Props) {
     return (
         <Card style={styles.card}>
-            <Text style={styles.title}>{title}</Text>
+            <Text style={sharedStyles.screenTitle}>{title}</Text>
             <Text style={styles.message}>{message}</Text>
         </Card>
     );
@@ -24,11 +24,6 @@ export default function LoadingCard({
 const styles = StyleSheet.create({
     card: {
         marginVertical: spacing.lg,
-    },
-    title: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: "800",
     },
     message: {
         color: colors.textSecondary,

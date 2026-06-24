@@ -39,7 +39,7 @@ export default function WorkoutSetRow({
             <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
             <AppInput
-                style={styles.weightInput}
+                style={styles.setRow}
                 keyboardType="numeric"
                 value={weightValue}
                 disabled={set.is_completed}
@@ -48,7 +48,7 @@ export default function WorkoutSetRow({
             />
 
             <AppInput
-                style={styles.repsInput}
+                style={styles.setRow}
                 keyboardType="numeric"
                 value={repsValue}
                 disabled={set.is_completed}
@@ -84,13 +84,7 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontWeight: "700",
     },
-    weightInput: {
-        flex: 1,
-        height: 36,
-        width: 80,
-        paddingVertical: 0,
-    },
-    repsInput: {
+    setRow: {
         flex: 1,
         height: 36,
         width: 80,

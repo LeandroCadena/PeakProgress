@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     },
     label: {
         color: colors.textSecondary,
-        fontWeight: "700",
+        fontWeight: typography.weightBold,
         flex: 1,
     },
     input: {

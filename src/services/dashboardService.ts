@@ -68,7 +68,7 @@ export async function getRecentWorkouts(userId: string) {
         .eq("user_id", userId)
         .not("completed_at", "is", null)
         .order("completed_at", { ascending: false })
-        .limit(2);
+        .limit(5);
 
     if (error) throw error;
 

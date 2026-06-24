@@ -1,4 +1,5 @@
-import { ChevronRight, Clock3, Hourglass } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Clock3, Hourglass } from "lucide-react-native"; //remove later
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, spacing, typography, componentStyles } from "../../theme";
@@ -22,11 +23,11 @@ export default function ActiveWorkoutBanner({
             <Card style={styles.banner}>
                 <View style={styles.left}>
                     <View style={styles.iconCircle}>
-                        <Text style={styles.icon}>🏋️</Text>
+                        <Ionicons name="barbell-outline" size={22} color={colors.success} />
                     </View>
 
                     <View>
-                        <Text style={styles.label}>Workout running</Text>
+                        <Text style={styles.label}>WORKOUT RUNNING</Text>
                         <Text style={styles.routineName}>{routineName}</Text>
                     </View>
                 </View>
@@ -36,9 +37,7 @@ export default function ActiveWorkoutBanner({
                 <View style={styles.right}>
                     <View style={styles.metric}>
                         <Clock3 size={18} color={colors.success} />
-                        <Text style={styles.metricText}>
-                            {elapsedText}
-                        </Text>
+                        <Text style={styles.metricText}>{elapsedText}</Text>
                     </View>
 
                     {restRemainingText ? (
@@ -47,17 +46,12 @@ export default function ActiveWorkoutBanner({
 
                             <View style={styles.metric}>
                                 <Hourglass size={18} color={colors.warning} />
-                                <Text style={styles.metricText}>
-                                    {restRemainingText}
-                                </Text>
+                                <Text style={styles.metricText}>{restRemainingText}</Text>
                             </View>
                         </>
                     ) : null}
 
-                    <ChevronRight
-                        size={22}
-                        color={colors.text}
-                    />
+                    <Ionicons name="chevron-forward" size={18} color={colors.text} />
                 </View>
             </Card>
         </Pressable>
@@ -65,49 +59,11 @@ export default function ActiveWorkoutBanner({
 }
 
 const styles = StyleSheet.create({
-    container: {
-        backgroundColor: colors.successDark,
-        borderColor: colors.success,
-        borderWidth: componentStyles.borderWidth,
-        borderRadius: componentStyles.cardRadius,
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.lg,
-        marginBottom: spacing.lg,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
     label: {
         color: colors.success,
-        fontWeight: typography.weightExtraBold,
+        fontWeight: typography.weightBold,
         fontSize: typography.small,
         marginBottom: spacing.xs,
-    },
-    title: {
-        color: colors.text,
-        fontWeight: "900",
-        fontSize: typography.body,
-    },
-    time: {
-        color: colors.text,
-        fontWeight: "900",
-        fontSize: typography.caption,
-    },
-    restText: {
-        color: colors.warning,
-        fontWeight: "800",
-        marginTop: spacing.xs,
-        fontSize: typography.small,
-    },
-    chevron: {
-        color: colors.text,
-        fontSize: 26,
-        fontWeight: typography.weightBold,
-    },
-    right: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.sm,
     },
     banner: {
         backgroundColor: colors.successDark,
@@ -117,12 +73,22 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         marginBottom: spacing.md,
+        paddingTop: 14,
+        paddingBottom: 14,
     },
     left: {
         flexDirection: "row",
         alignItems: "center",
         flex: 1,
         gap: spacing.md,
+    },
+    right: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.sm,
+    },
+    icon: {
+        fontSize: 20,
     },
     iconCircle: {
         width: 44,
@@ -132,14 +98,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    icon: {
-        fontSize: 20,
-    },
     routineName: {
         color: colors.text,
-        fontSize: typography.body,
-        fontWeight: typography.weightExtraBold,
-        marginTop: spacing.xs,
+        fontSize: typography.subtitle,
+        fontWeight: typography.weightBold,
     },
     divider: {
         width: 1,
@@ -148,14 +110,11 @@ const styles = StyleSheet.create({
         marginHorizontal: spacing.md,
         opacity: 0.8,
     },
-    timerIcon: {
-        color: colors.success,
-        fontSize: typography.subtitle,
-    },
-    elapsedText: {
-        color: colors.text,
-        fontSize: typography.body,
-        fontWeight: typography.weightBold,
+    smallDivider: {
+        width: 1,
+        height: 18,
+        backgroundColor: colors.cardBorder,
+        marginHorizontal: spacing.xs,
     },
     metric: {
         flexDirection: "row",
@@ -165,11 +124,5 @@ const styles = StyleSheet.create({
     metricText: {
         color: colors.text,
         fontWeight: typography.weightBold,
-    },
-    smallDivider: {
-        width: 1,
-        height: 18,
-        backgroundColor: colors.cardBorder,
-        marginHorizontal: spacing.xs,
     },
 });

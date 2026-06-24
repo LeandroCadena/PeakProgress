@@ -6,6 +6,7 @@ import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import ProgressScreen from "../screens/ProgressScreen";
 import RoutinesScreen from "../screens/RoutinesScreen";
+import { colors } from "../theme";
 
 export type MainTabsParamList = {
     Home: undefined;
@@ -23,11 +24,11 @@ export default function MainTabs() {
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: "#0B0F14",
+                    backgroundColor: colors.background,
                     borderTopColor: "#30363D",
                 },
-                tabBarActiveTintColor: "#4CAF50",
-                tabBarInactiveTintColor: "#9CA3AF",
+                tabBarActiveTintColor: colors.primary,
+                tabBarInactiveTintColor: colors.textSecondary,
                 tabBarIcon: ({ color, size }) => {
                     let iconName: keyof typeof Ionicons.glyphMap = "home-outline";
 

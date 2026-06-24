@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { View, Text, StyleSheet, Image, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 
 import { colors, componentStyles, spacing, typography } from "../../theme";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
 import IconButton from "../common/IconButton";
+import ExerciseCardHeader from "../exercise/ExerciseCardHeader";
 import RestTimeEditor from "../workout/RestTimeEditor";
 
 import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
@@ -42,30 +43,27 @@ export default function RoutineExerciseCard({
 
     return (
         <Card>
-            <Pressable style={styles.header} onPress={() => setIsCollapsed((prev) => !prev)}>
-                {item.exercise?.image_url ? (
-                    <Image source={{ uri: item.exercise.image_url }} style={styles.exerciseImage} />
-                ) : null}
-
-                <View style={styles.headerInfo}>
-                    <Text style={styles.cardTitle}>{item.exercise?.name ?? "Exercise"}</Text>
-
+            <Pressable onPress={() => setIsCollapsed((prev) => !prev)}>
+                <ExerciseCardHeader
+                    imageUrl={item.exercise?.image_url}
+                    title={item.exercise?.name ?? "Exercise"}
+                    rightContent={
+                        <Ionicons
+                            name={isCollapsed ? "chevron-down" : "chevron-up"}
+                            size={22}
+                            color={colors.text}
+                        />
+                    }
+                />
+            </Pressable>
+            {!isCollapsed ? (
+                <>
                     <RestTimeEditor
                         label="Rest between sets"
                         value={item.rest_seconds ?? 90}
                         editable={isEditing}
                         onChange={(value) => onUpdateSetRest(item.id, value)}
                     />
-                </View>
-
-                <Ionicons
-                    name={isCollapsed ? "chevron-down" : "chevron-up"}
-                    size={22}
-                    color={colors.text}
-                />
-            </Pressable>
-            {!isCollapsed ? (
-                <>
                     <View style={styles.setHeader}>
                         <Text style={styles.setNumberHeader}>Set</Text>
                         <Text style={styles.setHeaderText}>Weight</Text>
@@ -92,13 +90,22 @@ export default function RoutineExerciseCard({
                     })}
 
                     {isEditing ? (
-                        <AppButton title="+ Add Set" variant="success" onPress={onAddSet} />
+                        <AppButton
+                            style={styles.addButton}
+                            title="+ Add Set"
+                            variant="success"
+                            onPress={onAddSet}
+                        />
                     ) : null}
 
                     {isEditing ? (
                         <>
                             <View style={styles.cardActions}>
-                                <AppButton title="Remove Exercise" variant="danger" onPress={onDelete} />
+                                <AppButton
+                                    title="Remove Exercise"
+                                    variant="danger"
+                                    onPress={onDelete}
+                                />
                             </View>
 
                             <View style={styles.moveActions}>
@@ -115,29 +122,6 @@ export default function RoutineExerciseCard({
 }
 
 const styles = StyleSheet.create({
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-    },
-    exerciseImage: {
-        width: 72,
-        height: 72,
-        borderRadius: componentStyles.imageRadius,
-        backgroundColor: colors.background,
-    },
-    headerInfo: {
-        flex: 1,
-    },
-    cardTitle: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: typography.weightExtraBold,
-    },
-    restText: {
-        color: colors.textSecondary,
-        marginTop: spacing.xs,
-    },
     setHeader: {
         flexDirection: "row",
         alignItems: "center",
@@ -145,6 +129,13 @@ const styles = StyleSheet.create({
         marginTop: spacing.lg,
         marginBottom: spacing.sm,
     },
+    addButton: {
+        marginTop: spacing.md,
+    },
+    deleteColumn: {
+        width: componentStyles.iconButtonSize,
+    },
+    //To be removed
     cardActions: {
         flexDirection: "row",
         gap: spacing.md,
@@ -155,31 +146,16 @@ const styles = StyleSheet.create({
         gap: spacing.sm,
         marginTop: spacing.md,
     },
-    moveButton: {
-        flex: 1,
-        backgroundColor: colors.inputBorder,
-        paddingVertical: spacing.md,
-        borderRadius: 10,
-    },
-    moveText: {
-        color: colors.text,
-        textAlign: "center",
-        fontWeight: "800",
-        fontSize: typography.body,
-    },
     setNumberHeader: {
         width: 28,
         color: colors.textSecondary,
         fontSize: typography.caption,
-        fontWeight: "700",
+        fontWeight: typography.weightBold,
     },
     setHeaderText: {
         flex: 1,
         color: colors.textSecondary,
         fontSize: typography.small,
         fontWeight: typography.weightBold,
-    },
-    deleteColumn: {
-        width: componentStyles.iconButtonSize,
     },
 });

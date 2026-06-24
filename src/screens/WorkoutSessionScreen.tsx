@@ -10,7 +10,7 @@ import RestTimeEditor from "../components/workout/RestTimeEditor";
 import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing } from "../theme";
 import { WorkoutSessionRouteParams } from "../types/workout";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
@@ -56,8 +56,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 contentContainerStyle={styles.list}
                 ListHeaderComponent={
                     <>
-                        <Text style={styles.title}>{routineName}</Text>
-                        <Text style={styles.subtitle}>Workout Session</Text>
+                        <Text style={sharedStyles.screenTitle}>{routineName}</Text>
+                        <Text style={sharedStyles.screenSubtitle}>Workout Session</Text>
 
                         {!isInitializingSession ? (
                             <RestTimerCard
@@ -118,10 +118,11 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                             ...sessionExercises.map((item) => item.position ?? 0)
                                         ) + 1
                                         : 0,
-                                currentExerciseIds: sessionExercises.map((item) => item.exercise_id),
+                                currentExerciseIds: sessionExercises.map(
+                                    (item) => item.exercise_id
+                                ),
                             })
                         }
-                        style={styles.addExerciseButton}
                     />
                 }
             />
@@ -144,28 +145,10 @@ const styles = StyleSheet.create({
     screenContent: {
         paddingBottom: 0,
     },
-
-    title: {
-        color: colors.text,
-        fontSize: typography.title,
-        fontWeight: typography.weightExtraBold,
-    },
-
-    subtitle: {
-        color: colors.textSecondary,
-        marginTop: spacing.xs,
-        marginBottom: spacing.xl,
-    },
-
     list: {
         gap: spacing.md,
         paddingBottom: 120,
     },
-
-    addExerciseButton: {
-        marginTop: spacing.sm,
-    },
-
     footer: {
         paddingTop: spacing.md,
         paddingBottom: spacing.lg,

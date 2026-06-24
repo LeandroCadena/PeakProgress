@@ -10,12 +10,7 @@ type Props = {
     contentStyle?: ViewStyle;
 };
 
-export default function ScreenContainer({
-    children,
-    scroll = false,
-    style,
-    contentStyle,
-}: Props) {
+export default function ScreenContainer({ children, scroll = false, style, contentStyle }: Props) {
     if (scroll) {
         return (
             <ScrollView
@@ -28,11 +23,7 @@ export default function ScreenContainer({
         );
     }
 
-    return (
-        <View style={[styles.container, styles.content, style, contentStyle]}>
-            {children}
-        </View>
-    );
+    return <View style={[styles.container, styles.content, style, contentStyle]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
@@ -41,8 +32,8 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background,
     },
     content: {
-        padding: spacing.xxl,
-        paddingTop: 48,
+        padding: spacing.lg,
+        paddingTop: spacing.xxl,
         paddingBottom: 120,
     },
 });

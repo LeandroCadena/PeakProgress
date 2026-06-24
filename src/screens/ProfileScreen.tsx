@@ -3,9 +3,8 @@ import { Text, StyleSheet, Pressable } from "react-native";
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
-import SectionTitle from "../components/common/SectionTitle";
 import { useAuth } from "../context/AuthContext";
-import { colors, spacing, typography } from "../theme";
+import { colors, sharedStyles, spacing, typography } from "../theme";
 
 export default function ProfileScreen({ navigation }: any) {
     const { signOut } = useAuth();
@@ -15,13 +14,11 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={styles.title}>Profile</Text>
 
             <Card style={styles.profileCard}>
-                <Text style={styles.profileName}>Athlete</Text>
-                <Text style={styles.profileSubtitle}>
-                    Track your workouts and stay consistent.
-                </Text>
+                <Text style={sharedStyles.screenSubtitle}>Athlete</Text>
+                <Text style={styles.profileSubtitle}>Track your workouts and stay consistent.</Text>
             </Card>
 
-            <SectionTitle>Account</SectionTitle>
+            <Text style={sharedStyles.screenTitle}>Account</Text>
 
             <Card style={styles.menuItem}>
                 <Pressable
@@ -32,9 +29,7 @@ export default function ProfileScreen({ navigation }: any) {
                     <Text style={styles.chevron}>›</Text>
                 </Pressable>
 
-                <Text style={styles.menuSubtitle}>
-                    Manage your profile and account
-                </Text>
+                <Text style={styles.menuSubtitle}>Manage your profile and account</Text>
             </Card>
 
             <Card style={styles.menuItem}>
@@ -46,9 +41,7 @@ export default function ProfileScreen({ navigation }: any) {
                     <Text style={styles.chevron}>›</Text>
                 </Pressable>
 
-                <Text style={styles.menuSubtitle}>
-                    View your completed workouts
-                </Text>
+                <Text style={styles.menuSubtitle}>View your completed workouts</Text>
             </Card>
 
             <Card style={styles.menuItem}>
@@ -60,9 +53,7 @@ export default function ProfileScreen({ navigation }: any) {
                     <Text style={styles.chevron}>›</Text>
                 </Pressable>
 
-                <Text style={styles.menuSubtitle}>
-                    App preferences and timers
-                </Text>
+                <Text style={styles.menuSubtitle}>App preferences and timers</Text>
             </Card>
 
             <AppButton
@@ -84,11 +75,6 @@ const styles = StyleSheet.create({
     },
     profileCard: {
         marginBottom: spacing.lg,
-    },
-    profileName: {
-        color: colors.text,
-        fontSize: typography.subtitle,
-        fontWeight: typography.weightExtraBold,
     },
     profileSubtitle: {
         color: colors.textSecondary,
