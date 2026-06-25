@@ -25,6 +25,8 @@ type Props = {
 export default function RoutineExerciseSection({
     routineExercises,
     onDelete,
+
+    
     isEditing,
     onMoveUp,
     onMoveDown,

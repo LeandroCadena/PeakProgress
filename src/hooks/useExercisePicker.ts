@@ -4,7 +4,8 @@ import { Alert } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
 import { getUserExerciseBestVolume } from "../services/progressService";
-import { addExerciseToRoutine, addExerciseToWorkoutSession } from "../services/workoutService";
+import { addExerciseToRoutine } from "../services/routineService";
+import { addExerciseToWorkoutSession } from "../services/workoutService";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 type Params = {

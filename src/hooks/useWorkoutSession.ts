@@ -301,12 +301,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map((currentSet) =>
                 currentSet.id === set.id
                     ? {
-                          ...currentSet,
-                          weight,
-                          reps,
-                          is_pr: isPr,
-                          is_completed: nextCompletedValue,
-                      }
+                        ...currentSet,
+                        weight,
+                        reps,
+                        is_pr: isPr,
+                        is_completed: nextCompletedValue,
+                    }
                     : currentSet
             ),
         }));

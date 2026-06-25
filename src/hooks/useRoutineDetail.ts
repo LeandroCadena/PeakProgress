@@ -6,17 +6,17 @@ import { useAuth } from "../context/AuthContext";
 import {
     updateRoutine,
     deleteRoutineById,
+    getRoutineExercises,
+    updateRoutineExerciseConfig,
+    updateRoutineExercisePosition,
+    deleteRoutineExercise as deleteRoutineExerciseService,
+    createRoutineExerciseSet,
+    updateRoutineExerciseSet,
+    deleteRoutineExerciseSet,
+    createRoutineExerciseSets,
     getRoutineExerciseSetsByRoutineId,
 } from "../services/routineService";
 import {
-    getRoutineExercises,
-    deleteRoutineExercise as deleteRoutineExerciseService,
-    updateRoutineExerciseConfig,
-    updateRoutineExercisePosition,
-    updateRoutineExerciseSet,
-    createRoutineExerciseSet,
-    deleteRoutineExerciseSet,
-    createRoutineExerciseSets,
     deleteRoutineExerciseSetsByRoutineExerciseId,
     getOrCreateWorkoutAfterDiscard,
     getActiveWorkoutSession,
@@ -431,9 +431,9 @@ export function useRoutineDetail({
             prev.map((exercise) =>
                 exercise.id === routineExerciseId
                     ? {
-                          ...exercise,
-                          exercise_rest_seconds: value,
-                      }
+                        ...exercise,
+                        exercise_rest_seconds: value,
+                    }
                     : exercise
             )
         );

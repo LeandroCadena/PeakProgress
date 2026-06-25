@@ -1,5 +1,5 @@
 export type Routine = {
-    imageUrl: string;
+    imageUrl?: string;
     id: string;
     name: string;
     description: string | null;

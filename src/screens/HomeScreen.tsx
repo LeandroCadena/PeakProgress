@@ -169,10 +169,10 @@ export default function HomeScreen({ navigation }: any) {
                         stats.streakStatus === "empty"
                             ? "Start today"
                             : stats.streakStatus === "warning"
-                              ? "Keep it up"
-                              : stats.streakStatus === "expired"
-                                ? "Start again"
-                                : `${stats.streakWeeks} active weeks`
+                                ? "Keep it up"
+                                : stats.streakStatus === "expired"
+                                    ? "Start again"
+                                    : `${stats.streakWeeks} active weeks`
                     }
                 />
             </View>
@@ -206,7 +206,7 @@ export default function HomeScreen({ navigation }: any) {
                                 workout.completed_at,
                                 workout.workout_session_exercises?.length ?? 0
                             )}
-                            onPress={() => {}}
+                            onPress={() => { }}
                         />
                     ))}
                 </View>

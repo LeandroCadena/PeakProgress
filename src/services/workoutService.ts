@@ -1,74 +1,77 @@
-import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
+import { RoutineExerciseSet } from "../types/routine";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 
 import { getUserExerciseBestVolume } from "./progressService";
 import { getUserSettings } from "./settingsService";
 import { supabase } from "./supabase";
 
-export async function getRoutineExercises(routineId: string): Promise<RoutineExercise[]> {
+export async function getActiveWorkoutSession(userId: string) {
     const { data, error } = await supabase
-        .from("routine_exercises")
+        .from("workout_sessions")
         .select(
             `
         id,
-        exercise_id,
-        rest_seconds,
-        exercise_rest_seconds,
-        current_pr_volume,
-        position,
-        exercise:exercises (
-            name,
-            image_url
+        routine_id,
+        started_at,
+        rest_timer_end_at,
+        last_rest_duration_seconds,
+        routines (
+            name
         )
         `
         )
-        .eq("routine_id", routineId)
-        .order("position", { ascending: true })
-        .order("created_at", { ascending: true });
-
-    if (error) {
-        throw error;
-    }
-
-    return (data ?? []).map((item: any) => ({
-        ...item,
-        exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
-    })) as RoutineExercise[];
-}
-
-export async function getRoutineExerciseSets(
-    routineExerciseIds: string[]
-): Promise<Record<string, RoutineExerciseSet[]>> {
-    if (!routineExerciseIds.length) return {};
-
-    const { data, error } = await supabase
-        .from("routine_exercise_sets")
-        .select(
-            `
-        id,
-        routine_exercise_id,
-        reps,
-        weight,
-        is_pr,
-        created_at
-        `
-        )
-        .in("routine_exercise_id", routineExerciseIds)
-        .order("created_at", { ascending: true });
+        .eq("user_id", userId)
+        .is("completed_at", null)
+        .is("discarded_at", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
     if (error) throw error;
 
-    const grouped: Record<string, RoutineExerciseSet[]> = {};
+    return data;
+}
 
-    data?.forEach((set) => {
-        if (!grouped[set.routine_exercise_id]) {
-            grouped[set.routine_exercise_id] = [];
-        }
+export async function createWorkoutSession(params: { userId: string; routineId: string }) {
+    const { data, error } = await supabase
+        .from("workout_sessions")
+        .insert({
+            user_id: params.userId,
+            routine_id: params.routineId,
+            started_at: new Date().toISOString(),
+        })
+        .select("id, routine_id, started_at")
+        .single();
 
-        grouped[set.routine_exercise_id].push(set as RoutineExerciseSet);
+    if (error) throw error;
+
+    return data;
+}
+
+export async function discardWorkoutSession(sessionId: string) {
+    const { error } = await supabase
+        .from("workout_sessions")
+        .update({
+            discarded_at: new Date().toISOString(),
+        })
+        .eq("id", sessionId);
+
+    if (error) throw error;
+}
+
+export async function getOrCreateWorkoutAfterDiscard(params: {
+    userId: string;
+    routineId: string;
+    activeSessionId?: string;
+}) {
+    if (params.activeSessionId) {
+        await discardWorkoutSession(params.activeSessionId);
+    }
+
+    return createWorkoutSession({
+        userId: params.userId,
+        routineId: params.routineId,
     });
-
-    return grouped;
 }
 
 export async function getSavedSets(
@@ -104,63 +107,6 @@ export async function getSavedSets(
     });
 
     return grouped;
-}
-
-export async function createWorkoutSet(params: {
-    sessionId: string;
-    exerciseId: string;
-    reps: number;
-    weight: number;
-}) {
-    const { data, error } = await supabase
-        .from("workout_sets")
-        .insert({
-            workout_session_id: params.sessionId,
-            exercise_id: params.exerciseId,
-            reps: params.reps,
-            weight: params.weight,
-        })
-        .select()
-        .single();
-
-    if (error) throw error;
-
-    return data;
-}
-
-export async function updateWorkoutSetValues(params: {
-    setId: string;
-    weight: number;
-    reps: number;
-    isPr: boolean;
-}) {
-    const { error } = await supabase
-        .from("workout_sets")
-        .update({
-            weight: params.weight,
-            reps: params.reps,
-            is_pr: params.isPr,
-        })
-        .eq("id", params.setId);
-
-    if (error) throw error;
-}
-
-export async function toggleWorkoutSetCompleted(params: { setId: string; isCompleted: boolean }) {
-    const { error } = await supabase
-        .from("workout_sets")
-        .update({
-            is_completed: !params.isCompleted,
-        })
-        .eq("id", params.setId);
-
-    if (error) throw error;
-}
-
-export async function deleteWorkoutSet(setId: string) {
-    const { error } = await supabase.from("workout_sets").delete().eq("id", setId);
-
-    if (error) throw error;
 }
 
 export async function createEmptyWorkoutSet(params: {
@@ -199,6 +145,56 @@ export async function createEmptyWorkoutSet(params: {
     if (error) throw error;
 
     return data as WorkoutSessionSet;
+}
+
+export async function updateWorkoutSetValue(params: {
+    setId: string;
+    field: "weight" | "reps" | "is_pr";
+    value: number | boolean;
+}) {
+    const { error } = await supabase
+        .from("workout_sets")
+        .update({
+            [params.field]: params.value,
+        })
+        .eq("id", params.setId);
+
+    if (error) throw error;
+}
+
+export async function updateWorkoutSetValues(params: {
+    setId: string;
+    weight: number;
+    reps: number;
+    isPr: boolean;
+}) {
+    const { error } = await supabase
+        .from("workout_sets")
+        .update({
+            weight: params.weight,
+            reps: params.reps,
+            is_pr: params.isPr,
+        })
+        .eq("id", params.setId);
+
+    if (error) throw error;
+}
+
+export async function toggleWorkoutSetCompleted(params: { setId: string; isCompleted: boolean }) {
+    const { error } = await supabase
+        .from("workout_sets")
+        .update({
+            is_completed: !params.isCompleted,
+        })
+        .eq("id", params.setId);
+
+    if (error) throw error;
+}
+
+export async function deleteWorkoutSet(setId: string) {
+    const { error } = await supabase.from("workout_sets").delete().eq("id", setId);
+
+    if (error) throw error;
 }
 
 export async function finishWorkoutSession(params: { sessionId: string; routineName: string }) {
@@ -250,23 +246,11 @@ export async function finishWorkoutSession(params: { sessionId: string; routineN
     return data;
 }
 
-export async function addExerciseToRoutine(params: {
-    routineId: string;
-    exerciseId: string;
-    restSeconds: number;
-    position: number;
-    currentPrVolume?: number;
-}) {
+export async function getWorkoutSessionTimer(sessionId: string) {
     const { data, error } = await supabase
-        .from("routine_exercises")
-        .insert({
-            routine_id: params.routineId,
-            exercise_id: params.exerciseId,
-            rest_seconds: params.restSeconds,
-            position: params.position,
-            current_pr_volume: params.currentPrVolume ?? 0,
-        })
-        .select("id")
+        .from("workout_sessions")
+        .select("rest_timer_end_at, last_rest_duration_seconds")
+        .eq("id", sessionId)
         .single();
 
     if (error) throw error;
@@ -274,91 +258,87 @@ export async function addExerciseToRoutine(params: {
     return data;
 }
 
-export async function updateRoutineExerciseSet(params: {
-    setId: string;
-    field: "weight" | "reps";
-    value: number;
+export async function updateWorkoutSessionTimer(params: {
+    sessionId: string;
+    restTimerEndAt: string | null;
+    lastRestDurationSeconds?: number | null;
 }) {
     const { error } = await supabase
-        .from("routine_exercise_sets")
+        .from("workout_sessions")
         .update({
-            [params.field]: params.value,
+            rest_timer_end_at: params.restTimerEndAt,
+            last_rest_duration_seconds: params.lastRestDurationSeconds ?? null,
         })
-        .eq("id", params.setId);
+        .eq("id", params.sessionId);
 
     if (error) throw error;
 }
 
-export async function createRoutineExerciseSet(params: {
-    routineExerciseId: string;
-    reps: number;
-    weight: number;
+export async function updateWorkoutSessionExerciseRest(params: {
+    workoutSessionExerciseId: string;
+    restSeconds?: number;
+    exerciseRestSeconds?: number;
 }) {
+    const updates: Record<string, number> = {};
+
+    if (params.restSeconds !== undefined) {
+        updates.rest_seconds = params.restSeconds;
+    }
+
+    if (params.exerciseRestSeconds !== undefined) {
+        updates.exercise_rest_seconds = params.exerciseRestSeconds;
+    }
+
+    const { error } = await supabase
+        .from("workout_session_exercises")
+        .update(updates)
+        .eq("id", params.workoutSessionExerciseId);
+
+    if (error) throw error;
+}
+
+async function createWorkoutSessionExercise(params: {
+    sessionId: string;
+    exerciseId: string;
+    exerciseName: string;
+    position: number;
+    userId: string;
+    exerciseImageUrl?: string | null;
+    routineSetRestSeconds?: number;
+    routineExerciseRestSeconds?: number;
+    routineCurrentPrVolume?: number;
+}) {
+    const settings = await getUserSettings(params.userId);
+
+    const currentPrVolume =
+        params.routineCurrentPrVolume ??
+        (await getUserExerciseBestVolume({
+            userId: params.userId,
+            exerciseId: params.exerciseId,
+        }));
+
     const { data, error } = await supabase
-        .from("routine_exercise_sets")
+        .from("workout_session_exercises")
         .insert({
-            routine_exercise_id: params.routineExerciseId,
-            reps: params.reps,
-            weight: params.weight,
-            is_pr: false,
+            workout_session_id: params.sessionId,
+            exercise_id: params.exerciseId,
+            exercise_name_snapshot: params.exerciseName,
+            position: params.position,
+            exercise_image_url_snapshot: params.exerciseImageUrl ?? null,
+            rest_seconds: settings.use_global_timers
+                ? settings.global_set_rest_seconds
+                : (params.routineSetRestSeconds ?? 90),
+            exercise_rest_seconds: settings.use_global_timers
+                ? settings.global_exercise_rest_seconds
+                : (params.routineExerciseRestSeconds ?? 120),
+            current_pr_volume: currentPrVolume,
         })
-        .select(
-            `
-            id, 
-            routine_exercise_id, 
-            reps, 
-            weight, 
-            is_pr,
-            created_at
-            `
-        )
+        .select("id")
         .single();
 
     if (error) throw error;
 
-    return data as RoutineExerciseSet;
-}
-
-export async function deleteRoutineExerciseSet(setId: string) {
-    const { error } = await supabase.from("routine_exercise_sets").delete().eq("id", setId);
-
-    if (error) throw error;
-}
-
-export async function deleteRoutineExercise(routineExerciseId: string) {
-    const { error } = await supabase.from("routine_exercises").delete().eq("id", routineExerciseId);
-
-    if (error) throw error;
-}
-
-export async function updateRoutineExerciseConfig(params: {
-    routineExerciseId: string;
-    restSeconds: number;
-    exerciseRestSeconds: number;
-}) {
-    const { error } = await supabase
-        .from("routine_exercises")
-        .update({
-            rest_seconds: params.restSeconds,
-            exercise_rest_seconds: params.exerciseRestSeconds,
-        })
-        .eq("id", params.routineExerciseId);
-
-    if (error) throw error;
-}
-
-export async function updateRoutineExercisePosition(params: {
-    routineExerciseId: string;
-    position: number;
-}) {
-    const { error } = await supabase
-        .from("routine_exercises")
-        .update({
-            position: params.position,
-        })
-        .eq("id", params.routineExerciseId);
-
-    if (error) throw error;
+    return data;
 }
 
 export async function addExerciseToWorkoutSession(params: {
@@ -479,6 +459,47 @@ export async function deleteExerciseFromWorkoutSession(params: {
     if (error) throw error;
 }
 
+async function getRoutineExercisesWithSets(routineId: string) {
+    const { data, error } = await supabase
+        .from("routine_exercises")
+        .select(
+            `
+            id,
+            exercise_id,
+            position,
+            rest_seconds,
+            exercise_rest_seconds,
+            current_pr_volume,
+            exercise:exercises (
+                name,
+                image_url
+            ),
+            routine_exercise_sets (
+                id,
+                routine_exercise_id,
+                reps,
+                weight,
+                is_pr,
+                created_at
+            )
+        `
+        )
+        .eq("routine_id", routineId)
+        .order("position", { ascending: true })
+        .order("created_at", {
+            ascending: true,
+            referencedTable: "routine_exercise_sets",
+        });
+
+    if (error) throw error;
+
+    return (data ?? []).map((item: any) => ({
+        ...item,
+        exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
+        routine_exercise_sets: item.routine_exercise_sets ?? [],
+    }));
+}
+
 export async function createWorkoutSessionExercisesFromRoutine(params: {
     sessionId: string;
     routineId: string;
@@ -585,253 +606,4 @@ export async function deleteRoutineExerciseSetsByRoutineExerciseId(routineExerci
         .eq("routine_exercise_id", routineExerciseId);
 
     if (error) throw error;
-}
-
-export async function createRoutineExerciseSets(
-    sets: {
-        routine_exercise_id: string;
-        reps: number;
-        weight: number;
-    }[]
-) {
-    if (!sets.length) return;
-
-    const { error } = await supabase.from("routine_exercise_sets").insert(sets);
-
-    if (error) throw error;
-}
-
-export async function getActiveWorkoutSession(userId: string) {
-    const { data, error } = await supabase
-        .from("workout_sessions")
-        .select(
-            `
-        id,
-        routine_id,
-        started_at,
-        rest_timer_end_at,
-        last_rest_duration_seconds,
-        routines (
-            name
-        )
-        `
-        )
-        .eq("user_id", userId)
-        .is("completed_at", null)
-        .is("discarded_at", null)
-        .order("started_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (error) throw error;
-
-    return data;
-}
-
-export async function discardWorkoutSession(sessionId: string) {
-    const { error } = await supabase
-        .from("workout_sessions")
-        .update({
-            discarded_at: new Date().toISOString(),
-        })
-        .eq("id", sessionId);
-
-    if (error) throw error;
-}
-
-export async function getOrCreateWorkoutAfterDiscard(params: {
-    userId: string;
-    routineId: string;
-    activeSessionId?: string;
-}) {
-    if (params.activeSessionId) {
-        await discardWorkoutSession(params.activeSessionId);
-    }
-
-    return createWorkoutSession({
-        userId: params.userId,
-        routineId: params.routineId,
-    });
-}
-
-export async function createNewWorkoutSessionFromRoutine(params: {
-    userId: string;
-    routineId: string;
-}) {
-    const session = await createWorkoutSession(params);
-
-    await createWorkoutSessionExercisesFromRoutine({
-        sessionId: session.id,
-        routineId: params.routineId,
-        userId: params.userId,
-    });
-
-    return session;
-}
-
-export async function createWorkoutSession(params: { userId: string; routineId: string }) {
-    const { data, error } = await supabase
-        .from("workout_sessions")
-        .insert({
-            user_id: params.userId,
-            routine_id: params.routineId,
-            started_at: new Date().toISOString(),
-        })
-        .select("id, routine_id, started_at")
-        .single();
-
-    if (error) throw error;
-
-    return data;
-}
-
-export async function updateWorkoutSessionExerciseRest(params: {
-    workoutSessionExerciseId: string;
-    restSeconds?: number;
-    exerciseRestSeconds?: number;
-}) {
-    const updates: Record<string, number> = {};
-
-    if (params.restSeconds !== undefined) {
-        updates.rest_seconds = params.restSeconds;
-    }
-
-    if (params.exerciseRestSeconds !== undefined) {
-        updates.exercise_rest_seconds = params.exerciseRestSeconds;
-    }
-
-    const { error } = await supabase
-        .from("workout_session_exercises")
-        .update(updates)
-        .eq("id", params.workoutSessionExerciseId);
-
-    if (error) throw error;
-}
-
-export async function getWorkoutSessionTimer(sessionId: string) {
-    const { data, error } = await supabase
-        .from("workout_sessions")
-        .select("rest_timer_end_at, last_rest_duration_seconds")
-        .eq("id", sessionId)
-        .single();
-
-    if (error) throw error;
-
-    return data;
-}
-
-export async function updateWorkoutSessionTimer(params: {
-    sessionId: string;
-    restTimerEndAt: string | null;
-    lastRestDurationSeconds?: number | null;
-}) {
-    const { error } = await supabase
-        .from("workout_sessions")
-        .update({
-            rest_timer_end_at: params.restTimerEndAt,
-            last_rest_duration_seconds: params.lastRestDurationSeconds ?? null,
-        })
-        .eq("id", params.sessionId);
-
-    if (error) throw error;
-}
-
-export async function updateWorkoutSetValue(params: {
-    setId: string;
-    field: "weight" | "reps" | "is_pr";
-    value: number | boolean;
-}) {
-    const { error } = await supabase
-        .from("workout_sets")
-        .update({
-            [params.field]: params.value,
-        })
-        .eq("id", params.setId);
-
-    if (error) throw error;
-}
-
-async function createWorkoutSessionExercise(params: {
-    sessionId: string;
-    exerciseId: string;
-    exerciseName: string;
-    position: number;
-    userId: string;
-    exerciseImageUrl?: string | null;
-    routineSetRestSeconds?: number;
-    routineExerciseRestSeconds?: number;
-    routineCurrentPrVolume?: number;
-}) {
-    const settings = await getUserSettings(params.userId);
-
-    const currentPrVolume =
-        params.routineCurrentPrVolume ??
-        (await getUserExerciseBestVolume({
-            userId: params.userId,
-            exerciseId: params.exerciseId,
-        }));
-
-    const { data, error } = await supabase
-        .from("workout_session_exercises")
-        .insert({
-            workout_session_id: params.sessionId,
-            exercise_id: params.exerciseId,
-            exercise_name_snapshot: params.exerciseName,
-            position: params.position,
-            exercise_image_url_snapshot: params.exerciseImageUrl ?? null,
-            rest_seconds: settings.use_global_timers
-                ? settings.global_set_rest_seconds
-                : (params.routineSetRestSeconds ?? 90),
-            exercise_rest_seconds: settings.use_global_timers
-                ? settings.global_exercise_rest_seconds
-                : (params.routineExerciseRestSeconds ?? 120),
-            current_pr_volume: currentPrVolume,
-        })
-        .select("id")
-        .single();
-
-    if (error) throw error;
-
-    return data;
-}
-
-async function getRoutineExercisesWithSets(routineId: string) {
-    const { data, error } = await supabase
-        .from("routine_exercises")
-        .select(
-            `
-            id,
-            exercise_id,
-            position,
-            rest_seconds,
-            exercise_rest_seconds,
-            current_pr_volume,
-            exercise:exercises (
-                name,
-                image_url
-            ),
-            routine_exercise_sets (
-                id,
-                routine_exercise_id,
-                reps,
-                weight,
-                is_pr,
-                created_at
-            )
-        `
-        )
-        .eq("routine_id", routineId)
-        .order("position", { ascending: true })
-        .order("created_at", {
-            ascending: true,
-            referencedTable: "routine_exercise_sets",
-        });
-
-    if (error) throw error;
-
-    return (data ?? []).map((item: any) => ({
-        ...item,
-        exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
-        routine_exercise_sets: item.routine_exercise_sets ?? [],
-    }));
 }
