@@ -6,7 +6,6 @@ import { colors, componentStyles, spacing, typography } from "../../theme";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
-import IconButton from "../common/IconButton";
 import ExerciseCardHeader from "../exercise/ExerciseCardHeader";
 import RestTimeEditor from "../workout/RestTimeEditor";
 
@@ -16,8 +15,8 @@ type Props = {
     item: RoutineExercise;
     onDelete: () => void;
     isEditing: boolean;
-    onMoveUp: () => void;
-    onMoveDown: () => void;
+    onDrag: () => void;
+    isDragging: boolean;
     sets: RoutineExerciseSet[];
     onUpdateSet: (setId: string, field: "weight" | "reps", value: string) => void;
     onAddSet: () => void;
@@ -28,10 +27,9 @@ type Props = {
 
 export default function RoutineExerciseCard({
     item,
-    onDelete,
     isEditing,
-    onMoveUp,
-    onMoveDown,
+    onDrag,
+    isDragging,
     sets,
     onUpdateSet,
     onAddSet,
@@ -42,17 +40,45 @@ export default function RoutineExerciseCard({
     const [isCollapsed, setIsCollapsed] = useState(true);
 
     return (
-        <Card>
-            <Pressable onPress={() => setIsCollapsed((prev) => !prev)}>
+        <Card
+            style={[
+                styles.card,
+                isDragging && styles.cardDragging,
+            ]}
+        >
+            <Pressable
+                onPress={() => {
+                    if (!isDragging) {
+                        setIsCollapsed((prev) => !prev);
+                    }
+                }}
+            >
                 <ExerciseCardHeader
                     imageUrl={item.exercise?.image_url}
                     title={item.exercise?.name ?? "Exercise"}
                     rightContent={
-                        <Ionicons
-                            name={isCollapsed ? "chevron-down" : "chevron-up"}
-                            size={22}
-                            color={colors.text}
-                        />
+                        <View style={styles.headerActions}>
+                            {isEditing ? (
+                                <Pressable
+                                    onLongPress={onDrag}
+                                    delayLongPress={250}
+                                    disabled={isDragging}
+                                    hitSlop={12}
+                                >
+                                    <Ionicons
+                                        name="reorder-three-outline"
+                                        size={28}
+                                        color={colors.textSecondary}
+                                    />
+                                </Pressable>
+                            ) : null}
+
+                            <Ionicons
+                                name={isCollapsed ? "chevron-down" : "chevron-up"}
+                                size={22}
+                                color={colors.text}
+                            />
+                        </View>
                     }
                 />
             </Pressable>
@@ -97,24 +123,6 @@ export default function RoutineExerciseCard({
                             onPress={onAddSet}
                         />
                     ) : null}
-
-                    {isEditing ? (
-                        <>
-                            <View style={styles.cardActions}>
-                                <AppButton
-                                    title="Remove Exercise"
-                                    variant="danger"
-                                    onPress={onDelete}
-                                />
-                            </View>
-
-                            <View style={styles.moveActions}>
-                                <IconButton icon="↑" onPress={onMoveUp} />
-
-                                <IconButton icon="↓" onPress={onMoveDown} />
-                            </View>
-                        </>
-                    ) : null}
                 </>
             ) : null}
         </Card>
@@ -135,17 +143,6 @@ const styles = StyleSheet.create({
     deleteColumn: {
         width: componentStyles.iconButtonSize,
     },
-    //To be removed
-    cardActions: {
-        flexDirection: "row",
-        gap: spacing.md,
-        marginTop: spacing.lg,
-    },
-    moveActions: {
-        flexDirection: "row",
-        gap: spacing.sm,
-        marginTop: spacing.md,
-    },
     setNumberHeader: {
         width: 28,
         color: colors.textSecondary,
@@ -157,5 +154,17 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontSize: typography.small,
         fontWeight: typography.weightBold,
+    },
+    headerActions: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.sm,
+    },
+    card: {
+        borderWidth: componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
+    },
+    cardDragging: {
+        borderColor: colors.primary,
     },
 });

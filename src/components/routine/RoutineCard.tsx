@@ -11,6 +11,7 @@ type Props = {
     showButton?: boolean;
     buttonTitle?: string;
     buttonDisabled?: boolean;
+    imageUrl?: string;
     onPressButton?: () => void;
 };
 
@@ -22,15 +23,18 @@ export default function RoutineCard({
     buttonTitle,
     buttonDisabled,
     onPressButton,
+    imageUrl,
 }: Props) {
     return (
         <Pressable onPress={onPress}>
             <Card>
                 <View style={styles.routineContent}>
                     <Image
-                        source={{
-                            uri: "",
-                        }}
+                        source={
+                            imageUrl
+                                ? { uri: imageUrl }
+                                : require("../../../assets/routine-placeholder.png")
+                        }
                         style={styles.routineImage}
                     />
 
@@ -44,7 +48,7 @@ export default function RoutineCard({
                         <Pressable
                             style={[styles.button, buttonDisabled && styles.disabled]}
                             disabled={buttonDisabled}
-                            onPress={onPressButton ?? (() => {})}
+                            onPress={onPressButton ?? (() => { })}
                         >
                             <Text style={styles.text}>{buttonTitle}</Text>
                         </Pressable>

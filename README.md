@@ -184,3 +184,41 @@ User
 ## License
 
 Private project.
+
+## Development Build
+
+PeakProgress uses an Expo Development Build instead of Expo Go because it relies on native modules.
+
+### Create a new development build
+
+Run this command whenever:
+
+- A new native dependency is installed.
+- An Expo native module is added or updated.
+- Android or iOS native configuration changes.
+
+```bash
+eas build --profile development --platform android
+```
+
+Wait for the build to finish, then install the generated APK on your device.
+
+### Start the development server
+
+After installing the Development Build:
+
+```bash
+npx expo start --dev-client
+```
+
+### Rebuild required after installing native dependencies
+
+The following packages require creating a new Development Build after installation:
+
+- react-native-reanimated
+- react-native-gesture-handler
+- react-native-worklets
+- react-native-draggable-flatlist
+- Any Expo native module (expo-\* packages)
+
+Simply restarting Metro is **not** enough after installing native dependencies.

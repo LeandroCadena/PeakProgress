@@ -136,12 +136,21 @@ export function useRoutineDetail({
     }
 
     async function persistRoutineChanges() {
+        await Promise.all(
+            routineExercises.map((routineExercise, index) =>
+                updateRoutineExercisePosition({
+                    routineExerciseId: routineExercise.id,
+                    position: index,
+                })
+            )
+        );
+
         for (const routineExercise of routineExercises) {
             const currentSets = routineExerciseSets[routineExercise.id] ?? [];
 
             await deleteRoutineExerciseSetsByRoutineExerciseId(routineExercise.id);
 
-            const setsToInsert = currentSets.map((set, index) => {
+            const setsToInsert = currentSets.map((set) => {
                 const weightDraft = templateSetDraftValues[`weight:${set.id}`];
                 const repsDraft = templateSetDraftValues[`reps:${set.id}`];
 
@@ -227,38 +236,14 @@ export function useRoutineDetail({
         setIsEditingRoutine(false);
     }
 
-    async function moveRoutineExercise(index: number, direction: "up" | "down") {
-        const targetIndex = direction === "up" ? index - 1 : index + 1;
+    function reorderRoutineExercises(reorderedExercises: RoutineExercise[]) {
+        const exercisesWithUpdatedPosition = reorderedExercises.map((exercise, index) => ({
+            ...exercise,
+            position: index,
+        }));
 
-        if (targetIndex < 0 || targetIndex >= routineExercises.length) return;
-
-        const current = routineExercises[index];
-        const target = routineExercises[targetIndex];
-
-        const updated = [...routineExercises];
-
-        updated[index] = target;
-        updated[targetIndex] = current;
-
-        setRoutineExercises(updated);
-
-        try {
-            await Promise.all([
-                updateRoutineExercisePosition({
-                    routineExerciseId: current.id,
-                    position: targetIndex,
-                }),
-                updateRoutineExercisePosition({
-                    routineExerciseId: target.id,
-                    position: index,
-                }),
-            ]);
-
-            await fetchRoutineExercises();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-            await fetchRoutineExercises();
-        }
+        setRoutineExercises(exercisesWithUpdatedPosition);
+        setRoutineExercisesChanged(true);
     }
 
     async function updateTemplateSet(setId: string, field: "weight" | "reps", value: string) {
@@ -431,9 +416,9 @@ export function useRoutineDetail({
             prev.map((exercise) =>
                 exercise.id === routineExerciseId
                     ? {
-                        ...exercise,
-                        exercise_rest_seconds: value,
-                    }
+                          ...exercise,
+                          exercise_rest_seconds: value,
+                      }
                     : exercise
             )
         );
@@ -442,7 +427,7 @@ export function useRoutineDetail({
     return {
         routineTitle,
         routineExercises,
-        moveRoutineExercise,
+        reorderRoutineExercises,
 
         editRoutineVisible,
         setEditRoutineVisible,

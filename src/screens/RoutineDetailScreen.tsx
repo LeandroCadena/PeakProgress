@@ -37,7 +37,7 @@ export default function RoutineDetailScreen({ navigation }: any) {
         setDraftRoutineDescription,
         startEditingRoutine,
         cancelEditingRoutine,
-        moveRoutineExercise,
+        reorderRoutineExercises,
         deleteRoutine,
         routineExerciseSets,
         updateTemplateSet,
@@ -60,64 +60,85 @@ export default function RoutineDetailScreen({ navigation }: any) {
     });
 
     return (
-        <ScreenContainer scroll>
-            <RoutineHeader
-                title={isEditingRoutine ? draftRoutineName : routineTitle}
-                description={isEditingRoutine ? draftRoutineDescription : editRoutineDescription}
-                isEditing={isEditingRoutine}
-                onChangeTitle={setDraftRoutineName}
-                onChangeDescription={setDraftRoutineDescription}
-                onStartEdit={startEditingRoutine}
-                onSave={saveRoutineChanges}
-                onCancel={cancelEditingRoutine}
-                onDelete={deleteRoutine}
-            />
-
-            {!isEditingRoutine ? (
-                <AppButton
-                    title={isStartingWorkout ? "Starting..." : "Start Workout"}
-                    disabled={isStartingWorkout}
-                    onPress={startWorkout}
-                    style={styles.actionButton}
-                    iconLeft={<Ionicons name="barbell-outline" size={22} color="#FFFFFF" />}
-                    showChevron
-                />
-            ) : null}
-
+        <ScreenContainer contentStyle={styles.screenContent}>
             <RoutineExerciseSection
                 routineExercises={routineExercises}
                 routineExerciseSets={routineExerciseSets}
                 isEditing={isEditingRoutine}
+                onReorder={reorderRoutineExercises}
                 onDelete={deleteRoutineExercise}
-                onMoveUp={(index) => moveRoutineExercise(index, "up")}
-                onMoveDown={(index) => moveRoutineExercise(index, "down")}
                 onUpdateSet={updateTemplateSet}
                 onAddSet={addTemplateSet}
                 onDeleteSet={deleteTemplateSet}
                 updateLocalTemplateSetValue={updateLocalTemplateSetValue}
                 onUpdateSetRest={updateSetRest}
                 onUpdateExerciseRest={updateExerciseRest}
-            />
+                header={
+                    <>
+                        <RoutineHeader
+                            title={isEditingRoutine ? draftRoutineName : routineTitle}
+                            description={
+                                isEditingRoutine
+                                    ? draftRoutineDescription
+                                    : editRoutineDescription
+                            }
+                            isEditing={isEditingRoutine}
+                            onChangeTitle={setDraftRoutineName}
+                            onChangeDescription={setDraftRoutineDescription}
+                            onStartEdit={startEditingRoutine}
+                            onSave={saveRoutineChanges}
+                            onCancel={cancelEditingRoutine}
+                            onDelete={deleteRoutine}
+                        />
 
-            {isEditingRoutine ? (
-                <AppButton
-                    title="+ Add Exercise"
-                    variant="success"
-                    onPress={() =>
-                        navigation.navigate("ExercisePicker", {
-                            mode: "routine",
-                            routineId,
-                            currentCount:
-                                routineExercises.length > 0
-                                    ? Math.max(
-                                          ...routineExercises.map((item) => item.position ?? 0)
-                                      ) + 1
-                                    : 0,
-                            currentExerciseIds: routineExercises.map((item) => item.exercise_id),
-                        })
-                    }
-                />
-            ) : null}
+                        {!isEditingRoutine ? (
+                            <AppButton
+                                title={
+                                    isStartingWorkout
+                                        ? "Starting..."
+                                        : "Start Workout"
+                                }
+                                disabled={isStartingWorkout}
+                                onPress={startWorkout}
+                                style={styles.actionButton}
+                                iconLeft={
+                                    <Ionicons
+                                        name="barbell-outline"
+                                        size={22}
+                                        color="#FFFFFF"
+                                    />
+                                }
+                                showChevron
+                            />
+                        ) : null}
+                    </>
+                }
+                footer={
+                    isEditingRoutine ? (
+                        <AppButton
+                            title="+ Add Exercise"
+                            variant="success"
+                            onPress={() =>
+                                navigation.navigate("ExercisePicker", {
+                                    mode: "routine",
+                                    routineId,
+                                    currentCount:
+                                        routineExercises.length > 0
+                                            ? Math.max(
+                                                ...routineExercises.map(
+                                                    (item) => item.position ?? 0
+                                                )
+                                            ) + 1
+                                            : 0,
+                                    currentExerciseIds: routineExercises.map(
+                                        (item) => item.exercise_id
+                                    ),
+                                })
+                            }
+                        />
+                    ) : null
+                }
+            />
 
             <ActiveWorkoutModal
                 visible={activeWorkoutModalVisible}
@@ -133,7 +154,16 @@ export default function RoutineDetailScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+    screenContent: {
+        padding: 0,
+        paddingBottom: 0,
+    },
     actionButton: {
         marginBottom: spacing.lg,
+    },
+    scrollContent: {
+        paddingHorizontal: spacing.lg,
+        paddingTop: 48,
+        paddingBottom: 120,
     },
 });
