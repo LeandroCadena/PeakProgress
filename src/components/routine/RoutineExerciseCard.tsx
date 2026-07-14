@@ -6,6 +6,7 @@ import { colors, componentStyles, spacing, typography } from "../../theme";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
+import SwipeableCard from "../common/SwipeableCard";
 import ExerciseCardHeader from "../exercise/ExerciseCardHeader";
 import RestTimeEditor from "../workout/RestTimeEditor";
 
@@ -27,6 +28,7 @@ type Props = {
 
 export default function RoutineExerciseCard({
     item,
+    onDelete,
     isEditing,
     onDrag,
     isDragging,
@@ -40,92 +42,99 @@ export default function RoutineExerciseCard({
     const [isCollapsed, setIsCollapsed] = useState(true);
 
     return (
-        <Card
-            style={[
-                styles.card,
-                isDragging && styles.cardDragging,
-            ]}
+        <SwipeableCard
+            enabled={isEditing}
+            isDragging={isDragging}
+            showSwipeHint={isEditing}
+            onActionPress={onDelete}
         >
-            <Pressable
-                onPress={() => {
-                    if (!isDragging) {
-                        setIsCollapsed((prev) => !prev);
-                    }
-                }}
+            <Card
+                style={[
+                    styles.card,
+                    isDragging && styles.cardDragging,
+                ]}
             >
-                <ExerciseCardHeader
-                    imageUrl={item.exercise?.image_url}
-                    title={item.exercise?.name ?? "Exercise"}
-                    rightContent={
-                        <View style={styles.headerActions}>
-                            {isEditing ? (
-                                <Pressable
-                                    onLongPress={onDrag}
-                                    delayLongPress={250}
-                                    disabled={isDragging}
-                                    hitSlop={12}
-                                >
-                                    <Ionicons
-                                        name="reorder-three-outline"
-                                        size={28}
-                                        color={colors.textSecondary}
-                                    />
-                                </Pressable>
-                            ) : null}
+                <Pressable
+                    onPress={() => {
+                        if (!isDragging) {
+                            setIsCollapsed((prev) => !prev);
+                        }
+                    }}
+                >
+                    <ExerciseCardHeader
+                        imageUrl={item.exercise?.image_url}
+                        title={item.exercise?.name ?? "Exercise"}
+                        rightContent={
+                            <View style={styles.headerActions}>
+                                {isEditing ? (
+                                    <Pressable
+                                        onLongPress={onDrag}
+                                        delayLongPress={250}
+                                        disabled={isDragging}
+                                        hitSlop={12}
+                                    >
+                                        <Ionicons
+                                            name="reorder-three-outline"
+                                            size={28}
+                                            color={colors.textSecondary}
+                                        />
+                                    </Pressable>
+                                ) : null}
 
-                            <Ionicons
-                                name={isCollapsed ? "chevron-down" : "chevron-up"}
-                                size={22}
-                                color={colors.text}
-                            />
-                        </View>
-                    }
-                />
-            </Pressable>
-            {!isCollapsed ? (
-                <>
-                    <RestTimeEditor
-                        label="Rest between sets"
-                        value={item.rest_seconds ?? 90}
-                        editable={isEditing}
-                        onChange={(value) => onUpdateSetRest(item.id, value)}
+                                <Ionicons
+                                    name={isCollapsed ? "chevron-down" : "chevron-up"}
+                                    size={22}
+                                    color={colors.text}
+                                />
+                            </View>
+                        }
                     />
-                    <View style={styles.setHeader}>
-                        <Text style={styles.setNumberHeader}>Set</Text>
-                        <Text style={styles.setHeaderText}>Weight</Text>
-                        <Text style={styles.setHeaderText}>Reps</Text>
-                        {isEditing ? <View style={styles.deleteColumn} /> : null}
-                    </View>
-
-                    {sets.map((set, index) => {
-                        const isTemporarySet = set.id.startsWith("temp-");
-                        return (
-                            <RoutineExerciseSetRow
-                                key={set.id}
-                                set={set}
-                                isEditing={isEditing}
-                                displaySetNumber={index + 1}
-                                onDraftChange={(field, value) =>
-                                    updateLocalTemplateSetValue(set.id, field, value)
-                                }
-                                onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
-                                onDelete={() => onDeleteSet(item.id, set.id)}
-                                isTemporarySet={isTemporarySet}
-                            />
-                        );
-                    })}
-
-                    {isEditing ? (
-                        <AppButton
-                            style={styles.addButton}
-                            title="+ Add Set"
-                            variant="success"
-                            onPress={onAddSet}
+                </Pressable>
+                {!isCollapsed ? (
+                    <>
+                        <RestTimeEditor
+                            label="Rest between sets"
+                            value={item.rest_seconds ?? 90}
+                            editable={isEditing}
+                            onChange={(value) => onUpdateSetRest(item.id, value)}
                         />
-                    ) : null}
-                </>
-            ) : null}
-        </Card>
+                        <View style={styles.setHeader}>
+                            <Text style={styles.setNumberHeader}>Set</Text>
+                            <Text style={styles.setHeaderText}>Weight</Text>
+                            <Text style={styles.setHeaderText}>Reps</Text>
+                            {isEditing ? <View style={styles.deleteColumn} /> : null}
+                        </View>
+
+                        {sets.map((set, index) => {
+                            const isTemporarySet = set.id.startsWith("temp-");
+                            return (
+                                <RoutineExerciseSetRow
+                                    key={set.id}
+                                    set={set}
+                                    isEditing={isEditing}
+                                    displaySetNumber={index + 1}
+                                    onDraftChange={(field, value) =>
+                                        updateLocalTemplateSetValue(set.id, field, value)
+                                    }
+                                    onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
+                                    onDelete={() => onDeleteSet(item.id, set.id)}
+                                    isTemporarySet={isTemporarySet}
+                                />
+                            );
+                        })}
+
+                        {isEditing ? (
+                            <AppButton
+                                style={styles.addButton}
+                                title="+ Add Set"
+                                variant="success"
+                                onPress={onAddSet}
+                            />
+                        ) : null}
+                    </>
+                ) : null}
+            </Card>
+        </SwipeableCard>
     );
 }
 
@@ -156,13 +165,16 @@ const styles = StyleSheet.create({
         fontWeight: typography.weightBold,
     },
     headerActions: {
-        flexDirection: "row",
+        flex: 1,
+        flexDirection: "column",
         alignItems: "center",
+        justifyContent: "space-between",
         gap: spacing.sm,
     },
     card: {
         borderWidth: componentStyles.borderWidth,
         borderColor: colors.cardBorder,
+        gap: spacing.md,
     },
     cardDragging: {
         borderColor: colors.primary,

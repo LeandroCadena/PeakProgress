@@ -40,6 +40,5 @@ const styles = StyleSheet.create({
     },
     rightContent: {
         height: 86,
-        justifyContent: "center",
     },
 });

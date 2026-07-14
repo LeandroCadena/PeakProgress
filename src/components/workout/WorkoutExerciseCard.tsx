@@ -4,6 +4,7 @@ import { colors, sharedStyles, spacing, typography } from "../../theme";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
+import SwipeableCard from "../common/SwipeableCard";
 import ExerciseCardHeader from "../exercise/ExerciseCardHeader";
 
 import WorkoutSetRow from "./WorkoutSetRow";
@@ -38,54 +39,61 @@ export default function WorkoutExerciseCard({
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
     return (
-        <Card style={styles.card}>
-            <ExerciseCardHeader
-                imageUrl={exercise.exercise_image_url_snapshot}
-                title={exerciseName}
-            />
+        <SwipeableCard
+            enabled
+            showSwipeHint
+            actionLabel="Delete"
+            onActionPress={onDeleteExercise}
+        >
+            <Card style={styles.card}>
+                <ExerciseCardHeader
+                    imageUrl={exercise.exercise_image_url_snapshot}
+                    title={exerciseName}
+                />
 
-            <Text style={sharedStyles.mutedText}>
-                Rest between sets: {exercise.rest_seconds ?? 90} sec
-            </Text>
+                <Text style={sharedStyles.mutedText}>
+                    Rest between sets: {exercise.rest_seconds ?? 90} sec
+                </Text>
 
-            <View style={styles.divider} />
+                <View style={styles.divider} />
 
-            <View style={styles.setTableHeader}>
-                <Text style={styles.setNumberHeader}>Set</Text>
-                <Text style={styles.setHeaderText}>Weight</Text>
-                <Text style={styles.setHeaderText}>Reps</Text>
-                <Text style={styles.doneHeader}>Done</Text>
-            </View>
+                <View style={styles.setTableHeader}>
+                    <Text style={styles.setNumberHeader}>Set</Text>
+                    <Text style={styles.setHeaderText}>Weight</Text>
+                    <Text style={styles.setHeaderText}>Reps</Text>
+                    <Text style={styles.doneHeader}>Done</Text>
+                </View>
 
-            {savedSets.map((set, index) => {
-                const isTemporarySet = set.id.startsWith("temp-");
+                {savedSets.map((set, index) => {
+                    const isTemporarySet = set.id.startsWith("temp-");
 
-                return (
-                    <WorkoutSetRow
-                        key={set.id}
-                        set={set}
-                        isPersonalRecord={Boolean(set.is_completed && set.is_pr)}
-                        displaySetNumber={index + 1}
-                        weightValue={getSetInputValue(set.id, "weight", set.weight)}
-                        repsValue={getSetInputValue(set.id, "reps", set.reps)}
-                        onWeightChange={(value) => updateLocalSetValue(set.id, "weight", value)}
-                        onRepsChange={(value) => updateLocalSetValue(set.id, "reps", value)}
-                        onWeightBlur={(value) => updateSetValue(set.id, "weight", value)}
-                        onRepsBlur={(value) => updateSetValue(set.id, "reps", value)}
-                        onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
-                        onDelete={() => deleteSet(set.id)}
-                        isTemporarySet={isTemporarySet}
-                    />
-                );
-            })}
+                    return (
+                        <WorkoutSetRow
+                            key={set.id}
+                            set={set}
+                            isPersonalRecord={Boolean(set.is_completed && set.is_pr)}
+                            displaySetNumber={index + 1}
+                            weightValue={getSetInputValue(set.id, "weight", set.weight)}
+                            repsValue={getSetInputValue(set.id, "reps", set.reps)}
+                            onWeightChange={(value) => updateLocalSetValue(set.id, "weight", value)}
+                            onRepsChange={(value) => updateLocalSetValue(set.id, "reps", value)}
+                            onWeightBlur={(value) => updateSetValue(set.id, "weight", value)}
+                            onRepsBlur={(value) => updateSetValue(set.id, "reps", value)}
+                            onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
+                            onDelete={() => deleteSet(set.id)}
+                            isTemporarySet={isTemporarySet}
+                        />
+                    );
+                })}
 
-            <AppButton
-                title="+ Add Set"
-                variant="success"
-                onPress={() => addEmptySet(exercise.id)}
-                style={styles.addSetButton}
-            />
-        </Card>
+                <AppButton
+                    title="+ Add Set"
+                    variant="success"
+                    onPress={() => addEmptySet(exercise.id)}
+                    style={styles.addSetButton}
+                />
+            </Card>
+        </SwipeableCard>
     );
 }
 

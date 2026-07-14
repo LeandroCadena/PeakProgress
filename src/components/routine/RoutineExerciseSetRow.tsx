@@ -6,6 +6,7 @@ import { RoutineExerciseSet } from "../../types/routine";
 import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
 import IconButton from "../common/IconButton";
+import SwipeableCard from "../common/SwipeableCard";
 
 type Props = {
     set: RoutineExerciseSet;
@@ -48,38 +49,34 @@ export default function RoutineExerciseSetRow({
     }
 
     return (
-        <View style={styles.row}>
-            <Text style={styles.setNumber}>{displaySetNumber}</Text>
+        <SwipeableCard
+            compact
+            enabled={!isTemporarySet}
+            onActionPress={onDelete}
+        >
+            <View style={styles.row}>
+                <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
-            <AppInput
-                style={styles.setRow}
-                value={weightValue}
-                disabled={!isEditing}
-                keyboardType="numeric"
-                onChangeText={handleWeightChange}
-                onEndEditing={() => onUpdate("weight", weightValue)}
-            />
+                <AppInput
+                    style={styles.setRow}
+                    value={weightValue}
+                    disabled={!isEditing}
+                    keyboardType="numeric"
+                    onChangeText={handleWeightChange}
+                    onEndEditing={() => onUpdate("weight", weightValue)}
+                />
 
-            <AppInput
-                style={styles.setRow}
-                value={repsValue}
-                disabled={!isEditing}
-                keyboardType="numeric"
-                onChangeText={handleRepsChange}
-                onEndEditing={() => onUpdate("reps", repsValue)}
-            />
+                <AppInput
+                    style={styles.setRow}
+                    value={repsValue}
+                    disabled={!isEditing}
+                    keyboardType="numeric"
+                    onChangeText={handleRepsChange}
+                    onEndEditing={() => onUpdate("reps", repsValue)}
+                />
 
-            {isEditing ? (
-                <View style={styles.deleteAction}>
-                    <IconButton
-                        icon="X"
-                        variant="danger"
-                        disabled={isTemporarySet}
-                        onPress={onDelete}
-                    />
-                </View>
-            ) : null}
-        </View>
+            </View>
+        </SwipeableCard>
     );
 }
 const styles = StyleSheet.create({
@@ -87,7 +84,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.sm,
-        marginTop: spacing.sm,
     },
     setNumber: {
         width: componentStyles.setNumberWidth,

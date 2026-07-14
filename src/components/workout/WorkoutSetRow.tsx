@@ -4,6 +4,7 @@ import { colors, spacing, componentStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
+import SwipeableCard from "../common/SwipeableCard";
 
 type WorkoutSetRowProps = {
     set: WorkoutSessionSet;
@@ -35,39 +36,57 @@ export default function WorkoutSetRow({
     isTemporarySet,
 }: WorkoutSetRowProps) {
     return (
-        <View style={styles.row}>
-            <Text style={styles.setNumber}>{displaySetNumber}</Text>
+        <SwipeableCard
+            compact
+            enabled={!isTemporarySet}
+            onActionPress={onDelete}
+        >
+            <View style={styles.rowContainer}>
+                <View style={styles.row}>
+                    <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
-            <AppInput
-                style={styles.setRow}
-                keyboardType="numeric"
-                value={weightValue}
-                disabled={set.is_completed}
-                onChangeText={(value) => onWeightChange(sanitizeIntegerInput(value))}
-                onEndEditing={(event) => onWeightBlur(event.nativeEvent.text)}
-            />
+                    <AppInput
+                        style={styles.setRow}
+                        keyboardType="numeric"
+                        value={weightValue}
+                        disabled={set.is_completed}
+                        onChangeText={(value) =>
+                            onWeightChange(sanitizeIntegerInput(value))
+                        }
+                        onEndEditing={(event) =>
+                            onWeightBlur(event.nativeEvent.text)
+                        }
+                    />
 
-            <AppInput
-                style={styles.setRow}
-                keyboardType="numeric"
-                value={repsValue}
-                disabled={set.is_completed}
-                onChangeText={(value) => onRepsChange(sanitizeIntegerInput(value))}
-                onEndEditing={(event) => onRepsBlur(event.nativeEvent.text)}
-            />
+                    <AppInput
+                        style={styles.setRow}
+                        keyboardType="numeric"
+                        value={repsValue}
+                        disabled={set.is_completed}
+                        onChangeText={(value) =>
+                            onRepsChange(sanitizeIntegerInput(value))
+                        }
+                        onEndEditing={(event) =>
+                            onRepsBlur(event.nativeEvent.text)
+                        }
+                    />
 
-            <Pressable
-                style={[
-                    styles.checkbox,
-                    set.is_completed && styles.checkboxChecked,
-                    isPersonalRecord && styles.personalRecordCheckbox,
-                ]}
-                onPress={onToggleCompleted}
-                disabled={isTemporarySet}
-            >
-                <Text style={styles.checkboxText}>{set.is_completed ? "✓" : ""}</Text>
-            </Pressable>
-        </View>
+                    <Pressable
+                        style={[
+                            styles.checkbox,
+                            set.is_completed && styles.checkboxChecked,
+                            isPersonalRecord && styles.personalRecordCheckbox,
+                        ]}
+                        onPress={onToggleCompleted}
+                        disabled={isTemporarySet}
+                    >
+                        <Text style={styles.checkboxText}>
+                            {set.is_completed ? "✓" : ""}
+                        </Text>
+                    </Pressable>
+                </View>
+            </View>
+        </SwipeableCard>
     );
 }
 
@@ -77,7 +96,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.xs,
-        marginBottom: spacing.sm,
+    },
+    rowContainer: {
+        backgroundColor: colors.card,
     },
     setNumber: {
         width: 22,
@@ -86,13 +107,14 @@ const styles = StyleSheet.create({
     },
     setRow: {
         flex: 1,
+        minWidth: 0,
         height: 36,
-        width: 80,
         paddingVertical: 0,
     },
     checkbox: {
         width: 36,
         height: 36,
+        marginRight: 0,
         borderRadius: 10,
         borderWidth: componentStyles.borderWidth,
         borderColor: colors.success,

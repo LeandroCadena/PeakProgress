@@ -1,5 +1,5 @@
-import { Text, StyleSheet, View } from "react-native";
 import type { ReactElement } from "react";
+import { Text, StyleSheet, View } from "react-native";
 import DraggableFlatList, {
     RenderItemParams,
 } from "react-native-draggable-flatlist";
