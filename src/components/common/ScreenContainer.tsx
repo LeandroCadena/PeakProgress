@@ -23,7 +23,13 @@ export default function ScreenContainer({ children, scroll = false, style, conte
         );
     }
 
-    return <View style={[styles.container, styles.content, style, contentStyle]}>{children}</View>;
+    return (
+        <View style={[styles.container, style]}>
+            <View style={[styles.content, contentStyle]}>
+                {children}
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -32,6 +38,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background,
     },
     content: {
+        flex: 1,
         padding: spacing.lg,
         paddingTop: spacing.xxl,
         paddingBottom: 120,

@@ -1,6 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import DraggableFlatList, {
+    RenderItemParams,
+} from "react-native-draggable-flatlist";
 
 import AppButton from "../components/common/AppButton";
 import EmptyStateCard from "../components/common/EmptyStateCard";
@@ -11,7 +14,10 @@ import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
 import { colors, sharedStyles, spacing } from "../theme";
-import { WorkoutSessionRouteParams } from "../types/workout";
+import {
+    WorkoutSessionExercise,
+    WorkoutSessionRouteParams,
+} from "../types/workout";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
@@ -36,6 +42,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         updateWorkoutExerciseRest,
         isInitializingSession,
         isFinishingWorkout,
+        reorderSessionExercises,
     } = useWorkoutSession({
         sessionId,
         routineId,
@@ -49,11 +56,15 @@ export default function WorkoutSessionScreen({ navigation }: any) {
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
-            <FlatList
+            <DraggableFlatList
                 data={sessionExercises}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.list}
+                activationDistance={24}
+                onDragEnd={({ data }) => {
+                    reorderSessionExercises(data);
+                }}
                 ListHeaderComponent={
                     <>
                         <Text style={sharedStyles.screenTitle}>{routineName}</Text>
@@ -78,32 +89,45 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                         />
                     )
                 }
-                renderItem={({ item, index }) => (
-                    <View>
-                        <WorkoutExerciseCard
-                            exercise={item}
-                            savedSets={savedSets[item.id] ?? []}
-                            getSetInputValue={getSetInputValue}
-                            updateLocalSetValue={updateLocalSetValue}
-                            updateSetValue={updateSetValue}
-                            toggleSetCompleted={toggleSetCompleted}
-                            deleteSet={deleteSet}
-                            addEmptySet={addEmptySet}
-                            onDeleteExercise={() => deleteSessionExercise(item.id)}
-                            onUpdateSetRest={updateWorkoutSetRest}
-                            useGlobalTimers={useGlobalTimers}
-                        />
+                renderItem={({
+                    item,
+                    drag,
+                    isActive,
+                    getIndex,
+                }: RenderItemParams<WorkoutSessionExercise>) => {
+                    const index = getIndex() ?? 0;
 
-                        {index < sessionExercises.length - 1 ? (
-                            <RestTimeEditor
-                                label="Rest before next exercise"
-                                value={item.exercise_rest_seconds ?? 120}
-                                editable={!useGlobalTimers}
-                                onChange={(value) => updateWorkoutExerciseRest(item.id, value)}
+                    return (
+                        <View style={[styles.exerciseItem, isActive && styles.activeExerciseItem]}>
+                            <WorkoutExerciseCard
+                                exercise={item}
+                                savedSets={savedSets[item.id] ?? []}
+                                getSetInputValue={getSetInputValue}
+                                updateLocalSetValue={updateLocalSetValue}
+                                updateSetValue={updateSetValue}
+                                toggleSetCompleted={toggleSetCompleted}
+                                deleteSet={deleteSet}
+                                addEmptySet={addEmptySet}
+                                onDeleteExercise={() => deleteSessionExercise(item.id)}
+                                onUpdateSetRest={updateWorkoutSetRest}
+                                useGlobalTimers={useGlobalTimers}
+                                onDrag={drag}
+                                isDragging={isActive}
                             />
-                        ) : null}
-                    </View>
-                )}
+
+                            {index < sessionExercises.length - 1 ? (
+                                <RestTimeEditor
+                                    label="Rest before next exercise"
+                                    value={item.exercise_rest_seconds ?? 120}
+                                    editable={!useGlobalTimers}
+                                    onChange={(value) =>
+                                        updateWorkoutExerciseRest(item.id, value)
+                                    }
+                                />
+                            ) : null}
+                        </View>
+                    );
+                }}
                 ListFooterComponent={
                     <AppButton
                         title="+ Add Exercise"
@@ -115,11 +139,13 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 currentCount:
                                     sessionExercises.length > 0
                                         ? Math.max(
-                                            ...sessionExercises.map((item) => item.position ?? 0)
+                                            ...sessionExercises.map(
+                                                (item) => item.position ?? 0,
+                                            ),
                                         ) + 1
                                         : 0,
                                 currentExerciseIds: sessionExercises.map(
-                                    (item) => item.exercise_id
+                                    (item) => item.exercise_id,
                                 ),
                             })
                         }
@@ -127,15 +153,17 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 }
             />
 
-            <View style={styles.footer}>
-                <AppButton
-                    title={isFinishingWorkout ? "Finishing..." : "Finish Workout"}
-                    variant="primary"
-                    disabled={isFinishingWorkout}
-                    onPress={finishWorkout}
-                    iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
-                    showChevron
-                />
+            <View style={styles.footerContainer}>
+                <View style={styles.footer}>
+                    <AppButton
+                        title={isFinishingWorkout ? "Finishing..." : "Finish Workout"}
+                        variant="primary"
+                        disabled={isFinishingWorkout}
+                        onPress={finishWorkout}
+                        iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
+                        showChevron
+                    />
+                </View>
             </View>
         </ScreenContainer>
     );
@@ -143,15 +171,43 @@ export default function WorkoutSessionScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
     screenContent: {
+        flex: 1,
         paddingBottom: 0,
+    },
+    exerciseListContainer: {
+        flex: 1,
+        minHeight: 0,
     },
     list: {
         gap: spacing.md,
         paddingBottom: 120,
     },
-    footer: {
+    footerContainer: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+
+        backgroundColor: colors.background,
+
+        paddingHorizontal: spacing.lg,
         paddingTop: spacing.md,
         paddingBottom: spacing.lg,
-        backgroundColor: colors.background,
+
+        borderTopWidth: 1,
+        borderTopColor: colors.cardBorder,
+
+        zIndex: 10,
+        elevation: 10,
+    },
+    footer: {
+        width: "100%",
+    },
+    exerciseItem: {
+        marginBottom: spacing.md,
+    },
+    activeExerciseItem: {
+        opacity: 0.96,
+        elevation: 6,
     },
 });

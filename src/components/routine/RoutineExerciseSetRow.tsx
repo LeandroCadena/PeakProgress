@@ -5,7 +5,6 @@ import { colors, componentStyles, spacing, typography } from "../../theme";
 import { RoutineExerciseSet } from "../../types/routine";
 import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
-import IconButton from "../common/IconButton";
 import SwipeableCard from "../common/SwipeableCard";
 
 type Props = {

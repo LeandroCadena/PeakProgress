@@ -607,3 +607,27 @@ export async function deleteRoutineExerciseSetsByRoutineExerciseId(routineExerci
 
     if (error) throw error;
 }
+
+export async function reorderWorkoutSessionExercises(
+    exercises: {
+        id: string;
+        position: number;
+    }[]
+) {
+    const updates = exercises.map((exercise) =>
+        supabase
+            .from("workout_session_exercises")
+            .update({
+                position: exercise.position,
+            })
+            .eq("id", exercise.id)
+    );
+
+    const results = await Promise.all(updates);
+
+    const failed = results.find((result) => result.error);
+
+    if (failed?.error) {
+        throw failed.error;
+    }
+}

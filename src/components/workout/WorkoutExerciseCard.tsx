@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 
 import { colors, sharedStyles, spacing, typography } from "../../theme";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
@@ -12,15 +13,35 @@ import WorkoutSetRow from "./WorkoutSetRow";
 type WorkoutExerciseCardProps = {
     exercise: WorkoutSessionExercise;
     savedSets: WorkoutSessionSet[];
-    getSetInputValue: (setId: string, field: "weight" | "reps", value: number | null) => string;
-    updateLocalSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
-    updateSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
-    toggleSetCompleted: (workoutSessionExerciseId: string, set: WorkoutSessionSet) => void;
+    getSetInputValue: (
+        setId: string,
+        field: "weight" | "reps",
+        value: number | null,
+    ) => string;
+    updateLocalSetValue: (
+        setId: string,
+        field: "weight" | "reps",
+        value: string,
+    ) => void;
+    updateSetValue: (
+        setId: string,
+        field: "weight" | "reps",
+        value: string,
+    ) => void;
+    toggleSetCompleted: (
+        workoutSessionExerciseId: string,
+        set: WorkoutSessionSet,
+    ) => void;
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
     onDeleteExercise: () => void;
-    onUpdateSetRest: (workoutSessionExerciseId: string, value: number) => void;
+    onUpdateSetRest: (
+        workoutSessionExerciseId: string,
+        value: number,
+    ) => void;
     useGlobalTimers: boolean;
+    onDrag: () => void;
+    isDragging: boolean;
 };
 
 export default function WorkoutExerciseCard({
@@ -35,20 +56,42 @@ export default function WorkoutExerciseCard({
     onDeleteExercise,
     onUpdateSetRest,
     useGlobalTimers,
+    onDrag,
+    isDragging,
 }: WorkoutExerciseCardProps) {
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
     return (
         <SwipeableCard
-            enabled
+            enabled={!isDragging}
+            isDragging={isDragging}
             showSwipeHint
             actionLabel="Delete"
             onActionPress={onDeleteExercise}
         >
-            <Card style={styles.card}>
+            <Card
+                style={[
+                    styles.card,
+                    isDragging && styles.cardDragging,
+                ]}
+            >
                 <ExerciseCardHeader
                     imageUrl={exercise.exercise_image_url_snapshot}
                     title={exerciseName}
+                    rightContent={
+                        <Pressable
+                            onLongPress={onDrag}
+                            delayLongPress={250}
+                            disabled={isDragging}
+                            hitSlop={12}
+                        >
+                            <Ionicons
+                                name="reorder-three-outline"
+                                size={28}
+                                color={colors.textSecondary}
+                            />
+                        </Pressable>
+                    }
                 />
 
                 <Text style={sharedStyles.mutedText}>
@@ -131,5 +174,8 @@ const styles = StyleSheet.create({
     },
     addSetButton: {
         marginTop: spacing.sm,
+    },
+    cardDragging: {
+        borderColor: colors.primary,
     },
 });

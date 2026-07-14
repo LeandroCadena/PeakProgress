@@ -21,6 +21,7 @@ import {
     updateWorkoutSetValues,
     updateWorkoutSetValue,
     createWorkoutSessionExercisesFromRoutine,
+    reorderWorkoutSessionExercises,
 } from "../services/workoutService";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import {
@@ -301,12 +302,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map((currentSet) =>
                 currentSet.id === set.id
                     ? {
-                        ...currentSet,
-                        weight,
-                        reps,
-                        is_pr: isPr,
-                        is_completed: nextCompletedValue,
-                    }
+                          ...currentSet,
+                          weight,
+                          reps,
+                          is_pr: isPr,
+                          is_completed: nextCompletedValue,
+                      }
                     : currentSet
             ),
         }));
@@ -446,6 +447,29 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             await fetchSessionExercises();
             await fetchSavedSets();
         } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    }
+
+    async function reorderSessionExercises(reorderedExercises: WorkoutSessionExercise[]) {
+        const previousExercises = sessionExercises;
+
+        const exercisesWithPositions = reorderedExercises.map((exercise, index) => ({
+            ...exercise,
+            position: index,
+        }));
+
+        setSessionExercises(exercisesWithPositions);
+
+        try {
+            await reorderWorkoutSessionExercises(
+                exercisesWithPositions.map((exercise) => ({
+                    id: exercise.id,
+                    position: exercise.position,
+                }))
+            );
+        } catch (error: any) {
+            setSessionExercises(previousExercises);
             Alert.alert("Error", error.message);
         }
     }
@@ -600,6 +624,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
         updateUserExerciseRecordsFromWorkout,
+        reorderSessionExercises,
 
         lastTimerDuration,
         restartLastTimer,
