@@ -53,6 +53,7 @@ export function useRoutineDetail({
     const [routineExerciseSets, setRoutineExerciseSets] = useState<
         Record<string, RoutineExerciseSet[]>
     >({});
+    const [openExerciseMenuId, setOpenExerciseMenuId] = useState<string | null>(null);
 
     const [isEditingRoutine, setIsEditingRoutine] = useState(false);
     const [draftRoutineName, setDraftRoutineName] = useState(routineName);
@@ -471,5 +472,8 @@ export function useRoutineDetail({
 
         updateSetRest,
         updateExerciseRest,
+
+        openExerciseMenuId,
+        setOpenExerciseMenuId,
     };
 }

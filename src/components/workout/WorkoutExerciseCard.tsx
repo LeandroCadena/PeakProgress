@@ -36,11 +36,6 @@ type WorkoutExerciseCardProps = {
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
     onDeleteExercise: () => void;
-    onUpdateSetRest: (
-        workoutSessionExerciseId: string,
-        value: number,
-    ) => void;
-    useGlobalTimers: boolean;
     onDrag: () => void;
     isDragging: boolean;
     isActionsMenuOpen: boolean;
@@ -57,8 +52,6 @@ export default function WorkoutExerciseCard({
     deleteSet,
     addEmptySet,
     onDeleteExercise,
-    onUpdateSetRest,
-    useGlobalTimers,
     onDrag,
     isDragging,
     isActionsMenuOpen,
@@ -81,6 +74,8 @@ export default function WorkoutExerciseCard({
                         setIsCollapsed((prev) => !prev);
                     }
                 }}
+                onLongPress={onDrag}
+                delayLongPress={250}
             >
                 <ExerciseCardHeader
                     imageUrl={exercise.exercise_image_url_snapshot}
@@ -112,19 +107,6 @@ export default function WorkoutExerciseCard({
                                     />
                                 }
                             />
-
-                            {/* <Pressable
-                                onLongPress={onDrag}
-                                delayLongPress={250}
-                                disabled={isDragging}
-                                hitSlop={12}
-                            >
-                                <Ionicons
-                                    name="reorder-three-outline"
-                                    size={28}
-                                    color={colors.textSecondary}
-                                />
-                            </Pressable> */}
 
                             <Ionicons
                                 name={

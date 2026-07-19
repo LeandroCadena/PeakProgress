@@ -42,6 +42,8 @@ type Props = {
         field: "weight" | "reps",
         value: string
     ) => void;
+    openExerciseMenuId: string | null;
+    setOpenExerciseMenuId: (id: string | null) => void;
 };
 
 export default function RoutineExerciseSection({
@@ -58,6 +60,8 @@ export default function RoutineExerciseSection({
     updateLocalTemplateSetValue,
     onUpdateSetRest,
     onUpdateExerciseRest,
+    openExerciseMenuId,
+    setOpenExerciseMenuId,
 }: Props) {
     function renderExercise({
         item,
@@ -81,6 +85,10 @@ export default function RoutineExerciseSection({
                     onDelete={() => onDelete(item.id)}
                     onDrag={drag}
                     isDragging={isActive}
+                    isActionsMenuOpen={openExerciseMenuId === item.id}
+                    onActionsMenuOpenChange={(open) => {
+                        setOpenExerciseMenuId(open ? item.id : null);
+                    }}
                 />
 
                 {index < routineExercises.length - 1 ? (

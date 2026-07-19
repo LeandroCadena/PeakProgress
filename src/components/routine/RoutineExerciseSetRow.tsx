@@ -65,14 +65,16 @@ export default function RoutineExerciseSetRow({
                     onEndEditing={() => onUpdate("weight", weightValue)}
                 />
 
-                <AppInput
-                    style={styles.setRow}
-                    value={repsValue}
-                    disabled={!isEditing}
-                    keyboardType="numeric"
-                    onChangeText={handleRepsChange}
-                    onEndEditing={() => onUpdate("reps", repsValue)}
-                />
+                <View style={styles.repsContainer}>
+                    <AppInput
+                        style={styles.setRow}
+                        value={repsValue}
+                        disabled={!isEditing}
+                        keyboardType="numeric"
+                        onChangeText={handleRepsChange}
+                        onEndEditing={() => onUpdate("reps", repsValue)}
+                    />
+                </View>
 
             </View>
         </SwipeableCard>
@@ -97,5 +99,9 @@ const styles = StyleSheet.create({
     },
     deleteAction: {
         width: componentStyles.iconButtonSize,
+    },
+    repsContainer: {
+        flex: 1,
+        marginRight: spacing.md,
     },
 });

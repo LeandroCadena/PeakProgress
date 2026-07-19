@@ -52,6 +52,8 @@ export default function RoutineDetailScreen({ navigation }: any) {
         setActiveWorkoutModalVisible,
         updateSetRest,
         updateExerciseRest,
+        openExerciseMenuId,
+        setOpenExerciseMenuId,
     } = useRoutineDetail({
         routineId,
         routineName,
@@ -73,6 +75,8 @@ export default function RoutineDetailScreen({ navigation }: any) {
                 updateLocalTemplateSetValue={updateLocalTemplateSetValue}
                 onUpdateSetRest={updateSetRest}
                 onUpdateExerciseRest={updateExerciseRest}
+                openExerciseMenuId={openExerciseMenuId}
+                setOpenExerciseMenuId={setOpenExerciseMenuId}
                 header={
                     <>
                         <RoutineHeader
