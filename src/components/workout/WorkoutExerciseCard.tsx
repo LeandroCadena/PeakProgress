@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 
 import { colors, sharedStyles, spacing, typography } from "../../theme";
@@ -9,7 +10,7 @@ import SwipeableCard from "../common/SwipeableCard";
 import ExerciseCardHeader from "../exercise/ExerciseCardHeader";
 
 import WorkoutSetRow from "./WorkoutSetRow";
-import { useState } from "react";
+
 
 type WorkoutExerciseCardProps = {
     exercise: WorkoutSessionExercise;

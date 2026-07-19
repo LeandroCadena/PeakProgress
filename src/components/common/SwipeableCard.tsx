@@ -1,19 +1,36 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { ReactNode, useRef } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import Swipeable, {
-    SwipeableMethods,
-} from "react-native-gesture-handler/ReanimatedSwipeable";
+import { ReactNode, useCallback } from "react";
+import {
+    StyleSheet,
+    useWindowDimensions,
+    View,
+} from "react-native";
+import {
+    Gesture,
+    GestureDetector,
+} from "react-native-gesture-handler";
+import Animated, {
+    Extrapolation,
+    interpolate,
+    interpolateColor,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
+} from "react-native-reanimated";
 
 import {
     colors,
     componentStyles,
-    typography,
 } from "../../theme";
 
-const ACTION_WIDTH = 88;
-const SWIPE_AREA_WIDTH = 64;
+const CARD_DELETE_THRESHOLD = 64;
+const COMPACT_DELETE_THRESHOLD = 52;
+const SWIPE_ACTIVATION_DISTANCE = 10;
+
+const DELETE_ARMED_COLOR = "#991B1B";
 
 type Props = {
     children: ReactNode;
@@ -22,6 +39,7 @@ type Props = {
     showSwipeHint?: boolean;
     compact?: boolean;
     actionLabel?: string;
+    fullSwipeThreshold?: number;
     onActionPress: () => void;
 };
 
@@ -31,119 +49,300 @@ export default function SwipeableCard({
     isDragging = false,
     showSwipeHint = false,
     compact = false,
-    actionLabel,
+    fullSwipeThreshold,
     onActionPress,
 }: Props) {
-    const swipeableRef = useRef<SwipeableMethods>(null);
+    const { width: screenWidth } = useWindowDimensions();
 
-    function handleActionPress() {
-        swipeableRef.current?.close();
+    const translateX = useSharedValue(0);
+    const isDeleting = useSharedValue(false);
+
+    const deleteThreshold =
+        fullSwipeThreshold ??
+        (compact
+            ? COMPACT_DELETE_THRESHOLD
+            : CARD_DELETE_THRESHOLD);
+
+    const finishDelete = useCallback(() => {
         onActionPress();
-    }
+    }, [onActionPress]);
 
-    function renderRightActions() {
-        return (
-            <View
-                style={[
-                    styles.actionContainer,
-                    compact && styles.compactActionContainer,
-                ]}
-            >
-                <Pressable
-                    style={[
-                        styles.action,
-                        compact && styles.compactAction,
-                    ]}
-                    onPress={handleActionPress}
-                >
-                    <Ionicons
-                        name="trash-outline"
-                        size={22}
-                        color={colors.text}
-                    />
+    const panGesture = Gesture.Pan()
+        .enabled(enabled && !isDragging)
 
+        // Solo se activa después de un movimiento horizontal claro.
+        .activeOffsetX([-14, 14])
+
+        // Si el movimiento se vuelve vertical, el swipe falla
+        // y el ScrollView puede tomar el control.
+        .failOffsetY([-10, 10])
+
+        .onUpdate((event) => {
+            if (isDeleting.get()) {
+                return;
+            }
+
+            // Solo permitimos mover hacia la izquierda.
+            translateX.set(Math.min(0, event.translationX));
+        })
+        .onEnd(() => {
+            const swipeDistance = Math.abs(translateX.get());
+
+            if (swipeDistance < deleteThreshold) {
+                translateX.set(
+                    withSpring(0, {
+                        damping: 20,
+                        stiffness: 220,
+                        mass: 0.7,
+                    }),
+                );
+
+                return;
+            }
+
+            isDeleting.set(true);
+
+            translateX.set(
+                withTiming(
+                    -screenWidth,
                     {
-                        actionLabel && (
-                            <Text style={styles.actionText}>
-                                {actionLabel}
-                            </Text>
-                        )
-                    }
-                </Pressable>
-            </View>
+                        duration: 180,
+                    },
+                    (finished) => {
+                        if (finished) {
+                            runOnJS(finishDelete)();
+                        }
+                    },
+                ),
+            );
+        })
+        .onFinalize(() => {
+            if (
+                !isDeleting.get() &&
+                Math.abs(translateX.get()) < deleteThreshold
+            ) {
+                translateX.set(
+                    withSpring(0, {
+                        damping: 20,
+                        stiffness: 220,
+                        mass: 0.7,
+                    }),
+                );
+            }
+        });
+
+    const animatedCardStyle = useAnimatedStyle(() => ({
+        transform: [
+            {
+                translateX: translateX.get(),
+            },
+        ],
+    }));
+
+    const animatedDeleteBackgroundStyle = useAnimatedStyle(() => {
+        const distance = Math.abs(translateX.get());
+
+        const darkeningEnd = Math.max(
+            deleteThreshold + 1,
+            screenWidth * 0.65,
         );
-    }
+
+        return {
+            backgroundColor: interpolateColor(
+                distance,
+                [
+                    0,
+                    deleteThreshold,
+                    darkeningEnd,
+                ],
+                [
+                    colors.danger,
+                    colors.danger,
+                    DELETE_ARMED_COLOR,
+                ],
+            ),
+        };
+    });
+
+    const animatedCardOverlayStyle = useAnimatedStyle(() => {
+        const distance = Math.abs(translateX.get());
+        const darkeningEnd = Math.max(
+            deleteThreshold + 1,
+            screenWidth * 0.65,
+        );
+
+        return {
+            opacity: interpolate(
+                distance,
+                [
+                    0,
+                    deleteThreshold,
+                    darkeningEnd,
+                ],
+                [
+                    0,
+                    0,
+                    0.32,
+                ],
+                Extrapolation.CLAMP,
+            ),
+        };
+    });
+
+    const animatedDeleteIconStyle = useAnimatedStyle(() => {
+        const distance = Math.abs(translateX.get());
+
+        return {
+            opacity: interpolate(
+                distance,
+                [
+                    8,
+                    deleteThreshold,
+                ],
+                [
+                    0,
+                    1,
+                ],
+                Extrapolation.CLAMP,
+            ),
+            transform: [
+                {
+                    scale: interpolate(
+                        distance,
+                        [
+                            0,
+                            deleteThreshold,
+                            deleteThreshold * 2,
+                        ],
+                        [
+                            0.75,
+                            1,
+                            1.15,
+                        ],
+                        Extrapolation.CLAMP,
+                    ),
+                },
+            ],
+        };
+    });
 
     return (
-        <Swipeable
-            ref={swipeableRef}
-            enabled={enabled && !isDragging}
-            friction={2}
-            rightThreshold={40}
-            dragOffsetFromRightEdge={-20}
-            overshootRight={false}
-            hitSlop={{
-                right: 0,
-                width: SWIPE_AREA_WIDTH,
-            }}
-            renderRightActions={renderRightActions}
-            containerStyle={[
+        <View
+            style={[
                 styles.container,
                 compact && styles.compactContainer,
             ]}
-            childrenContainerStyle={[
-                styles.childrenContainer,
-                compact && styles.compactChildrenContainer,
-            ]}
         >
-            <View style={styles.content}>
-                {showSwipeHint ? (
-                    <LinearGradient
-                        colors={[
-                            "rgba(249, 115, 22, 0)",
-                            "rgba(249, 115, 22, 0.10)",
-                        ]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        pointerEvents="none"
-                        style={styles.swipeHint}
+            <Animated.View
+                style={[
+                    styles.deleteBackground,
+                    compact && styles.compactDeleteBackground,
+                    animatedDeleteBackgroundStyle,
+                ]}
+            >
+                <Animated.View
+                    style={[
+                        styles.deleteIcon,
+                        compact && styles.compactDeleteIcon,
+                        animatedDeleteIconStyle,
+                    ]}
+                >
+                    <Ionicons
+                        name="trash"
+                        size={compact ? 20 : 24}
+                        color={colors.text}
                     />
-                ) : null}
+                </Animated.View>
+            </Animated.View>
 
-                {children}
-            </View>
-        </Swipeable>
+            <GestureDetector gesture={panGesture}>
+                <Animated.View
+                    style={[
+                        styles.childrenContainer,
+                        compact && styles.compactChildrenContainer,
+                        animatedCardStyle,
+                    ]}
+                >
+                    <View style={styles.content}>
+                        {showSwipeHint ? (
+                            <LinearGradient
+                                colors={[
+                                    "rgba(249, 115, 22, 0)",
+                                    "rgba(249, 115, 22, 0.10)",
+                                ]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                pointerEvents="none"
+                                style={styles.swipeHint}
+                            />
+                        ) : null}
+
+                        {children}
+
+                        <Animated.View
+                            pointerEvents="none"
+                            style={[
+                                styles.deleteOverlay,
+                                compact && styles.compactDeleteOverlay,
+                                animatedCardOverlayStyle,
+                            ]}
+                        />
+                    </View>
+                </Animated.View>
+            </GestureDetector>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        borderTopRightRadius: componentStyles.cardRadius,
-        borderBottomRightRadius: componentStyles.cardRadius,
+        position: "relative",
         overflow: "hidden",
+        borderRadius: componentStyles.cardRadius,
         backgroundColor: colors.danger,
     },
     compactContainer: {
-        overflow: "visible",
-        backgroundColor: colors.danger,
+        borderRadius: componentStyles.inputRadius,
     },
     childrenContainer: {
+        position: "relative",
+        zIndex: 2,
+        borderRadius: componentStyles.cardRadius,
+        overflow: "hidden",
         backgroundColor: colors.card,
-        borderTopRightRadius: componentStyles.cardRadius,
-        borderBottomRightRadius: componentStyles.cardRadius,
     },
     compactChildrenContainer: {
-        borderTopRightRadius: componentStyles.inputRadius,
-        borderBottomRightRadius: componentStyles.inputRadius,
-        overflow: "hidden",
-    },
-    compactActionContainer: {
-        borderTopRightRadius: componentStyles.inputRadius,
-        borderBottomRightRadius: componentStyles.inputRadius,
-        overflow: "hidden",
+        borderRadius: componentStyles.inputRadius,
     },
     content: {
         position: "relative",
+    },
+    deleteBackground: {
+        ...StyleSheet.absoluteFill,
+        alignItems: "flex-end",
+        justifyContent: "center",
+        borderRadius: componentStyles.cardRadius,
+    },
+    compactDeleteBackground: {
+        borderRadius: componentStyles.inputRadius,
+    },
+    deleteIcon: {
+        width: 64,
+        height: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    compactDeleteIcon: {
+        width: 52,
+    },
+    deleteOverlay: {
+        ...StyleSheet.absoluteFill,
+        zIndex: 10,
+        borderRadius: componentStyles.cardRadius,
+        backgroundColor: "#000000",
+    },
+    compactDeleteOverlay: {
+        borderRadius: componentStyles.inputRadius,
     },
     swipeHint: {
         position: "absolute",
@@ -153,33 +352,7 @@ const styles = StyleSheet.create({
         width: 24,
         zIndex: 2,
     },
-    actionContainer: {
-        width: ACTION_WIDTH,
-        height: "100%",
-        backgroundColor: colors.danger,
-        shadowColor: "#c42222",
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
-        shadowOffset: {
-            width: -3,
-            height: 0,
-        },
-        elevation: 6,
-    },
-    action: {
-        width: "100%",
-        height: "100%",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    actionText: {
-        color: colors.text,
-        fontSize: typography.small,
-        fontWeight: typography.weightBold,
-    },
-    compactAction: {
-        borderTopRightRadius: componentStyles.inputRadius,
-        borderBottomRightRadius: componentStyles.inputRadius,
-        backgroundColor: colors.danger,
+    nonInteractive: {
+        pointerEvents: "none",
     },
 });
