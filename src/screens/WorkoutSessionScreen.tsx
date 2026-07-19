@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import DraggableFlatList, {
     RenderItemParams,
@@ -22,6 +23,8 @@ import {
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
     const { sessionId, routineId, routineName } = route.params;
+    const [openExerciseMenuId, setOpenExerciseMenuId] =
+        useState<string | null>(null);
 
     const {
         sessionExercises,
@@ -64,6 +67,12 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 activationDistance={24}
                 onDragEnd={({ data }) => {
                     reorderSessionExercises(data);
+                }}
+                onScrollBeginDrag={() => {
+                    setOpenExerciseMenuId(null);
+                }}
+                onDragBegin={() => {
+                    setOpenExerciseMenuId(null);
                 }}
                 ListHeaderComponent={
                     <>
@@ -113,6 +122,10 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 useGlobalTimers={useGlobalTimers}
                                 onDrag={drag}
                                 isDragging={isActive}
+                                isActionsMenuOpen={openExerciseMenuId === item.id}
+                                onActionsMenuOpenChange={(open) => {
+                                    setOpenExerciseMenuId(open ? item.id : null);
+                                }}
                             />
 
                             {index < sessionExercises.length - 1 ? (
