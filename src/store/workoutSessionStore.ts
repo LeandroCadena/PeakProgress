@@ -2,150 +2,201 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-export type LocalWorkoutSet = {
-    id: string;
-    exerciseId: string;
-    reps: number | null;
-    weight: number | null;
-    completed: boolean;
-    position: number;
-};
-
-export type LocalWorkoutExercise = {
-    id: string;
-    exerciseId: string;
-    name: string;
-    imageUrl?: string | null;
-    position: number;
-    restSeconds: number;
-    sets: LocalWorkoutSet[];
-};
-
-export type LocalWorkoutSession = {
-    id: string;
-    routineId: string | null;
-    routineName: string;
-    startedAt: string;
-    restTimerEndAt: string | null;
-    exercises: LocalWorkoutExercise[];
-};
-
-type InitializeSessionInput = LocalWorkoutSession;
+import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 
 type UpdateSetInput = {
-    exerciseId: string;
+    workoutSessionExerciseId: string;
     setId: string;
-    changes: Partial<Pick<LocalWorkoutSet, "reps" | "weight" | "completed" | "position">>;
+    changes: Partial<WorkoutSessionSet>;
 };
 
 type WorkoutSessionState = {
-    session: LocalWorkoutSession | null;
+    sessionId: string | null;
+    routineId: string | null;
+    routineName: string | null;
+
+    sessionExercises: WorkoutSessionExercise[];
+    savedSets: Record<string, WorkoutSessionSet[]>;
+    editingValues: Record<string, string>;
+
+    restTimerEndAt: string | null;
+    lastTimerDuration: number;
+
     hasHydrated: boolean;
 
     setHasHydrated: (hasHydrated: boolean) => void;
 
-    initializeSession: (session: InitializeSessionInput) => void;
-    clearSession: () => void;
+    initializeSession: (params: {
+        sessionId: string;
+        routineId: string;
+        routineName: string;
+        sessionExercises: WorkoutSessionExercise[];
+        savedSets: Record<string, WorkoutSessionSet[]>;
+        restTimerEndAt?: string | null;
+        lastTimerDuration?: number;
+    }) => void;
+
+    setSessionExercises: (sessionExercises: WorkoutSessionExercise[]) => void;
+
+    setSavedSets: (savedSets: Record<string, WorkoutSessionSet[]>) => void;
+
+    updateEditingValue: (setId: string, field: "weight" | "reps", value: string) => void;
 
     updateSet: (input: UpdateSetInput) => void;
-    toggleSetCompleted: (exerciseId: string, setId: string) => void;
 
-    setRestTimerEndAt: (restTimerEndAt: string | null) => void;
+    addSet: (workoutSessionExerciseId: string, workoutSet: WorkoutSessionSet) => void;
+
+    deleteSet: (workoutSessionExerciseId: string, setId: string) => void;
+
+    deleteExercise: (workoutSessionExerciseId: string) => void;
+
+    setRestTimer: (params: { restTimerEndAt: string | null; lastTimerDuration?: number }) => void;
+
+    clearSession: () => void;
+};
+
+const initialState = {
+    sessionId: null,
+    routineId: null,
+    routineName: null,
+
+    sessionExercises: [],
+    savedSets: {},
+    editingValues: {},
+
+    restTimerEndAt: null,
+    lastTimerDuration: 0,
 };
 
 export const useWorkoutSessionStore = create<WorkoutSessionState>()(
     persist(
         (set) => ({
-            session: null,
+            ...initialState,
+
             hasHydrated: false,
 
             setHasHydrated: (hasHydrated) => {
                 set({ hasHydrated });
             },
 
-            initializeSession: (session) => {
-                set({ session });
+            initializeSession: ({
+                sessionId,
+                routineId,
+                routineName,
+                sessionExercises,
+                savedSets,
+                restTimerEndAt = null,
+                lastTimerDuration = 0,
+            }) => {
+                set({
+                    sessionId,
+                    routineId,
+                    routineName,
+                    sessionExercises,
+                    savedSets,
+                    editingValues: {},
+                    restTimerEndAt,
+                    lastTimerDuration,
+                });
+            },
+
+            setSessionExercises: (sessionExercises) => {
+                set({ sessionExercises });
+            },
+
+            setSavedSets: (savedSets) => {
+                set({ savedSets });
+            },
+
+            updateEditingValue: (setId, field, value) => {
+                const key = `${setId}-${field}`;
+
+                set((state) => ({
+                    editingValues: {
+                        ...state.editingValues,
+                        [key]: value,
+                    },
+                }));
+            },
+
+            updateSet: ({ workoutSessionExerciseId, setId, changes }) => {
+                set((state) => ({
+                    savedSets: {
+                        ...state.savedSets,
+                        [workoutSessionExerciseId]: (
+                            state.savedSets[workoutSessionExerciseId] ?? []
+                        ).map((workoutSet) =>
+                            workoutSet.id === setId
+                                ? {
+                                      ...workoutSet,
+                                      ...changes,
+                                  }
+                                : workoutSet
+                        ),
+                    },
+                }));
+            },
+
+            addSet: (workoutSessionExerciseId, workoutSet) => {
+                set((state) => ({
+                    savedSets: {
+                        ...state.savedSets,
+                        [workoutSessionExerciseId]: [
+                            ...(state.savedSets[workoutSessionExerciseId] ?? []),
+                            workoutSet,
+                        ],
+                    },
+                }));
+            },
+
+            deleteSet: (workoutSessionExerciseId, setId) => {
+                set((state) => {
+                    const nextEditingValues = {
+                        ...state.editingValues,
+                    };
+
+                    delete nextEditingValues[`${setId}-weight`];
+
+                    delete nextEditingValues[`${setId}-reps`];
+
+                    return {
+                        savedSets: {
+                            ...state.savedSets,
+                            [workoutSessionExerciseId]: (
+                                state.savedSets[workoutSessionExerciseId] ?? []
+                            ).filter((workoutSet) => workoutSet.id !== setId),
+                        },
+                        editingValues: nextEditingValues,
+                    };
+                });
+            },
+
+            deleteExercise: (workoutSessionExerciseId) => {
+                set((state) => {
+                    const nextSavedSets = {
+                        ...state.savedSets,
+                    };
+
+                    delete nextSavedSets[workoutSessionExerciseId];
+
+                    return {
+                        sessionExercises: state.sessionExercises.filter(
+                            (exercise) => exercise.id !== workoutSessionExerciseId
+                        ),
+                        savedSets: nextSavedSets,
+                    };
+                });
+            },
+
+            setRestTimer: ({ restTimerEndAt, lastTimerDuration }) => {
+                set((state) => ({
+                    restTimerEndAt,
+                    lastTimerDuration: lastTimerDuration ?? state.lastTimerDuration,
+                }));
             },
 
             clearSession: () => {
-                set({ session: null });
-            },
-
-            updateSet: ({ exerciseId, setId, changes }) => {
-                set((state) => {
-                    if (!state.session) {
-                        return state;
-                    }
-
-                    return {
-                        session: {
-                            ...state.session,
-                            exercises: state.session.exercises.map((exercise) => {
-                                if (exercise.id !== exerciseId) {
-                                    return exercise;
-                                }
-
-                                return {
-                                    ...exercise,
-                                    sets: exercise.sets.map((workoutSet) =>
-                                        workoutSet.id === setId
-                                            ? {
-                                                  ...workoutSet,
-                                                  ...changes,
-                                              }
-                                            : workoutSet
-                                    ),
-                                };
-                            }),
-                        },
-                    };
-                });
-            },
-
-            toggleSetCompleted: (exerciseId, setId) => {
-                set((state) => {
-                    if (!state.session) {
-                        return state;
-                    }
-
-                    return {
-                        session: {
-                            ...state.session,
-                            exercises: state.session.exercises.map((exercise) => {
-                                if (exercise.id !== exerciseId) {
-                                    return exercise;
-                                }
-
-                                return {
-                                    ...exercise,
-                                    sets: exercise.sets.map((workoutSet) =>
-                                        workoutSet.id === setId
-                                            ? {
-                                                  ...workoutSet,
-                                                  completed: !workoutSet.completed,
-                                              }
-                                            : workoutSet
-                                    ),
-                                };
-                            }),
-                        },
-                    };
-                });
-            },
-
-            setRestTimerEndAt: (restTimerEndAt) => {
-                set((state) => {
-                    if (!state.session) {
-                        return state;
-                    }
-
-                    return {
-                        session: {
-                            ...state.session,
-                            restTimerEndAt,
-                        },
-                    };
-                });
+                set(initialState);
             },
         }),
         {
@@ -153,7 +204,14 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
             storage: createJSONStorage(() => AsyncStorage),
 
             partialize: (state) => ({
-                session: state.session,
+                sessionId: state.sessionId,
+                routineId: state.routineId,
+                routineName: state.routineName,
+                sessionExercises: state.sessionExercises,
+                savedSets: state.savedSets,
+                editingValues: state.editingValues,
+                restTimerEndAt: state.restTimerEndAt,
+                lastTimerDuration: state.lastTimerDuration,
             }),
 
             onRehydrateStorage: () => (state) => {

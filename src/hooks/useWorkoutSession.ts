@@ -23,6 +23,7 @@ import {
     createWorkoutSessionExercisesFromRoutine,
     reorderWorkoutSessionExercises,
 } from "../services/workoutService";
+import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import {
     scheduleRestFinishedNotification,
@@ -40,6 +41,24 @@ type Params = {
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
     const { user } = useAuth();
 
+    const storedSessionId = useWorkoutSessionStore((state) => state.sessionId);
+
+    const storedSessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
+
+    const storedSavedSets = useWorkoutSessionStore((state) => state.savedSets);
+
+    const storedEditingValues = useWorkoutSessionStore((state) => state.editingValues);
+
+    const storedRestTimerEndAt = useWorkoutSessionStore((state) => state.restTimerEndAt);
+
+    const storedLastTimerDuration = useWorkoutSessionStore((state) => state.lastTimerDuration);
+
+    const hasHydrated = useWorkoutSessionStore((state) => state.hasHydrated);
+
+    const initializeLocalSession = useWorkoutSessionStore((state) => state.initializeSession);
+
+    const setStoredRestTimer = useWorkoutSessionStore((state) => state.setRestTimer);
+
     const [sessionExercises, setSessionExercises] = useState<WorkoutSessionExercise[]>([]);
     const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
     const [editingValues, setEditingValues] = useState<Record<string, string>>({});
@@ -55,38 +74,104 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const isScreenFocusedRef = useRef(false);
 
     const ensureWorkoutSessionInitialized = useCallback(async () => {
-        if (!user?.id || !sessionId || !routineId) return;
+        if (!hasHydrated || !user?.id || !sessionId || !routineId) {
+            return;
+        }
 
         setIsInitializingSession(true);
 
         try {
-            const exercises = await getWorkoutSessionExercises(sessionId);
+            const hasStoredSession =
+                storedSessionId === sessionId && storedSessionExercises.length > 0;
 
-            if (exercises.length > 0) {
-                setSessionExercises(exercises);
+            if (hasStoredSession) {
+                setSessionExercises(storedSessionExercises);
+                setSavedSets(storedSavedSets);
+                setEditingValues(storedEditingValues);
 
-                const existingSets = await getSavedSets(sessionId);
-                setSavedSets(existingSets);
+                if (storedRestTimerEndAt) {
+                    const endAt = new Date(storedRestTimerEndAt).getTime();
+
+                    const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+
+                    setRestEndAt(remainingSeconds > 0 ? endAt : null);
+
+                    setTimer(remainingSeconds);
+                    setTimerRunning(remainingSeconds > 0);
+                }
+
+                setLastTimerDuration(storedLastTimerDuration);
 
                 return;
             }
 
-            const createdExercises = await createWorkoutSessionExercisesFromRoutine({
+            let exercises = await getWorkoutSessionExercises(sessionId);
+
+            if (exercises.length === 0) {
+                exercises = await createWorkoutSessionExercisesFromRoutine({
+                    sessionId,
+                    routineId,
+                    userId: user.id,
+                });
+            }
+
+            const sets = await getSavedSets(sessionId);
+
+            const timerData = await getWorkoutSessionTimer(sessionId);
+
+            setSessionExercises(exercises);
+            setSavedSets(sets);
+            setEditingValues({});
+
+            const restTimerEndAt = timerData.rest_timer_end_at ?? null;
+
+            const lastTimerDuration = timerData.last_rest_duration_seconds ?? 0;
+
+            if (restTimerEndAt) {
+                const endAt = new Date(restTimerEndAt).getTime();
+
+                const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+
+                setRestEndAt(remainingSeconds > 0 ? endAt : null);
+
+                setTimer(remainingSeconds);
+                setTimerRunning(remainingSeconds > 0);
+            } else {
+                setRestEndAt(null);
+                setTimer(0);
+                setTimerRunning(false);
+            }
+
+            setLastTimerDuration(lastTimerDuration);
+
+            initializeLocalSession({
                 sessionId,
                 routineId,
-                userId: user.id,
+                routineName,
+                sessionExercises: exercises,
+                savedSets: sets,
+                restTimerEndAt,
+                lastTimerDuration,
             });
-
-            setSessionExercises(createdExercises);
-
-            const createdSets = await getSavedSets(sessionId);
-            setSavedSets(createdSets);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         } finally {
             setIsInitializingSession(false);
         }
-    }, [routineId, sessionId, user?.id]);
+    }, [
+        hasHydrated,
+        initializeLocalSession,
+        routineId,
+        routineName,
+        sessionId,
+        storedEditingValues,
+        storedLastTimerDuration,
+        storedRestTimerEndAt,
+        storedSavedSets,
+        storedSessionExercises,
+        storedSessionId,
+        user?.id,
+    ]);
 
     const fetchSavedSets = useCallback(async () => {
         try {
@@ -95,27 +180,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [sessionId]);
-
-    const fetchWorkoutSessionTimer = useCallback(async () => {
-        const data = await getWorkoutSessionTimer(sessionId);
-
-        setLastTimerDuration(data.last_rest_duration_seconds ?? 0);
-
-        if (!data.rest_timer_end_at) {
-            setTimer(0);
-            setTimerRunning(false);
-            setRestEndAt(null);
-            return;
-        }
-
-        const endAt = new Date(data.rest_timer_end_at).getTime();
-
-        const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
-
-        setRestEndAt(remainingSeconds > 0 ? endAt : null);
-        setTimer(remainingSeconds);
-        setTimerRunning(remainingSeconds > 0);
     }, [sessionId]);
 
     const fetchUserSettings = useCallback(async () => {
@@ -130,19 +194,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             isScreenFocusedRef.current = true;
 
             ensureWorkoutSessionInitialized();
-            fetchSavedSets();
-            fetchWorkoutSessionTimer();
             fetchUserSettings();
 
             return () => {
                 isScreenFocusedRef.current = false;
             };
-        }, [
-            ensureWorkoutSessionInitialized,
-            fetchSavedSets,
-            fetchWorkoutSessionTimer,
-            fetchUserSettings,
-        ])
+        }, [ensureWorkoutSessionInitialized, fetchUserSettings])
     );
 
     useEffect(() => {
@@ -156,6 +213,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             if (remainingSeconds <= 0) {
                 setTimerRunning(false);
                 setRestEndAt(null);
+
+                setStoredRestTimer({
+                    restTimerEndAt: null,
+                    lastTimerDuration,
+                });
 
                 await updateWorkoutSessionTimer({
                     sessionId,
@@ -172,7 +234,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }, 1000);
 
         return () => clearInterval(intervalId);
-    }, [timerRunning, restEndAt, lastTimerDuration, sessionId]);
+    }, [timerRunning, restEndAt, lastTimerDuration, sessionId, setStoredRestTimer]);
 
     const syncTimerWithRestEndAt = useCallback(() => {
         if (!restEndAt) return;
@@ -357,6 +419,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         setRestEndAt(endAt);
         setTimer(restSeconds);
         setTimerRunning(true);
+
+        setStoredRestTimer({
+            restTimerEndAt: endAtIso,
+            lastTimerDuration: restSeconds,
+        });
 
         await updateWorkoutSessionTimer({
             sessionId,
