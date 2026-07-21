@@ -12,6 +12,11 @@ type UpdateSetInput = {
 
 type WorkoutSessionSyncStatus = "idle" | "pending" | "syncing" | "error";
 
+type AddSessionExerciseInput = {
+    exercise: WorkoutSessionExercise;
+    sets: WorkoutSessionSet[];
+};
+
 type WorkoutSessionState = {
     sessionId: string | null;
     routineId: string | null;
@@ -31,7 +36,6 @@ type WorkoutSessionState = {
 
     setHasHydrated: (hasHydrated: boolean) => void;
 
-    markPendingChanges: () => void;
     setSyncing: () => void;
     setSyncSuccess: () => void;
     setSyncError: (message: string) => void;
@@ -47,13 +51,11 @@ type WorkoutSessionState = {
     }) => void;
     clearSession: () => void;
 
-    setSessionExercises: (sessionExercises: WorkoutSessionExercise[]) => void;
-    updateSessionExercises: (sessionExercises: WorkoutSessionExercise[]) => void;
+    replaceSessionExercises: (sessionExercises: WorkoutSessionExercise[]) => void;
+    addExercise: (input: AddSessionExerciseInput) => void;
     deleteExercise: (workoutSessionExerciseId: string) => void;
 
     updateEditingValue: (setId: string, field: "weight" | "reps", value: string) => void;
-
-    setSavedSets: (savedSets: Record<string, WorkoutSessionSet[]>) => void;
     updateSet: (input: UpdateSetInput) => void;
     addSet: (workoutSessionExerciseId: string, workoutSet: WorkoutSessionSet) => void;
     replaceSavedSets: (savedSets: Record<string, WorkoutSessionSet[]>) => void;
@@ -78,6 +80,11 @@ const initialState = {
     syncError: null,
 };
 
+const pendingSyncState = {
+    syncStatus: "pending" as WorkoutSessionSyncStatus,
+    syncError: null,
+};
+
 export const useWorkoutSessionStore = create<WorkoutSessionState>()(
     persist(
         (set) => ({
@@ -87,13 +94,6 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
 
             setHasHydrated: (hasHydrated) => {
                 set({ hasHydrated });
-            },
-
-            markPendingChanges: () => {
-                set({
-                    syncStatus: "pending",
-                    syncError: null,
-                });
             },
 
             setSyncing: () => {
@@ -140,26 +140,18 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                 });
             },
 
-            setSessionExercises: (sessionExercises) => {
-                set({ sessionExercises });
-            },
-
-            updateSessionExercises: (sessionExercises) => {
+            replaceSessionExercises: (sessionExercises) => {
                 set({
                     sessionExercises,
-                    syncStatus: "pending",
-                    syncError: null,
+                    ...pendingSyncState,
                 });
-            },
-
-            setSavedSets: (savedSets) => {
-                set({ savedSets });
             },
 
             replaceSavedSets: (savedSets) => {
                 set({
                     savedSets,
                     editingValues: {},
+                    ...pendingSyncState,
                 });
             },
 
@@ -171,8 +163,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                         ...state.editingValues,
                         [key]: value,
                     },
-                    syncStatus: "pending",
-                    syncError: null,
+                    ...pendingSyncState,
                 }));
             },
 
@@ -186,8 +177,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             workoutSet.id === setId ? { ...workoutSet, ...changes } : workoutSet
                         ),
                     },
-                    syncStatus: "pending",
-                    syncError: null,
+                    ...pendingSyncState,
                 }));
             },
 
@@ -200,8 +190,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             workoutSet,
                         ],
                     },
-                    syncStatus: "pending",
-                    syncError: null,
+                    ...pendingSyncState,
                 }));
             },
 
@@ -223,6 +212,27 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             ).filter((workoutSet) => workoutSet.id !== setId),
                         },
                         editingValues: nextEditingValues,
+                        ...pendingSyncState,
+                    };
+                });
+            },
+
+            addExercise: ({ exercise, sets }) => {
+                set((state) => {
+                    const alreadyExists = state.sessionExercises.some(
+                        (sessionExercise) => sessionExercise.exercise_id === exercise.exercise_id
+                    );
+
+                    if (alreadyExists) {
+                        return state;
+                    }
+
+                    return {
+                        sessionExercises: [...state.sessionExercises, exercise],
+                        savedSets: {
+                            ...state.savedSets,
+                            [exercise.id]: sets,
+                        },
                         syncStatus: "pending",
                         syncError: null,
                     };
@@ -242,8 +252,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             (exercise) => exercise.id !== workoutSessionExerciseId
                         ),
                         savedSets: nextSavedSets,
-                        syncStatus: "pending",
-                        syncError: null,
+                        ...pendingSyncState,
                     };
                 });
             },

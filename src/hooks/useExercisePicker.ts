@@ -1,12 +1,13 @@
+import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
-import { getUserExerciseBestVolume } from "../services/progressService";
 import { addExerciseToRoutine } from "../services/routineService";
-import { addExerciseToWorkoutSession } from "../services/workoutService";
+import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
+import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 
 type Params = {
     mode: "routine" | "session";
@@ -33,6 +34,8 @@ export function useExercisePicker({
     const [regions, setRegions] = useState<MuscleRegion[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const filterOptions = filterMode === "muscle" ? muscles : regions;
+
+    const addSessionExercise = useWorkoutSessionStore((state) => state.addExercise);
 
     async function fetchMuscles() {
         try {
@@ -80,38 +83,72 @@ export function useExercisePicker({
     );
 
     async function handleAddExercise(exerciseId: string) {
-        if (!user?.id) return;
+        const exercise = exercises.find((item) => item.id === exerciseId);
+
+        if (!exercise) {
+            Alert.alert("Error", "The selected exercise could not be found.");
+            return;
+        }
 
         try {
-            const currentPrVolume = await getUserExerciseBestVolume({
-                userId: user.id,
-                exerciseId,
-            });
-
             if (mode === "routine") {
-                await addExerciseToRoutine({
-                    routineId: routineId!,
-                    exerciseId,
-                    restSeconds: 90,
-                    position: currentCount,
-                    currentPrVolume,
-                });
-            } else {
-                const exercise = exercises.find((item) => item.id === exerciseId);
+                if (!routineId) {
+                    throw new Error("Routine ID is required.");
+                }
 
-                await addExerciseToWorkoutSession({
-                    userId: user.id,
-                    sessionId: sessionId!,
-                    exerciseId,
-                    exerciseName: exercise?.name ?? "Exercise",
-                    exerciseImageUrl: exercise?.image_url ?? null,
+                await addExerciseToRoutine({
+                    routineId,
+                    exerciseId: exercise.id,
                     position: currentCount,
+                    restSeconds: 0,
                 });
+
+                onExerciseAdded();
+                return;
             }
 
+            if (!sessionId) {
+                throw new Error("Workout session ID is required.");
+            }
+
+            const workoutSessionExerciseId = Crypto.randomUUID();
+
+            const workoutSetId = Crypto.randomUUID();
+            const createdAt = new Date().toISOString();
+
+            const sessionExercise: WorkoutSessionExercise = {
+                id: workoutSessionExerciseId,
+                workout_session_id: sessionId,
+                exercise_id: exercise.id,
+                exercise_name_snapshot: exercise.name,
+                exercise_image_url_snapshot: exercise.image_url ?? null,
+                position: currentCount,
+                rest_seconds: 90,
+                exercise_rest_seconds: 120,
+                current_pr_volume: 0,
+            };
+
+            const firstSet: WorkoutSessionSet = {
+                id: workoutSetId,
+                workout_session_exercise_id: workoutSessionExerciseId,
+                exercise_id: exercise.id,
+                reps: 0,
+                weight: 0,
+                is_completed: false,
+                is_pr: false,
+                created_at: createdAt,
+            };
+
+            addSessionExercise({
+                exercise: sessionExercise,
+                sets: [firstSet],
+            });
+
             onExerciseAdded();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "Unable to add exercise.";
+
+            Alert.alert("Error", message);
         }
     }
 

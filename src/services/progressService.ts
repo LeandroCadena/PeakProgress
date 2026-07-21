@@ -108,12 +108,6 @@ export async function getUserExerciseRecord(params: { userId: string; exerciseId
     return data;
 }
 
-export async function getUserExerciseBestVolume(params: { userId: string; exerciseId: string }) {
-    const record = await getUserExerciseRecord(params);
-
-    return Number(record?.best_volume ?? 0);
-}
-
 export async function upsertUserExerciseRecord(params: {
     userId: string;
     exerciseId: string;

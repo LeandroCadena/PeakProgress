@@ -106,7 +106,6 @@ export default function ExercisePickerScreen({ navigation }: any) {
                 contentContainerStyle={styles.exerciseList}
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item }) =>
-                    //To Improve query on future
                     !currentExerciseIds.includes(item.id) && !showAdded ? (
                         <ExerciseListCard
                             exercise={item}

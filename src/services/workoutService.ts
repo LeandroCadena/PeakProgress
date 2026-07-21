@@ -1,7 +1,6 @@
 import { RoutineExerciseSet } from "../types/routine";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 
-import { getUserExerciseBestVolume } from "./progressService";
 import { getUserSettings } from "./settingsService";
 import { supabase } from "./supabase";
 
@@ -109,44 +108,6 @@ export async function getSavedSets(
     return grouped;
 }
 
-export async function createEmptyWorkoutSet(params: {
-    sessionId: string;
-    workoutSessionExerciseId: string;
-    exerciseId: string | null;
-    exerciseName: string;
-    reps: number;
-    weight: number;
-}) {
-    const { data, error } = await supabase
-        .from("workout_sets")
-        .insert({
-            workout_session_id: params.sessionId,
-            workout_session_exercise_id: params.workoutSessionExerciseId,
-            exercise_id: params.exerciseId,
-            exercise_name_snapshot: params.exerciseName,
-            reps: params.reps,
-            weight: params.weight,
-            is_completed: false,
-            is_pr: false,
-        })
-        .select(
-            `
-        id,
-        workout_session_exercise_id,
-        exercise_id,
-        reps,
-        weight,
-        is_completed,
-        is_pr
-        `
-        )
-        .single();
-
-    if (error) throw error;
-
-    return data as WorkoutSessionSet;
-}
-
 export async function finishWorkoutSession(params: {
     sessionId: string;
     routineName: string;
@@ -218,68 +179,6 @@ export async function updateWorkoutSessionTimer(params: {
         .eq("id", params.sessionId);
 
     if (error) throw error;
-}
-
-async function createWorkoutSessionExercise(params: {
-    sessionId: string;
-    exerciseId: string;
-    exerciseName: string;
-    position: number;
-    userId: string;
-    exerciseImageUrl?: string | null;
-    routineSetRestSeconds?: number;
-    routineExerciseRestSeconds?: number;
-    routineCurrentPrVolume?: number;
-}) {
-    const settings = await getUserSettings(params.userId);
-
-    const currentPrVolume =
-        params.routineCurrentPrVolume ??
-        (await getUserExerciseBestVolume({
-            userId: params.userId,
-            exerciseId: params.exerciseId,
-        }));
-
-    const { data, error } = await supabase
-        .from("workout_session_exercises")
-        .insert({
-            workout_session_id: params.sessionId,
-            exercise_id: params.exerciseId,
-            exercise_name_snapshot: params.exerciseName,
-            position: params.position,
-            exercise_image_url_snapshot: params.exerciseImageUrl ?? null,
-            rest_seconds: settings.use_global_timers
-                ? settings.global_set_rest_seconds
-                : (params.routineSetRestSeconds ?? 90),
-            exercise_rest_seconds: settings.use_global_timers
-                ? settings.global_exercise_rest_seconds
-                : (params.routineExerciseRestSeconds ?? 120),
-            current_pr_volume: currentPrVolume,
-        })
-        .select("id")
-        .single();
-
-    if (error) throw error;
-
-    return data;
-}
-
-export async function addExerciseToWorkoutSession(params: {
-    userId: string;
-    sessionId: string;
-    exerciseId: string;
-    exerciseName: string;
-    position: number;
-    exerciseImageUrl?: string | null;
-}) {
-    await createWorkoutSessionExercise({
-        sessionId: params.sessionId,
-        exerciseId: params.exerciseId,
-        exerciseName: params.exerciseName,
-        exerciseImageUrl: params.exerciseImageUrl,
-        position: params.position,
-        userId: params.userId,
-    });
 }
 
 export async function syncWorkoutSessionToRoutine(params: {
@@ -367,19 +266,6 @@ export async function getWorkoutSessionExercises(
     if (error) throw error;
 
     return data ?? [];
-}
-
-export async function deleteExerciseFromWorkoutSession(params: {
-    sessionId: string;
-    exerciseId: string;
-}) {
-    const { error } = await supabase
-        .from("workout_sets")
-        .delete()
-        .eq("workout_session_id", params.sessionId)
-        .eq("exercise_id", params.exerciseId);
-
-    if (error) throw error;
 }
 
 async function getRoutineExercisesWithSets(routineId: string) {
@@ -529,98 +415,168 @@ export async function saveWorkoutSessionSnapshot(params: {
 }): Promise<void> {
     const { sessionId, sessionExercises, savedSets } = params;
 
-    const localExerciseIds = sessionExercises.map((exercise) => exercise.id);
+    /*
+     * 1. Read the current persisted snapshot.
+     */
 
-    const { data: persistedExercises, error: persistedExercisesError } = await supabase
-        .from("workout_session_exercises")
-        .select("id")
-        .eq("workout_session_id", sessionId);
+    const [
+        { data: persistedExercises, error: persistedExercisesError },
+        { data: persistedSets, error: persistedSetsError },
+    ] = await Promise.all([
+        supabase.from("workout_session_exercises").select("id").eq("workout_session_id", sessionId),
+
+        supabase.from("workout_sets").select("id").eq("workout_session_id", sessionId),
+    ]);
 
     if (persistedExercisesError) {
         throw persistedExercisesError;
     }
 
-    const removedExerciseIds = (persistedExercises ?? [])
-        .map((exercise) => exercise.id)
-        .filter((exerciseId) => !localExerciseIds.includes(exerciseId));
-
-    if (removedExerciseIds.length > 0) {
-        const { error: deleteExercisesError } = await supabase
-            .from("workout_session_exercises")
-            .delete()
-            .in("id", removedExerciseIds);
-
-        if (deleteExercisesError) {
-            throw deleteExercisesError;
-        }
-    }
-
-    await Promise.all(
-        sessionExercises.map(async (exercise) => {
-            const { error } = await supabase
-                .from("workout_session_exercises")
-                .update({
-                    position: exercise.position ?? 0,
-                    rest_seconds: exercise.rest_seconds ?? 90,
-                    exercise_rest_seconds: exercise.exercise_rest_seconds ?? 120,
-                    exercise_name_snapshot: exercise.exercise_name_snapshot,
-                    exercise_image_url_snapshot: exercise.exercise_image_url_snapshot,
-                })
-                .eq("id", exercise.id)
-                .eq("workout_session_id", sessionId);
-
-            if (error) {
-                throw error;
-            }
-        })
-    );
-
-    const localSets = Object.values(savedSets).flat();
-
-    const localSetIds = localSets.map((workoutSet) => workoutSet.id);
-
-    const { data: persistedSets, error: persistedSetsError } = await supabase
-        .from("workout_sets")
-        .select("id")
-        .eq("workout_session_id", sessionId);
-
     if (persistedSetsError) {
         throw persistedSetsError;
     }
 
+    /*
+     * 2. Determine which persisted records were removed locally.
+     */
+
+    const localExerciseIds = new Set(sessionExercises.map((exercise) => exercise.id));
+
+    const localSets = sessionExercises.flatMap((exercise) => savedSets[exercise.id] ?? []);
+
+    const localSetIds = new Set(localSets.map((workoutSet) => workoutSet.id));
+
     const removedSetIds = (persistedSets ?? [])
         .map((workoutSet) => workoutSet.id)
-        .filter((setId) => !localSetIds.includes(setId));
+        .filter((setId) => !localSetIds.has(setId));
+
+    const removedExerciseIds = (persistedExercises ?? [])
+        .map((exercise) => exercise.id)
+        .filter((exerciseId) => !localExerciseIds.has(exerciseId));
+
+    /*
+     * Delete sets before exercises so the operation does not depend on
+     * cascade-delete configuration.
+     */
 
     if (removedSetIds.length > 0) {
-        const { error: deleteSetsError } = await supabase
+        const { error } = await supabase
             .from("workout_sets")
             .delete()
+            .eq("workout_session_id", sessionId)
             .in("id", removedSetIds);
 
-        if (deleteSetsError) {
-            throw deleteSetsError;
+        if (error) {
+            throw error;
         }
     }
 
-    await Promise.all(
-        localSets.map(async (workoutSet) => {
-            const { error } = await supabase
-                .from("workout_sets")
-                .update({
-                    workout_session_exercise_id: workoutSet.workout_session_exercise_id,
-                    exercise_id: workoutSet.exercise_id,
-                    reps: Number(workoutSet.reps ?? 0),
-                    weight: Number(workoutSet.weight ?? 0),
-                    is_completed: workoutSet.is_completed,
-                    is_pr: workoutSet.is_pr,
-                })
-                .eq("id", workoutSet.id)
-                .eq("workout_session_id", sessionId);
+    if (removedExerciseIds.length > 0) {
+        const { error } = await supabase
+            .from("workout_session_exercises")
+            .delete()
+            .eq("workout_session_id", sessionId)
+            .in("id", removedExerciseIds);
 
-            if (error) {
-                throw error;
+        if (error) {
+            throw error;
+        }
+    }
+
+    /*
+     * 3. Insert new exercises and update existing ones.
+     *
+     * IDs created locally are preserved as the final database IDs.
+     */
+
+    if (sessionExercises.length > 0) {
+        const exercisesToUpsert = sessionExercises.map((exercise, index) => ({
+            id: exercise.id,
+            workout_session_id: sessionId,
+            exercise_id: exercise.exercise_id,
+            exercise_name_snapshot: exercise.exercise_name_snapshot,
+            exercise_image_url_snapshot: exercise.exercise_image_url_snapshot ?? null,
+            position: exercise.position ?? index,
+            rest_seconds: exercise.rest_seconds ?? 90,
+            exercise_rest_seconds: exercise.exercise_rest_seconds ?? 120,
+            current_pr_volume: exercise.current_pr_volume ?? 0,
+        }));
+
+        const { error } = await supabase
+            .from("workout_session_exercises")
+            .upsert(exercisesToUpsert, {
+                onConflict: "id",
+            });
+
+        if (error) {
+            throw error;
+        }
+    }
+
+    /*
+     * 4. Insert new sets and update existing ones.
+     */
+
+    const exerciseById = new Map(sessionExercises.map((exercise) => [exercise.id, exercise]));
+
+    if (localSets.length > 0) {
+        const setsToUpsert = localSets.map((workoutSet) => {
+            const parentExercise = exerciseById.get(workoutSet.workout_session_exercise_id);
+
+            if (!parentExercise) {
+                throw new Error(
+                    `Unable to find the parent exercise for workout set ${workoutSet.id}`
+                );
             }
-        })
-    );
+
+            return {
+                id: workoutSet.id,
+                workout_session_id: sessionId,
+                workout_session_exercise_id: parentExercise.id,
+                exercise_id: workoutSet.exercise_id ?? parentExercise.exercise_id,
+                exercise_name_snapshot: parentExercise.exercise_name_snapshot,
+                reps: Number(workoutSet.reps ?? 0),
+                weight: Number(workoutSet.weight ?? 0),
+                is_completed: workoutSet.is_completed,
+                is_pr: workoutSet.is_pr,
+                created_at: workoutSet.created_at ?? new Date().toISOString(),
+            };
+        });
+
+        const { error } = await supabase.from("workout_sets").upsert(setsToUpsert, {
+            onConflict: "id",
+        });
+
+        if (error) {
+            throw error;
+        }
+    }
+}
+
+export async function loadWorkoutSessionSnapshot(params: {
+    sessionId: string;
+    routineId: string;
+    userId: string;
+}) {
+    let sessionExercises = await getWorkoutSessionExercises(params.sessionId);
+
+    if (sessionExercises.length === 0) {
+        sessionExercises = await createWorkoutSessionExercisesFromRoutine({
+            sessionId: params.sessionId,
+            routineId: params.routineId,
+            userId: params.userId,
+        });
+    }
+
+    const [savedSets, timer] = await Promise.all([
+        getSavedSets(params.sessionId),
+        getWorkoutSessionTimer(params.sessionId),
+    ]);
+
+    return {
+        sessionExercises,
+        savedSets,
+        restTimerEndAt: timer.rest_timer_end_at ?? null,
+        lastTimerDuration: timer.last_rest_duration_seconds ?? 0,
+    };
 }

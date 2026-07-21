@@ -1,17 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
+import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import { getUserSettings } from "../services/settingsService";
-import {
-    getSavedSets,
-    createEmptyWorkoutSet,
-    getWorkoutSessionExercises,
-    getWorkoutSessionTimer,
-    updateWorkoutSessionTimer,
-    createWorkoutSessionExercisesFromRoutine,
-} from "../services/workoutService";
+import { loadWorkoutSessionSnapshot, updateWorkoutSessionTimer } from "../services/workoutService";
 import { syncCompletedWorkout } from "../services/workoutSyncService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
@@ -36,6 +30,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const { user } = useAuth();
 
     const storedSessionId = useWorkoutSessionStore((state) => state.sessionId);
+    const storedRoutineId = useWorkoutSessionStore((state) => state.routineId);
     const hasHydrated = useWorkoutSessionStore((state) => state.hasHydrated);
     const initializeLocalSession = useWorkoutSessionStore((state) => state.initializeSession);
     const clearStoredSession = useWorkoutSessionStore((state) => state.clearSession);
@@ -51,18 +46,15 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const updateStoredEditingValue = useWorkoutSessionStore((state) => state.updateEditingValue);
 
     const savedSets = useWorkoutSessionStore((state) => state.savedSets);
-    const setStoredSavedSets = useWorkoutSessionStore((state) => state.setSavedSets);
     const replaceStoredSavedSets = useWorkoutSessionStore((state) => state.replaceSavedSets);
     const addStoredSet = useWorkoutSessionStore((state) => state.addSet);
     const updateStoredSet = useWorkoutSessionStore((state) => state.updateSet);
     const deleteStoredSet = useWorkoutSessionStore((state) => state.deleteSet);
 
     const sessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
-    const storedSessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
-    const setStoredSessionExercises = useWorkoutSessionStore((state) => state.setSessionExercises);
     const deleteStoredExercise = useWorkoutSessionStore((state) => state.deleteExercise);
-    const updateStoredSessionExercises = useWorkoutSessionStore(
-        (state) => state.updateSessionExercises
+    const replaceStoredSessionExercises = useWorkoutSessionStore(
+        (state) => state.replaceSessionExercises
     );
 
     const [isInitializingSession, setIsInitializingSession] = useState(true);
@@ -86,7 +78,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         try {
             const hasStoredSession =
-                storedSessionId === sessionId && storedSessionExercises.length > 0;
+                storedSessionId === sessionId &&
+                storedRoutineId === routineId &&
+                sessionExercises.length > 0;
 
             if (hasStoredSession) {
                 if (storedRestTimerEndAt) {
@@ -95,9 +89,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
 
                     setRestEndAt(remainingSeconds > 0 ? endAt : null);
-
                     setTimer(remainingSeconds);
                     setTimerRunning(remainingSeconds > 0);
+                } else {
+                    setRestEndAt(null);
+                    setTimer(0);
+                    setTimerRunning(false);
                 }
 
                 setLastTimerDuration(storedLastTimerDuration);
@@ -105,34 +102,28 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 return;
             }
 
-            let exercises = await getWorkoutSessionExercises(sessionId);
+            const snapshot = await loadWorkoutSessionSnapshot({
+                sessionId,
+                routineId,
+                userId: user.id,
+            });
 
-            if (exercises.length === 0) {
-                exercises = await createWorkoutSessionExercisesFromRoutine({
-                    sessionId,
-                    routineId,
-                    userId: user.id,
-                });
-            }
+            initializeLocalSession({
+                sessionId,
+                routineId,
+                routineName,
+                sessionExercises: snapshot.sessionExercises,
+                savedSets: snapshot.savedSets,
+                restTimerEndAt: snapshot.restTimerEndAt,
+                lastTimerDuration: snapshot.lastTimerDuration,
+            });
 
-            const sets = await getSavedSets(sessionId);
-
-            const timerData = await getWorkoutSessionTimer(sessionId);
-
-            setStoredSessionExercises(exercises);
-            setStoredSavedSets(sets);
-
-            const restTimerEndAt = timerData.rest_timer_end_at ?? null;
-
-            const lastTimerDuration = timerData.last_rest_duration_seconds ?? 0;
-
-            if (restTimerEndAt) {
-                const endAt = new Date(restTimerEndAt).getTime();
+            if (snapshot.restTimerEndAt) {
+                const endAt = new Date(snapshot.restTimerEndAt).getTime();
 
                 const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
 
                 setRestEndAt(remainingSeconds > 0 ? endAt : null);
-
                 setTimer(remainingSeconds);
                 setTimerRunning(remainingSeconds > 0);
             } else {
@@ -141,19 +132,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 setTimerRunning(false);
             }
 
-            setLastTimerDuration(lastTimerDuration);
+            setLastTimerDuration(snapshot.lastTimerDuration);
+        } catch (error: unknown) {
+            const message =
+                error instanceof Error ? error.message : "Unable to initialize workout session";
 
-            initializeLocalSession({
-                sessionId,
-                routineId,
-                routineName,
-                sessionExercises: exercises,
-                savedSets: sets,
-                restTimerEndAt,
-                lastTimerDuration,
-            });
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
+            Alert.alert("Error", message);
         } finally {
             setIsInitializingSession(false);
         }
@@ -162,12 +146,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         initializeLocalSession,
         routineId,
         routineName,
+        sessionExercises.length,
         sessionId,
         storedLastTimerDuration,
         storedRestTimerEndAt,
-        setStoredSavedSets,
-        storedSessionExercises,
-        setStoredSessionExercises,
+        storedRoutineId,
         storedSessionId,
         user?.id,
     ]);
@@ -256,9 +239,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }, [syncTimerWithRestEndAt])
     );
 
-    async function addEmptySet(workoutSessionExerciseId: string) {
+    function addEmptySet(workoutSessionExerciseId: string) {
         const currentSets = savedSets[workoutSessionExerciseId] ?? [];
-
         const lastSet = currentSets[currentSets.length - 1];
 
         const sessionExercise = sessionExercises.find(
@@ -273,42 +255,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             lastSet ? (editingValues[`${lastSet.id}-weight`] ?? lastSet.weight ?? 0) : 0
         );
 
-        const tempId = `temp-${Date.now()}`;
-        const createdAt = new Date().toISOString();
-
-        const tempSet: WorkoutSessionSet = {
-            id: tempId,
+        const newSet: WorkoutSessionSet = {
+            id: Crypto.randomUUID(),
             workout_session_exercise_id: workoutSessionExerciseId,
             exercise_id: sessionExercise?.exercise_id ?? null,
             reps,
             weight,
             is_completed: false,
             is_pr: false,
-            created_at: createdAt,
+            created_at: new Date().toISOString(),
         };
 
-        addStoredSet(workoutSessionExerciseId, tempSet);
-
-        try {
-            const createdSet = await createEmptyWorkoutSet({
-                sessionId,
-                workoutSessionExerciseId,
-                exerciseId: sessionExercise?.exercise_id ?? null,
-                exerciseName: sessionExercise?.exercise_name_snapshot ?? "Exercise",
-                reps,
-                weight,
-            });
-
-            updateStoredSet({
-                workoutSessionExerciseId,
-                setId: tempId,
-                changes: createdSet,
-            });
-        } catch (error: any) {
-            deleteStoredSet(workoutSessionExerciseId, tempId);
-
-            Alert.alert("Error", error.message);
-        }
+        addStoredSet(workoutSessionExerciseId, newSet);
     }
 
     function updateSetValue(setId: string, field: "weight" | "reps", value: string) {
@@ -489,7 +447,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             position: index,
         }));
 
-        updateStoredSessionExercises(exercisesWithPositions);
+        replaceStoredSessionExercises(exercisesWithPositions);
     }
 
     function getRestSecondsAfterSet(params: { workoutSessionExerciseId: string; setId: string }) {
@@ -518,7 +476,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     function updateWorkoutSetRest(workoutSessionExerciseId: string, value: number) {
-        updateStoredSessionExercises(
+        replaceStoredSessionExercises(
             sessionExercises.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
                     ? { ...exercise, rest_seconds: value }
@@ -528,7 +486,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     function updateWorkoutExerciseRest(workoutSessionExerciseId: string, value: number) {
-        updateStoredSessionExercises(
+        replaceStoredSessionExercises(
             sessionExercises.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
                     ? { ...exercise, exercise_rest_seconds: value }
