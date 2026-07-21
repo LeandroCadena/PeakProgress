@@ -56,6 +56,7 @@ type WorkoutSessionState = {
     setSavedSets: (savedSets: Record<string, WorkoutSessionSet[]>) => void;
     updateSet: (input: UpdateSetInput) => void;
     addSet: (workoutSessionExerciseId: string, workoutSet: WorkoutSessionSet) => void;
+    replaceSavedSets: (savedSets: Record<string, WorkoutSessionSet[]>) => void;
     deleteSet: (workoutSessionExerciseId: string, setId: string) => void;
 
     setRestTimer: (params: { restTimerEndAt: string | null; lastTimerDuration?: number }) => void;
@@ -153,6 +154,13 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
 
             setSavedSets: (savedSets) => {
                 set({ savedSets });
+            },
+
+            replaceSavedSets: (savedSets) => {
+                set({
+                    savedSets,
+                    editingValues: {},
+                });
             },
 
             updateEditingValue: (setId, field, value) => {

@@ -45,6 +45,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const hasHydrated = useWorkoutSessionStore((state) => state.hasHydrated);
     const initializeLocalSession = useWorkoutSessionStore((state) => state.initializeSession);
     const clearStoredSession = useWorkoutSessionStore((state) => state.clearSession);
+    const setSessionSyncing = useWorkoutSessionStore((state) => state.setSyncing);
+    const setSessionSyncSuccess = useWorkoutSessionStore((state) => state.setSyncSuccess);
+    const setSessionSyncError = useWorkoutSessionStore((state) => state.setSyncError);
 
     const setStoredRestTimer = useWorkoutSessionStore((state) => state.setRestTimer);
     const storedRestTimerEndAt = useWorkoutSessionStore((state) => state.restTimerEndAt);
@@ -55,6 +58,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
     const savedSets = useWorkoutSessionStore((state) => state.savedSets);
     const setStoredSavedSets = useWorkoutSessionStore((state) => state.setSavedSets);
+    const replaceStoredSavedSets = useWorkoutSessionStore((state) => state.replaceSavedSets);
     const addStoredSet = useWorkoutSessionStore((state) => state.addSet);
     const updateStoredSet = useWorkoutSessionStore((state) => state.updateSet);
     const deleteStoredSet = useWorkoutSessionStore((state) => state.deleteSet);
@@ -62,10 +66,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const sessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
     const storedSessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
     const setStoredSessionExercises = useWorkoutSessionStore((state) => state.setSessionExercises);
+    const deleteStoredExercise = useWorkoutSessionStore((state) => state.deleteExercise);
     const updateStoredSessionExercises = useWorkoutSessionStore(
         (state) => state.updateSessionExercises
     );
-    const deleteStoredExercise = useWorkoutSessionStore((state) => state.deleteExercise);
 
     const [isInitializingSession, setIsInitializingSession] = useState(true);
     const [isFinishingWorkout, setIsFinishingWorkout] = useState(false);
@@ -474,6 +478,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         setIsFinishingWorkout(true);
 
         try {
+            const normalizedSavedSets = getNormalizedSavedSets();
+
+            replaceStoredSavedSets(normalizedSavedSets);
+
+            setSessionSyncing();
+
             await finishWorkoutSession({
                 sessionId,
                 routineName,
@@ -483,17 +493,21 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 syncWorkoutSessionToRoutine({
                     routineId,
                     sessionExercises,
-                    savedSets,
-                    editingValues,
+                    savedSets: normalizedSavedSets,
+                    editingValues: {},
                 }),
-                updateUserExerciseRecordsFromWorkout(),
+                updateUserExerciseRecordsFromWorkout(normalizedSavedSets),
                 user?.id ? updateWorkoutStreakAfterFinish(user.id) : Promise.resolve(),
             ]);
+
+            setSessionSyncSuccess();
 
             hasFinishedRef.current = true;
             clearStoredSession();
             onFinish();
         } catch (error: any) {
+            setSessionSyncError(error.message ?? "Unable to synchronize workout");
+
             Alert.alert("Error finishing workout", error.message);
         } finally {
             setIsFinishingWorkout(false);
@@ -640,10 +654,27 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         return { weight, reps };
     }
 
-    async function updateUserExerciseRecordsFromWorkout() {
+    function getNormalizedSavedSets() {
+        return Object.fromEntries(
+            Object.entries(savedSets).map(([workoutSessionExerciseId, sets]) => [
+                workoutSessionExerciseId,
+                sets.map((workoutSet) => ({
+                    ...workoutSet,
+                    weight: Number(
+                        editingValues[`${workoutSet.id}-weight`] ?? workoutSet.weight ?? 0
+                    ),
+                    reps: Number(editingValues[`${workoutSet.id}-reps`] ?? workoutSet.reps ?? 0),
+                })),
+            ])
+        );
+    }
+
+    async function updateUserExerciseRecordsFromWorkout(
+        normalizedSavedSets: Record<string, WorkoutSessionSet[]>
+    ) {
         if (!user) return;
 
-        const allSets = Object.values(savedSets).flat();
+        const allSets = Object.values(normalizedSavedSets).flat();
 
         const completedPrSets = allSets.filter(
             (set) => set.is_completed && set.is_pr && set.exercise_id
@@ -661,8 +692,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         completedPrSets.forEach((set) => {
             const exerciseId = set.exercise_id!;
-            const weight = Number(editingValues[`${set.id}-weight`] ?? set.weight ?? 0);
-            const reps = Number(editingValues[`${set.id}-reps`] ?? set.reps ?? 0);
+            const weight = Number(set.weight ?? 0);
+            const reps = Number(set.reps ?? 0);
             const volume = weight * reps;
 
             if (!bestByExercise[exerciseId] || volume > bestByExercise[exerciseId].volume) {
