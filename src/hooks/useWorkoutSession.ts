@@ -50,6 +50,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const [lastTimerDuration, setLastTimerDuration] = useState(0);
     const [restEndAt, setRestEndAt] = useState<number | null>(null);
     const [useGlobalTimers, setUseGlobalTimers] = useState(false);
+    const [isRoutineMenuOpen, setIsRoutineMenuOpen] = useState(false);
     const timerVersionRef = useRef(0);
     const isScreenFocusedRef = useRef(false);
 
@@ -629,5 +630,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         lastTimerDuration,
         restartLastTimer,
         useGlobalTimers,
+
+        isRoutineMenuOpen,
+        setIsRoutineMenuOpen,
     };
 }

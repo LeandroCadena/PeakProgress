@@ -5,6 +5,7 @@ import { View, Text, StyleSheet } from "react-native";
 import DraggableFlatList, {
     RenderItemParams,
 } from "react-native-draggable-flatlist";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AppButton from "../components/common/AppButton";
 import EmptyStateCard from "../components/common/EmptyStateCard";
@@ -19,12 +20,16 @@ import {
     WorkoutSessionExercise,
     WorkoutSessionRouteParams,
 } from "../types/workout";
+import ActionMenu from "../components/common/ActionMenu";
+
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
     const { sessionId, routineId, routineName } = route.params;
     const [openExerciseMenuId, setOpenExerciseMenuId] =
         useState<string | null>(null);
+
+    const insets = useSafeAreaInsets();
 
     const {
         sessionExercises,
@@ -46,6 +51,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         isInitializingSession,
         isFinishingWorkout,
         reorderSessionExercises,
+        isRoutineMenuOpen,
+        setIsRoutineMenuOpen,
     } = useWorkoutSession({
         sessionId,
         routineId,
@@ -59,6 +66,66 @@ export default function WorkoutSessionScreen({ navigation }: any) {
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
+            <View
+                style={[
+                    styles.headerContainer,
+                    {
+                        paddingTop: insets.top + spacing.md,
+                    },
+                ]}
+            >
+                <View style={styles.leftHeaderContainer}>
+                    <ActionMenu
+                        open={isRoutineMenuOpen}
+                        onOpenChange={setIsRoutineMenuOpen}
+                        items={[
+                            {
+                                key: "workout-settings",
+                                label: "Workout settings",
+                                icon: "settings-outline",
+                                onPress: () => {
+                                    setIsRoutineMenuOpen(false);
+                                    navigation.navigate("Settings");
+                                },
+                            },
+                        ]}
+                        trigger={
+                            <Ionicons
+                                name="ellipsis-vertical"
+                                size={22}
+                                color={colors.textSecondary}
+                            />
+                        }
+                    />
+
+                    <View>
+                        <Text
+                            numberOfLines={1}
+                            style={sharedStyles.cardTitle}
+                        >
+                            {routineName}
+                        </Text>
+
+                        <Text style={sharedStyles.mutedText}>
+                            Workout Session
+                        </Text>
+                    </View>
+                </View>
+
+                <AppButton
+                    title={
+                        isFinishingWorkout
+                            ? "Finishing..."
+                            : "Finish"
+                    }
+                    variant="primary"
+                    disabled={isFinishingWorkout}
+                    onPress={finishWorkout}
+                    style={styles.rightHeaderContainer}
+                    showChevron
+                />
+            </View>
+
             <DraggableFlatList
                 data={sessionExercises}
                 keyExtractor={(item) => item.id}
@@ -74,20 +141,6 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 onDragBegin={() => {
                     setOpenExerciseMenuId(null);
                 }}
-                ListHeaderComponent={
-                    <>
-                        <Text style={sharedStyles.screenTitle}>{routineName}</Text>
-                        <Text style={sharedStyles.screenSubtitle}>Workout Session</Text>
-
-                        {!isInitializingSession ? (
-                            <RestTimerCard
-                                timer={timer}
-                                lastTimerDuration={lastTimerDuration}
-                                onRestart={restartLastTimer}
-                            />
-                        ) : null}
-                    </>
-                }
                 ListEmptyComponent={
                     isInitializingSession ? (
                         <LoadingCard />
@@ -124,6 +177,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 onActionsMenuOpenChange={(open) => {
                                     setOpenExerciseMenuId(open ? item.id : null);
                                 }}
+                                useGlobalTimers={useGlobalTimers}
+                                updateWorkoutSetRest={updateWorkoutSetRest}
                             />
 
                             {index < sessionExercises.length - 1 ? (
@@ -164,18 +219,15 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 }
             />
 
-            <View style={styles.footerContainer}>
-                <View style={styles.footer}>
-                    <AppButton
-                        title={isFinishingWorkout ? "Finishing..." : "Finish Workout"}
-                        variant="primary"
-                        disabled={isFinishingWorkout}
-                        onPress={finishWorkout}
-                        iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
-                        showChevron
+            {!isInitializingSession ? (
+                <View style={styles.footerContainer}>
+                    <RestTimerCard
+                        timer={timer}
+                        lastTimerDuration={lastTimerDuration}
+                        onRestart={restartLastTimer}
                     />
                 </View>
-            </View>
+            ) : null}
         </ScreenContainer>
     );
 }
@@ -185,12 +237,41 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingBottom: 0,
     },
-    exerciseListContainer: {
-        flex: 1,
-        minHeight: 0,
+    headerContainer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+
+        zIndex: 20,
+        elevation: 20,
+
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: spacing.md,
+
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.lg,
+        paddingBottom: spacing.md,
+
+        backgroundColor: colors.background,
+
+        borderBottomWidth: 1,
+        borderBottomColor: colors.cardBorder,
+    },
+    leftHeaderContainer: {
+        flexDirection: "row",
+        flex: 6,
+        justifyContent: "flex-start",
+        alignItems: "center",
+    },
+    rightHeaderContainer: {
+        flex: 5,
     },
     list: {
         gap: spacing.md,
+        paddingTop: 100,
         paddingBottom: 120,
     },
     footerContainer: {

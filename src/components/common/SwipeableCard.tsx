@@ -28,8 +28,6 @@ import {
 
 const CARD_DELETE_THRESHOLD = 64;
 const COMPACT_DELETE_THRESHOLD = 52;
-const SWIPE_ACTIVATION_DISTANCE = 10;
-
 const DELETE_ARMED_COLOR = "#991B1B";
 
 type Props = {

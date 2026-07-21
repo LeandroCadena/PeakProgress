@@ -9,6 +9,7 @@ import AppButton from "../common/AppButton";
 import Card from "../common/Card";
 import ExerciseCardHeader from "../exercise/ExerciseCardHeader";
 
+import RestTimeEditor from "./RestTimeEditor";
 import WorkoutSetRow from "./WorkoutSetRow";
 
 type WorkoutExerciseCardProps = {
@@ -40,6 +41,8 @@ type WorkoutExerciseCardProps = {
     isDragging: boolean;
     isActionsMenuOpen: boolean;
     onActionsMenuOpenChange: (open: boolean) => void;
+    useGlobalTimers?: boolean;
+    updateWorkoutSetRest: (workoutSessionExerciseId: string, value: number) => void;
 };
 
 export default function WorkoutExerciseCard({
@@ -56,6 +59,8 @@ export default function WorkoutExerciseCard({
     isDragging,
     isActionsMenuOpen,
     onActionsMenuOpenChange,
+    useGlobalTimers = false,
+    updateWorkoutSetRest,
 }: WorkoutExerciseCardProps) {
     const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -123,9 +128,12 @@ export default function WorkoutExerciseCard({
             </Pressable>
             {!isCollapsed ? (
                 <>
-                    <Text style={sharedStyles.mutedText}>
-                        Rest between sets: {exercise.rest_seconds ?? 90} sec
-                    </Text>
+                    <RestTimeEditor
+                        label="Rest between sets"
+                        value={exercise.rest_seconds ?? 90}
+                        editable={!useGlobalTimers}
+                        onChange={(value) => updateWorkoutSetRest(exercise.id, value)}
+                    />
 
                     <View style={styles.divider} />
 
@@ -188,12 +196,14 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontSize: typography.small,
         fontWeight: typography.weightBold,
+        marginLeft: spacing.xs,
     },
     setHeaderText: {
         flex: 1,
         color: colors.textSecondary,
         fontWeight: typography.weightBold,
         fontSize: typography.small,
+        marginLeft: spacing.sm,
     },
     doneHeader: {
         width: 36,
@@ -219,7 +229,6 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFill,
         zIndex: 50,
     },
-
     menu: {
         position: "absolute",
         top: 56,
@@ -232,7 +241,6 @@ const styles = StyleSheet.create({
         overflow: "hidden",
         elevation: 10,
     },
-
     menuItem: {
         flexDirection: "row",
         alignItems: "center",
@@ -240,7 +248,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.md,
     },
-
     menuText: {
         color: colors.text,
     },

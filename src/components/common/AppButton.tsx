@@ -15,6 +15,7 @@ type Props = {
     children?: ReactNode;
     iconLeft?: any;
     showChevron?: boolean;
+    fullWidth?: boolean;
 };
 
 export default function AppButton({
@@ -25,6 +26,7 @@ export default function AppButton({
     style,
     iconLeft,
     showChevron,
+    fullWidth,
 }: Props) {
     return (
         <Pressable
@@ -33,14 +35,14 @@ export default function AppButton({
             onPress={onPress}
         >
             <View style={styles.content}>
-                {iconLeft ? <View style={styles.iconSlot}>{iconLeft}</View> : null}
+                {iconLeft ? <View style={styles.sideSlot}>{iconLeft}</View> : null}
 
                 <Text style={[styles.text, variant === "secondary" && styles.secondaryText]}>
                     {title}
                 </Text>
 
                 {showChevron ? (
-                    <View style={styles.chevron}>
+                    <View style={styles.sideSlot}>
                         <Ionicons name="chevron-forward" size={22} color={colors.text} />
                     </View>
                 ) : null}
@@ -51,7 +53,7 @@ export default function AppButton({
 
 const styles = StyleSheet.create({
     button: {
-        paddingVertical: spacing.lg,
+        paddingVertical: spacing.sm,
         borderRadius: componentStyles.buttonRadius,
         alignItems: "center",
         justifyContent: "center",
@@ -75,31 +77,24 @@ const styles = StyleSheet.create({
     disabled: {
         opacity: 0.5,
     },
-    text: {
-        color: colors.text,
-        fontWeight: typography.weightSemiBold,
-        fontSize: typography.subtitle,
-        textAlign: "center",
-    },
     secondaryText: {
         color: colors.textSecondary,
     },
     content: {
-        width: "100%",
         flexDirection: "row",
         alignItems: "center",
+    },
+    sideSlot: {
+        flex: 1,
+        width: 32,
+        alignItems: "center",
         justifyContent: "center",
-        gap: spacing.sm,
     },
-    chevronSpacer: {
-        width: 22,
-    },
-    iconSlot: {
-        position: "absolute",
-        left: spacing.xl,
-    },
-    chevron: {
-        position: "absolute",
-        right: spacing.md,
+    text: {
+        flex: 4,
+        color: colors.text,
+        fontWeight: typography.weightSemiBold,
+        fontSize: typography.subtitle,
+        textAlign: "center",
     },
 });

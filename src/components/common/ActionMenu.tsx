@@ -140,7 +140,7 @@ export default function ActionMenu({
                                 styles.menu,
                                 {
                                     top: menuTop,
-                                    right: menuLeft,
+                                    left: menuLeft,
                                 },
                             ]}
                         >
@@ -196,15 +196,12 @@ const styles = StyleSheet.create({
         minHeight: 36,
         borderRadius: componentStyles.inputRadius,
     },
-
     triggerPressed: {
         opacity: 0.65,
     },
-
     modalContainer: {
         flex: 1,
     },
-
     menu: {
         position: "absolute",
         width: MENU_WIDTH,
@@ -222,7 +219,6 @@ const styles = StyleSheet.create({
             height: 5,
         },
     },
-
     menuItem: {
         minHeight: 48,
         flexDirection: "row",
@@ -231,22 +227,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
     },
-
     menuItemPressed: {
         backgroundColor: colors.background,
     },
-
     menuItemDisabled: {
         opacity: 0.45,
     },
-
     menuItemText: {
         flex: 1,
         color: colors.text,
         fontSize: typography.body,
         fontWeight: typography.weightMedium,
     },
-
     destructiveText: {
         color: colors.danger,
     },

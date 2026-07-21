@@ -98,18 +98,19 @@ const styles = StyleSheet.create({
         gap: spacing.xs,
     },
     rowContainer: {
-        backgroundColor: colors.card,
+        backgroundColor: colors.inputBackground,
     },
     setNumber: {
+        marginLeft: spacing.sm,
         width: 22,
         color: colors.textSecondary,
         fontWeight: "700",
     },
     setRow: {
         flex: 1,
-        minWidth: 0,
         height: 36,
         paddingVertical: 0,
+        marginRight: 30,
     },
     checkbox: {
         width: 36,

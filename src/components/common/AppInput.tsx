@@ -21,10 +21,10 @@ export default function AppInput({ style, disabled, editable, ...props }: Props)
 
 const styles = StyleSheet.create({
     input: {
-        backgroundColor: colors.inputBackground,
+        // backgroundColor: colors.inputBackground,
         color: colors.text,
-        borderWidth: componentStyles.borderWidth,
-        borderColor: colors.cardBorder,
+        // borderWidth: componentStyles.borderWidth,
+        // borderColor: colors.cardBorder,
         borderRadius: componentStyles.inputRadius,
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.md,

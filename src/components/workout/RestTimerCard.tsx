@@ -12,26 +12,19 @@ type Props = {
 
 export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: Props) {
     return (
-        <Card>
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.label}>Rest Timer</Text>
-                    <Text style={styles.timer}>{timer}s</Text>
-                    {lastTimerDuration > 0 ? (
-                        <Text style={styles.lastTimerText}>Last rest: {lastTimerDuration}s</Text>
-                    ) : null}
-                </View>
-
-                <Pressable style={styles.restartButton} onPress={onRestart}>
-                    <Ionicons
-                        name="reload-outline"
-                        size={32}
-                        color={colors.text}
-                        style={styles.restartIcon}
-                    />
-                </Pressable>
+        <View style={styles.header}>
+            <View>
+                <Text style={styles.timer}>{timer}s</Text>
             </View>
-        </Card>
+
+            <Pressable style={styles.restartButton} onPress={onRestart}>
+                <Ionicons
+                    name="reload-outline"
+                    size={28}
+                    color={colors.text}
+                />
+            </Pressable>
+        </View>
     );
 }
 
@@ -50,21 +43,20 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontSize: 36,
         fontWeight: typography.weightExtraBold,
+        marginLeft: 20,
     },
     lastTimerText: {
         color: colors.textSecondary,
         marginTop: spacing.sm,
     },
     restartButton: {
-        width: 60,
-        height: 50,
+        width: 50,
+        height: 40,
         borderRadius: 22,
         borderWidth: 1,
         backgroundColor: colors.primary,
         alignItems: "center",
         justifyContent: "center",
-    },
-    restartIcon: {
-        marginTop: 1,
+        marginRight: 20,
     },
 });
