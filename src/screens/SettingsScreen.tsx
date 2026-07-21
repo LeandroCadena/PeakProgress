@@ -76,7 +76,10 @@ export default function SettingsScreen() {
 
                     <Switch
                         value={settings.sounds_enabled}
-                        onValueChange={(value) => updateSetting({ sounds_enabled: value })}
+                        onValueChange={(value) =>
+                            updateSetting({
+                                sounds_enabled: value
+                            })}
                     />
                 </View>
             </Card>
@@ -90,7 +93,34 @@ export default function SettingsScreen() {
 
                     <Switch
                         value={settings.notifications_enabled}
-                        onValueChange={(value) => updateSetting({ notifications_enabled: value })}
+                        onValueChange={(value) =>
+                            updateSetting({
+                                notifications_enabled: value
+                            })}
+                    />
+                </View>
+            </Card>
+
+            <Card style={styles.settingCard}>
+                <View style={styles.settingRow}>
+                    <View style={styles.settingInfo}>
+                        <Text style={styles.label}>
+                            Update Routine After Workout
+                        </Text>
+
+                        <Text style={styles.helperText}>
+                            Automatically use your completed workout
+                            as the new routine template.
+                        </Text>
+                    </View>
+
+                    <Switch
+                        value={settings.update_routine_after_workout}
+                        onValueChange={(value) =>
+                            updateSetting({
+                                update_routine_after_workout: value
+                            })
+                        }
                     />
                 </View>
             </Card>
@@ -104,7 +134,11 @@ export default function SettingsScreen() {
 
                     <Switch
                         value={settings.use_global_timers}
-                        onValueChange={(value) => updateSetting({ use_global_timers: value })}
+                        onValueChange={(value) =>
+                            updateSetting({
+                                use_global_timers: value
+                            })
+                        }
                     />
                 </View>
             </Card>
@@ -120,7 +154,7 @@ export default function SettingsScreen() {
                             placeholder="90"
                             onChangeText={(value) =>
                                 updateSetting({
-                                    global_set_rest_seconds: Number(value || 0),
+                                    global_set_rest_seconds: Number(value || 0)
                                 })
                             }
                         />

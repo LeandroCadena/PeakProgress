@@ -15,7 +15,6 @@ type Props = {
     children?: ReactNode;
     iconLeft?: any;
     showChevron?: boolean;
-    fullWidth?: boolean;
 };
 
 export default function AppButton({
@@ -26,7 +25,6 @@ export default function AppButton({
     style,
     iconLeft,
     showChevron,
-    fullWidth,
 }: Props) {
     return (
         <Pressable

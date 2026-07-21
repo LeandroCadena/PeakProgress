@@ -1,15 +1,14 @@
 import { supabase } from "./supabase";
 
 export type UserSettings = {
-    user_id: string;
-    theme: "dark" | "light";
-    language: "en" | "es";
+    sounds_enabled: boolean;
+    notifications_enabled: boolean;
+    update_routine_after_workout: boolean;
     use_global_timers: boolean;
     global_set_rest_seconds: number;
     global_exercise_rest_seconds: number;
-    sounds_enabled: boolean;
-    notifications_enabled: boolean;
-    updated_at: string;
+    theme: "dark" | "light";
+    language: "en" | "es";
 };
 
 export async function getUserSettings(userId: string): Promise<UserSettings> {

@@ -3,19 +3,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
-import { upsertUserExerciseRecord } from "../services/progressService";
 import { getUserSettings } from "../services/settingsService";
-import { updateWorkoutStreakAfterFinish } from "../services/streakService";
 import {
     getSavedSets,
     createEmptyWorkoutSet,
-    finishWorkoutSession,
-    syncWorkoutSessionToRoutine,
     getWorkoutSessionExercises,
     getWorkoutSessionTimer,
     updateWorkoutSessionTimer,
     createWorkoutSessionExercisesFromRoutine,
 } from "../services/workoutService";
+import { syncCompletedWorkout } from "../services/workoutSyncService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import {
@@ -24,11 +21,15 @@ import {
 } from "../utils/notifications";
 import { playPersonalRecordSound, playTimerFinishedSound } from "../utils/sounds";
 
+type WorkoutFinishResult = {
+    updateRoutineAfterWorkout: boolean;
+};
+
 type Params = {
     sessionId: string;
     routineId: string;
     routineName: string;
-    onFinish: () => void;
+    onFinish: (result: WorkoutFinishResult) => void;
 };
 
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
@@ -429,31 +430,41 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
             setSessionSyncing();
 
-            await finishWorkoutSession({
+            await syncCompletedWorkout({
                 sessionId,
                 routineName,
+                userId: user?.id ?? null,
+                sessionExercises,
+                savedSets: normalizedSavedSets,
             });
 
-            await Promise.all([
-                syncWorkoutSessionToRoutine({
-                    routineId,
-                    sessionExercises,
-                    savedSets: normalizedSavedSets,
-                    editingValues: {},
-                }),
-                updateUserExerciseRecordsFromWorkout(normalizedSavedSets),
-                user?.id ? updateWorkoutStreakAfterFinish(user.id) : Promise.resolve(),
-            ]);
+            let updateRoutineAfterWorkout = true;
+
+            if (user?.id) {
+                try {
+                    const settings = await getUserSettings(user.id);
+
+                    updateRoutineAfterWorkout = settings.update_routine_after_workout;
+                } catch (settingsError) {
+                    console.log("Unable to read workout update preference", settingsError);
+                }
+            }
 
             setSessionSyncSuccess();
 
             hasFinishedRef.current = true;
             clearStoredSession();
-            onFinish();
-        } catch (error: any) {
-            setSessionSyncError(error.message ?? "Unable to synchronize workout");
 
-            Alert.alert("Error finishing workout", error.message);
+            onFinish({
+                updateRoutineAfterWorkout,
+            });
+        } catch (error: unknown) {
+            const message =
+                error instanceof Error ? error.message : "Unable to synchronize workout";
+
+            setSessionSyncError(message);
+
+            Alert.alert("Error finishing workout", message);
         } finally {
             setIsFinishingWorkout(false);
         }
@@ -564,55 +575,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         );
     }
 
-    async function updateUserExerciseRecordsFromWorkout(
-        normalizedSavedSets: Record<string, WorkoutSessionSet[]>
-    ) {
-        if (!user) return;
-
-        const allSets = Object.values(normalizedSavedSets).flat();
-
-        const completedPrSets = allSets.filter(
-            (set) => set.is_completed && set.is_pr && set.exercise_id
-        );
-
-        const bestByExercise: Record<
-            string,
-            {
-                setId: string;
-                volume: number;
-                weight: number;
-                reps: number;
-            }
-        > = {};
-
-        completedPrSets.forEach((set) => {
-            const exerciseId = set.exercise_id!;
-            const weight = Number(set.weight ?? 0);
-            const reps = Number(set.reps ?? 0);
-            const volume = weight * reps;
-
-            if (!bestByExercise[exerciseId] || volume > bestByExercise[exerciseId].volume) {
-                bestByExercise[exerciseId] = {
-                    setId: set.id,
-                    volume,
-                    weight,
-                    reps,
-                };
-            }
-        });
-
-        for (const [exerciseId, record] of Object.entries(bestByExercise)) {
-            await upsertUserExerciseRecord({
-                userId: user.id,
-                exerciseId,
-                bestVolume: record.volume,
-                bestWeight: record.weight,
-                bestReps: record.reps,
-                bestSetId: record.setId,
-            });
-        }
-    }
-
     return {
         sessionExercises,
         isInitializingSession,
@@ -633,7 +595,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         getRestSecondsAfterSet,
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
-        updateUserExerciseRecordsFromWorkout,
         reorderSessionExercises,
 
         lastTimerDuration,

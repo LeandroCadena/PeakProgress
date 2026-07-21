@@ -7,6 +7,7 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import ActionMenu from "../components/common/ActionMenu";
 import AppButton from "../components/common/AppButton";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
@@ -20,7 +21,6 @@ import {
     WorkoutSessionExercise,
     WorkoutSessionRouteParams,
 } from "../types/workout";
-import ActionMenu from "../components/common/ActionMenu";
 
 
 export default function WorkoutSessionScreen({ navigation }: any) {
@@ -57,11 +57,18 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         sessionId,
         routineId,
         routineName,
-        onFinish: () =>
-            navigation.navigate("WorkoutSummary", {
-                sessionId,
-                routineName,
-            }),
+        onFinish: ({
+            updateRoutineAfterWorkout,
+        }) =>
+            navigation.navigate(
+                "WorkoutSummary",
+                {
+                    sessionId,
+                    routineId,
+                    routineName,
+                    updateRoutineAfterWorkout,
+                },
+            ),
     });
 
     return (
@@ -98,18 +105,13 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                         }
                     />
 
-                    <View>
-                        <Text
-                            numberOfLines={1}
-                            style={sharedStyles.cardTitle}
-                        >
-                            {routineName}
-                        </Text>
+                    <Text
+                        numberOfLines={1}
+                        style={sharedStyles.cardTitle}
+                    >
+                        {routineName}
+                    </Text>
 
-                        <Text style={sharedStyles.mutedText}>
-                            Workout Session
-                        </Text>
-                    </View>
                 </View>
 
                 <AppButton
@@ -249,11 +251,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: spacing.md,
 
         paddingHorizontal: spacing.lg,
         paddingTop: spacing.lg,
-        paddingBottom: spacing.md,
+        paddingBottom: spacing.sm,
 
         backgroundColor: colors.background,
 
@@ -268,9 +269,10 @@ const styles = StyleSheet.create({
     },
     rightHeaderContainer: {
         flex: 5,
+        paddingVertical: spacing.xs,
     },
     list: {
-        gap: spacing.md,
+        gap: spacing.xs,
         paddingTop: 100,
         paddingBottom: 120,
     },
@@ -283,7 +285,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background,
 
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.md,
+        paddingTop: spacing.sm,
         paddingBottom: spacing.lg,
 
         borderTopWidth: 1,
@@ -291,9 +293,6 @@ const styles = StyleSheet.create({
 
         zIndex: 10,
         elevation: 10,
-    },
-    footer: {
-        width: "100%",
     },
     exerciseItem: {
         marginBottom: spacing.md,

@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 
 import { colors, spacing, typography } from "../../theme";
-import Card from "../common/Card";
 
 type Props = {
     timer: number;

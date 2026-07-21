@@ -147,7 +147,12 @@ export async function createEmptyWorkoutSet(params: {
     return data as WorkoutSessionSet;
 }
 
-export async function finishWorkoutSession(params: { sessionId: string; routineName: string }) {
+export async function finishWorkoutSession(params: {
+    sessionId: string;
+    routineName: string;
+    totalSets: number;
+    totalVolume: number;
+}) {
     const completedAt = new Date().toISOString();
 
     const { data: session, error: sessionError } = await supabase
@@ -156,42 +161,33 @@ export async function finishWorkoutSession(params: { sessionId: string; routineN
         .eq("id", params.sessionId)
         .single();
 
-    if (sessionError) throw sessionError;
+    if (sessionError) {
+        throw sessionError;
+    }
 
-    const { data: sets, error: setsError } = await supabase
-        .from("workout_sets")
-        .select("reps, weight, is_completed")
-        .eq("workout_session_id", params.sessionId)
-        .eq("is_completed", true);
+    const startedAt = new Date(session.started_at).getTime();
 
-    if (setsError) throw setsError;
+    const finishedAt = new Date(completedAt).getTime();
 
-    const totalSets = sets?.length ?? 0;
-
-    const totalVolume =
-        sets?.reduce((sum, set) => {
-            return sum + Number(set.weight ?? 0) * Number(set.reps ?? 0);
-        }, 0) ?? 0;
-
-    const start = new Date(session.started_at).getTime();
-    const end = new Date(completedAt).getTime();
-
-    const durationMinutes = Math.max(1, Math.round((end - start) / 60000));
+    const durationMinutes = Math.max(1, Math.round((finishedAt - startedAt) / 60000));
 
     const { data, error } = await supabase
         .from("workout_sessions")
         .update({
             completed_at: completedAt,
             routine_name_snapshot: params.routineName,
-            total_sets: totalSets,
-            total_volume: totalVolume,
+            total_sets: params.totalSets,
+            total_volume: params.totalVolume,
             duration_minutes: durationMinutes,
+            rest_timer_end_at: null,
         })
         .eq("id", params.sessionId)
         .select("id, completed_at")
         .single();
 
-    if (error) throw error;
+    if (error) {
+        throw error;
+    }
 
     return data;
 }
@@ -524,4 +520,107 @@ export async function deleteRoutineExerciseSetsByRoutineExerciseId(routineExerci
         .eq("routine_exercise_id", routineExerciseId);
 
     if (error) throw error;
+}
+
+export async function saveWorkoutSessionSnapshot(params: {
+    sessionId: string;
+    sessionExercises: WorkoutSessionExercise[];
+    savedSets: Record<string, WorkoutSessionSet[]>;
+}): Promise<void> {
+    const { sessionId, sessionExercises, savedSets } = params;
+
+    const localExerciseIds = sessionExercises.map((exercise) => exercise.id);
+
+    const { data: persistedExercises, error: persistedExercisesError } = await supabase
+        .from("workout_session_exercises")
+        .select("id")
+        .eq("workout_session_id", sessionId);
+
+    if (persistedExercisesError) {
+        throw persistedExercisesError;
+    }
+
+    const removedExerciseIds = (persistedExercises ?? [])
+        .map((exercise) => exercise.id)
+        .filter((exerciseId) => !localExerciseIds.includes(exerciseId));
+
+    if (removedExerciseIds.length > 0) {
+        const { error: deleteExercisesError } = await supabase
+            .from("workout_session_exercises")
+            .delete()
+            .in("id", removedExerciseIds);
+
+        if (deleteExercisesError) {
+            throw deleteExercisesError;
+        }
+    }
+
+    await Promise.all(
+        sessionExercises.map(async (exercise) => {
+            const { error } = await supabase
+                .from("workout_session_exercises")
+                .update({
+                    position: exercise.position ?? 0,
+                    rest_seconds: exercise.rest_seconds ?? 90,
+                    exercise_rest_seconds: exercise.exercise_rest_seconds ?? 120,
+                    exercise_name_snapshot: exercise.exercise_name_snapshot,
+                    exercise_image_url_snapshot: exercise.exercise_image_url_snapshot,
+                })
+                .eq("id", exercise.id)
+                .eq("workout_session_id", sessionId);
+
+            if (error) {
+                throw error;
+            }
+        })
+    );
+
+    const localSets = Object.values(savedSets).flat();
+
+    const localSetIds = localSets.map((workoutSet) => workoutSet.id);
+
+    const { data: persistedSets, error: persistedSetsError } = await supabase
+        .from("workout_sets")
+        .select("id")
+        .eq("workout_session_id", sessionId);
+
+    if (persistedSetsError) {
+        throw persistedSetsError;
+    }
+
+    const removedSetIds = (persistedSets ?? [])
+        .map((workoutSet) => workoutSet.id)
+        .filter((setId) => !localSetIds.includes(setId));
+
+    if (removedSetIds.length > 0) {
+        const { error: deleteSetsError } = await supabase
+            .from("workout_sets")
+            .delete()
+            .in("id", removedSetIds);
+
+        if (deleteSetsError) {
+            throw deleteSetsError;
+        }
+    }
+
+    await Promise.all(
+        localSets.map(async (workoutSet) => {
+            const { error } = await supabase
+                .from("workout_sets")
+                .update({
+                    workout_session_exercise_id: workoutSet.workout_session_exercise_id,
+                    exercise_id: workoutSet.exercise_id,
+                    reps: Number(workoutSet.reps ?? 0),
+                    weight: Number(workoutSet.weight ?? 0),
+                    is_completed: workoutSet.is_completed,
+                    is_pr: workoutSet.is_pr,
+                })
+                .eq("id", workoutSet.id)
+                .eq("workout_session_id", sessionId);
+
+            if (error) {
+                throw error;
+            }
+        })
+    );
 }

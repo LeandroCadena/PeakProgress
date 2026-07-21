@@ -1,5 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 
 import AppButton from "../components/common/AppButton";
@@ -7,12 +8,15 @@ import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import StatCard from "../components/common/StatCard";
 import { getWorkoutSummary } from "../services/historyService";
+import { updateRoutineFromCompletedWorkout } from "../services/workoutSyncService";
 import { colors, sharedStyles, spacing, typography } from "../theme";
 
 type RouteParams = {
     WorkoutSummary: {
         sessionId: string;
+        routineId: string;
         routineName: string;
+        updateRoutineAfterWorkout: boolean;
     };
 };
 
@@ -24,9 +28,23 @@ type Summary = {
 
 export default function WorkoutSummaryScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "WorkoutSummary">>();
-    const { sessionId, routineName } = route.params;
+    const {
+        sessionId,
+        routineId,
+        routineName,
+        updateRoutineAfterWorkout,
+    } = route.params;
 
     const [summary, setSummary] = useState<Summary | null>(null);
+    const [
+        routineUpdateStatus,
+        setRoutineUpdateStatus,
+    ] = useState<
+        "idle" | "updating" | "success" | "error"
+    >("idle");
+
+    const hasAttemptedRoutineUpdateRef =
+        useRef(false);
 
     const fetchSummary = useCallback(async () => {
         try {
@@ -40,6 +58,45 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
     useEffect(() => {
         fetchSummary();
     }, [fetchSummary]);
+
+    useEffect(() => {
+        if (
+            !summary ||
+            !updateRoutineAfterWorkout ||
+            hasAttemptedRoutineUpdateRef.current
+        ) {
+            return;
+        }
+
+        hasAttemptedRoutineUpdateRef.current = true;
+
+        async function updateRoutine() {
+            setRoutineUpdateStatus("updating");
+
+            try {
+                await updateRoutineFromCompletedWorkout({
+                    sessionId,
+                    routineId,
+                });
+
+                setRoutineUpdateStatus("success");
+            } catch (error) {
+                console.log(
+                    "Automatic routine update failed",
+                    error,
+                );
+
+                setRoutineUpdateStatus("error");
+            }
+        }
+
+        updateRoutine();
+    }, [
+        routineId,
+        sessionId,
+        summary,
+        updateRoutineAfterWorkout,
+    ]);
 
     return (
         <ScreenContainer>
@@ -59,10 +116,30 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
                 <StatCard label="Sets" value={summary?.totalSets ?? 0} />
             </View>
 
+            {routineUpdateStatus === "updating" ? (
+                <Text style={styles.syncText}>
+                    Updating routine...
+                </Text>
+            ) : null}
+
+            {routineUpdateStatus === "success" ? (
+                <Text style={styles.syncText}>
+                    Routine updated
+                </Text>
+            ) : null}
+
+            {routineUpdateStatus === "error" ? (
+                <Text style={styles.syncErrorText}>
+                    Workout saved, but the routine could not
+                    be updated.
+                </Text>
+            ) : null}
+
             <AppButton
                 title="Back to Home"
                 variant="primary"
                 onPress={() => navigation.navigate("Main")}
+                iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
                 showChevron
             />
         </ScreenContainer>
@@ -92,5 +169,15 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         gap: spacing.md,
         marginBottom: spacing.lg,
+    },
+    syncText: {
+        color: colors.textSecondary,
+        textAlign: "center",
+        marginTop: 8,
+    },
+    syncErrorText: {
+        color: colors.danger,
+        textAlign: "center",
+        marginTop: 8,
     },
 });
