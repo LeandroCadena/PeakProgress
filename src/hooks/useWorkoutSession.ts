@@ -5,7 +5,7 @@ import { Alert, AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import { getUserSettings } from "../services/settingsService";
-import { loadWorkoutSessionSnapshot, updateWorkoutSessionTimer } from "../services/workoutService";
+import { loadWorkoutSessionSnapshot } from "../services/workoutService";
 import { syncCompletedWorkout } from "../services/workoutSyncService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
@@ -192,12 +192,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     lastTimerDuration,
                 });
 
-                await updateWorkoutSessionTimer({
-                    sessionId,
-                    restTimerEndAt: null,
-                    lastRestDurationSeconds: lastTimerDuration,
-                });
-
                 const hadPendingNotification = await cancelRestFinishedNotification();
 
                 if (isScreenFocusedRef.current && hadPendingNotification) {
@@ -343,12 +337,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         setStoredRestTimer({
             restTimerEndAt: endAtIso,
             lastTimerDuration: restSeconds,
-        });
-
-        await updateWorkoutSessionTimer({
-            sessionId,
-            restTimerEndAt: endAtIso,
-            lastRestDurationSeconds: restSeconds,
         });
 
         await cancelRestFinishedNotification();
