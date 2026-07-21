@@ -10,6 +10,8 @@ type UpdateSetInput = {
     changes: Partial<WorkoutSessionSet>;
 };
 
+type WorkoutSessionSyncStatus = "idle" | "pending" | "syncing" | "error";
+
 type WorkoutSessionState = {
     sessionId: string | null;
     routineId: string | null;
@@ -24,7 +26,15 @@ type WorkoutSessionState = {
 
     hasHydrated: boolean;
 
+    syncStatus: WorkoutSessionSyncStatus;
+    syncError: string | null;
+
     setHasHydrated: (hasHydrated: boolean) => void;
+
+    markPendingChanges: () => void;
+    setSyncing: () => void;
+    setSyncSuccess: () => void;
+    setSyncError: (message: string) => void;
 
     initializeSession: (params: {
         sessionId: string;
@@ -35,24 +45,20 @@ type WorkoutSessionState = {
         restTimerEndAt?: string | null;
         lastTimerDuration?: number;
     }) => void;
+    clearSession: () => void;
 
     setSessionExercises: (sessionExercises: WorkoutSessionExercise[]) => void;
-
-    setSavedSets: (savedSets: Record<string, WorkoutSessionSet[]>) => void;
+    updateSessionExercises: (sessionExercises: WorkoutSessionExercise[]) => void;
+    deleteExercise: (workoutSessionExerciseId: string) => void;
 
     updateEditingValue: (setId: string, field: "weight" | "reps", value: string) => void;
 
+    setSavedSets: (savedSets: Record<string, WorkoutSessionSet[]>) => void;
     updateSet: (input: UpdateSetInput) => void;
-
     addSet: (workoutSessionExerciseId: string, workoutSet: WorkoutSessionSet) => void;
-
     deleteSet: (workoutSessionExerciseId: string, setId: string) => void;
 
-    deleteExercise: (workoutSessionExerciseId: string) => void;
-
     setRestTimer: (params: { restTimerEndAt: string | null; lastTimerDuration?: number }) => void;
-
-    clearSession: () => void;
 };
 
 const initialState = {
@@ -66,6 +72,9 @@ const initialState = {
 
     restTimerEndAt: null,
     lastTimerDuration: 0,
+
+    syncStatus: "idle" as WorkoutSessionSyncStatus,
+    syncError: null,
 };
 
 export const useWorkoutSessionStore = create<WorkoutSessionState>()(
@@ -77,6 +86,34 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
 
             setHasHydrated: (hasHydrated) => {
                 set({ hasHydrated });
+            },
+
+            markPendingChanges: () => {
+                set({
+                    syncStatus: "pending",
+                    syncError: null,
+                });
+            },
+
+            setSyncing: () => {
+                set({
+                    syncStatus: "syncing",
+                    syncError: null,
+                });
+            },
+
+            setSyncSuccess: () => {
+                set({
+                    syncStatus: "idle",
+                    syncError: null,
+                });
+            },
+
+            setSyncError: (message) => {
+                set({
+                    syncStatus: "error",
+                    syncError: message,
+                });
             },
 
             initializeSession: ({
@@ -97,11 +134,21 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                     editingValues: {},
                     restTimerEndAt,
                     lastTimerDuration,
+                    syncStatus: "idle",
+                    syncError: null,
                 });
             },
 
             setSessionExercises: (sessionExercises) => {
                 set({ sessionExercises });
+            },
+
+            updateSessionExercises: (sessionExercises) => {
+                set({
+                    sessionExercises,
+                    syncStatus: "pending",
+                    syncError: null,
+                });
             },
 
             setSavedSets: (savedSets) => {
@@ -116,6 +163,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                         ...state.editingValues,
                         [key]: value,
                     },
+                    syncStatus: "pending",
+                    syncError: null,
                 }));
             },
 
@@ -129,6 +178,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             workoutSet.id === setId ? { ...workoutSet, ...changes } : workoutSet
                         ),
                     },
+                    syncStatus: "pending",
+                    syncError: null,
                 }));
             },
 
@@ -141,6 +192,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             workoutSet,
                         ],
                     },
+                    syncStatus: "pending",
+                    syncError: null,
                 }));
             },
 
@@ -162,6 +215,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             ).filter((workoutSet) => workoutSet.id !== setId),
                         },
                         editingValues: nextEditingValues,
+                        syncStatus: "pending",
+                        syncError: null,
                     };
                 });
             },
@@ -179,6 +234,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                             (exercise) => exercise.id !== workoutSessionExerciseId
                         ),
                         savedSets: nextSavedSets,
+                        syncStatus: "pending",
+                        syncError: null,
                     };
                 });
             },
@@ -190,19 +247,9 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                 }));
             },
 
-            clearSession: () =>
-                set({
-                    sessionId: null,
-                    routineId: null,
-                    routineName: null,
-
-                    sessionExercises: [],
-                    savedSets: {},
-                    editingValues: {},
-
-                    restTimerEndAt: null,
-                    lastTimerDuration: 0,
-                }),
+            clearSession: () => {
+                set(initialState);
+            },
         }),
         {
             name: "peak-progress-workout-session",
@@ -217,6 +264,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                 editingValues: state.editingValues,
                 restTimerEndAt: state.restTimerEndAt,
                 lastTimerDuration: state.lastTimerDuration,
+                syncStatus: state.syncStatus,
+                syncError: state.syncError,
             }),
 
             onRehydrateStorage: () => (state) => {

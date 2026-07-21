@@ -62,6 +62,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const sessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
     const storedSessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
     const setStoredSessionExercises = useWorkoutSessionStore((state) => state.setSessionExercises);
+    const updateStoredSessionExercises = useWorkoutSessionStore(
+        (state) => state.updateSessionExercises
+    );
     const deleteStoredExercise = useWorkoutSessionStore((state) => state.deleteExercise);
 
     const [isInitializingSession, setIsInitializingSession] = useState(true);
@@ -539,7 +542,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             position: index,
         }));
 
-        setStoredSessionExercises(exercisesWithPositions);
+        updateStoredSessionExercises(exercisesWithPositions);
 
         try {
             await reorderWorkoutSessionExercises(
@@ -581,7 +584,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     async function updateWorkoutSetRest(workoutSessionExerciseId: string, value: number) {
-        setStoredSessionExercises(
+        updateStoredSessionExercises(
             sessionExercises.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
                     ? { ...exercise, rest_seconds: value }
@@ -600,7 +603,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     async function updateWorkoutExerciseRest(workoutSessionExerciseId: string, value: number) {
-        setStoredSessionExercises(
+        updateStoredSessionExercises(
             sessionExercises.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
                     ? { ...exercise, exercise_rest_seconds: value }
