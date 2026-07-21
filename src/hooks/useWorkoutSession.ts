@@ -42,26 +42,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const { user } = useAuth();
 
     const storedSessionId = useWorkoutSessionStore((state) => state.sessionId);
-
     const storedSessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
-
     const storedSavedSets = useWorkoutSessionStore((state) => state.savedSets);
-
-    const storedEditingValues = useWorkoutSessionStore((state) => state.editingValues);
-
     const storedRestTimerEndAt = useWorkoutSessionStore((state) => state.restTimerEndAt);
-
     const storedLastTimerDuration = useWorkoutSessionStore((state) => state.lastTimerDuration);
-
     const hasHydrated = useWorkoutSessionStore((state) => state.hasHydrated);
-
     const initializeLocalSession = useWorkoutSessionStore((state) => state.initializeSession);
-
     const setStoredRestTimer = useWorkoutSessionStore((state) => state.setRestTimer);
+    const editingValues = useWorkoutSessionStore((state) => state.editingValues);
+    const updateStoredEditingValue = useWorkoutSessionStore((state) => state.updateEditingValue);
 
     const [sessionExercises, setSessionExercises] = useState<WorkoutSessionExercise[]>([]);
     const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
-    const [editingValues, setEditingValues] = useState<Record<string, string>>({});
     const [isInitializingSession, setIsInitializingSession] = useState(true);
     const [isFinishingWorkout, setIsFinishingWorkout] = useState(false);
     const [timer, setTimer] = useState(0);
@@ -87,7 +79,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             if (hasStoredSession) {
                 setSessionExercises(storedSessionExercises);
                 setSavedSets(storedSavedSets);
-                setEditingValues(storedEditingValues);
 
                 if (storedRestTimerEndAt) {
                     const endAt = new Date(storedRestTimerEndAt).getTime();
@@ -121,7 +112,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
             setSessionExercises(exercises);
             setSavedSets(sets);
-            setEditingValues({});
 
             const restTimerEndAt = timerData.rest_timer_end_at ?? null;
 
@@ -164,7 +154,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         routineId,
         routineName,
         sessionId,
-        storedEditingValues,
         storedLastTimerDuration,
         storedRestTimerEndAt,
         storedSavedSets,
@@ -501,12 +490,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     function updateLocalSetValue(setId: string, field: "weight" | "reps", value: string) {
-        const key = `${setId}-${field}`;
-
-        setEditingValues((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
+        updateStoredEditingValue(setId, field, value);
     }
 
     async function deleteSessionExercise(workoutSessionExerciseId: string) {
