@@ -43,17 +43,22 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
     const storedSessionId = useWorkoutSessionStore((state) => state.sessionId);
     const storedSessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
-    const storedSavedSets = useWorkoutSessionStore((state) => state.savedSets);
     const storedRestTimerEndAt = useWorkoutSessionStore((state) => state.restTimerEndAt);
     const storedLastTimerDuration = useWorkoutSessionStore((state) => state.lastTimerDuration);
     const hasHydrated = useWorkoutSessionStore((state) => state.hasHydrated);
     const initializeLocalSession = useWorkoutSessionStore((state) => state.initializeSession);
     const setStoredRestTimer = useWorkoutSessionStore((state) => state.setRestTimer);
+
     const editingValues = useWorkoutSessionStore((state) => state.editingValues);
     const updateStoredEditingValue = useWorkoutSessionStore((state) => state.updateEditingValue);
 
+    const savedSets = useWorkoutSessionStore((state) => state.savedSets);
+    const setStoredSavedSets = useWorkoutSessionStore((state) => state.setSavedSets);
+    const addStoredSet = useWorkoutSessionStore((state) => state.addSet);
+    const updateStoredSet = useWorkoutSessionStore((state) => state.updateSet);
+    const deleteStoredSet = useWorkoutSessionStore((state) => state.deleteSet);
+
     const [sessionExercises, setSessionExercises] = useState<WorkoutSessionExercise[]>([]);
-    const [savedSets, setSavedSets] = useState<Record<string, WorkoutSessionSet[]>>({});
     const [isInitializingSession, setIsInitializingSession] = useState(true);
     const [isFinishingWorkout, setIsFinishingWorkout] = useState(false);
     const [timer, setTimer] = useState(0);
@@ -78,7 +83,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
             if (hasStoredSession) {
                 setSessionExercises(storedSessionExercises);
-                setSavedSets(storedSavedSets);
 
                 if (storedRestTimerEndAt) {
                     const endAt = new Date(storedRestTimerEndAt).getTime();
@@ -111,7 +115,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             const timerData = await getWorkoutSessionTimer(sessionId);
 
             setSessionExercises(exercises);
-            setSavedSets(sets);
+            setStoredSavedSets(sets);
 
             const restTimerEndAt = timerData.rest_timer_end_at ?? null;
 
@@ -156,7 +160,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         sessionId,
         storedLastTimerDuration,
         storedRestTimerEndAt,
-        storedSavedSets,
+        setStoredSavedSets,
         storedSessionExercises,
         storedSessionId,
         user?.id,
@@ -165,11 +169,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const fetchSavedSets = useCallback(async () => {
         try {
             const data = await getSavedSets(sessionId);
-            setSavedSets(data);
+            setStoredSavedSets(data);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
-    }, [sessionId]);
+    }, [sessionId, setStoredSavedSets]);
 
     const fetchUserSettings = useCallback(async () => {
         if (!user?.id) return;
@@ -266,6 +270,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
     async function addEmptySet(workoutSessionExerciseId: string) {
         const currentSets = savedSets[workoutSessionExerciseId] ?? [];
+
         const lastSet = currentSets[currentSets.length - 1];
 
         const sessionExercise = sessionExercises.find(
@@ -294,10 +299,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             created_at: createdAt,
         };
 
-        setSavedSets((prev) => ({
-            ...prev,
-            [workoutSessionExerciseId]: [...(prev[workoutSessionExerciseId] ?? []), tempSet],
-        }));
+        addStoredSet(workoutSessionExerciseId, tempSet);
 
         try {
             const createdSet = await createEmptyWorkoutSet({
@@ -309,19 +311,13 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 weight,
             });
 
-            setSavedSets((prev) => ({
-                ...prev,
-                [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map((set) =>
-                    set.id === tempId ? createdSet : set
-                ),
-            }));
+            updateStoredSet({
+                workoutSessionExerciseId,
+                setId: tempId,
+                changes: createdSet,
+            });
         } catch (error: any) {
-            setSavedSets((prev) => ({
-                ...prev,
-                [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).filter(
-                    (set) => set.id !== tempId
-                ),
-            }));
+            deleteStoredSet(workoutSessionExerciseId, tempId);
 
             Alert.alert("Error", error.message);
         }
@@ -330,6 +326,20 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     async function updateSetValue(setId: string, field: "weight" | "reps", value: string) {
         updateLocalSetValue(setId, field, value);
 
+        const workoutSessionExerciseId = Object.keys(savedSets).find((exerciseId) =>
+            savedSets[exerciseId]?.some((workoutSet) => workoutSet.id === setId)
+        );
+
+        if (workoutSessionExerciseId) {
+            updateStoredSet({
+                workoutSessionExerciseId,
+                setId,
+                changes: {
+                    [field]: Number(value || 0),
+                },
+            });
+        }
+
         await updateWorkoutSetValue({
             setId,
             field,
@@ -337,11 +347,17 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         });
     }
 
-    async function toggleSetCompleted(workoutSessionExerciseId: string, set: WorkoutSessionSet) {
-        const nextCompletedValue = !set.is_completed;
-        const previousSets = savedSets;
+    async function toggleSetCompleted(
+        workoutSessionExerciseId: string,
+        workoutSet: WorkoutSessionSet
+    ) {
+        const nextCompletedValue = !workoutSet.is_completed;
 
-        const { weight, reps } = getCurrentSetValues(set);
+        const previousSet = {
+            ...workoutSet,
+        };
+
+        const { weight, reps } = getCurrentSetValues(workoutSet);
 
         const isPr = calculateIsPersonalRecord({
             workoutSessionExerciseId,
@@ -349,32 +365,28 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             reps,
         });
 
-        setSavedSets((prev) => ({
-            ...prev,
-            [workoutSessionExerciseId]: (prev[workoutSessionExerciseId] ?? []).map((currentSet) =>
-                currentSet.id === set.id
-                    ? {
-                          ...currentSet,
-                          weight,
-                          reps,
-                          is_pr: isPr,
-                          is_completed: nextCompletedValue,
-                      }
-                    : currentSet
-            ),
-        }));
+        updateStoredSet({
+            workoutSessionExerciseId,
+            setId: workoutSet.id,
+            changes: {
+                weight,
+                reps,
+                is_pr: isPr,
+                is_completed: nextCompletedValue,
+            },
+        });
 
         try {
             await updateWorkoutSetValues({
-                setId: set.id,
+                setId: workoutSet.id,
                 weight,
                 reps,
                 isPr,
             });
 
             await toggleWorkoutSetCompleted({
-                setId: set.id,
-                isCompleted: set.is_completed,
+                setId: workoutSet.id,
+                isCompleted: workoutSet.is_completed,
             });
 
             if (nextCompletedValue && isPr) {
@@ -384,7 +396,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             if (nextCompletedValue) {
                 const restSeconds = getRestSecondsAfterSet({
                     workoutSessionExerciseId,
-                    setId: set.id,
+                    setId: workoutSet.id,
                 });
 
                 if (restSeconds > 0) {
@@ -392,7 +404,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 }
             }
         } catch (error: any) {
-            setSavedSets(previousSets);
+            updateStoredSet({
+                workoutSessionExerciseId,
+                setId: workoutSet.id,
+                changes: previousSet,
+            });
+
             Alert.alert("Error", error.message);
         }
     }
@@ -434,22 +451,29 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     async function deleteSet(setId: string) {
-        const previousSets = savedSets;
+        const workoutSessionExerciseId = Object.keys(savedSets).find((exerciseId) =>
+            savedSets[exerciseId]?.some((workoutSet) => workoutSet.id === setId)
+        );
 
-        setSavedSets((prev) => {
-            const next = { ...prev };
+        if (!workoutSessionExerciseId) {
+            return;
+        }
 
-            Object.keys(next).forEach((exerciseId) => {
-                next[exerciseId] = next[exerciseId].filter((set) => set.id !== setId);
-            });
+        const deletedSet = savedSets[workoutSessionExerciseId]?.find(
+            (workoutSet) => workoutSet.id === setId
+        );
 
-            return next;
-        });
+        if (!deletedSet) {
+            return;
+        }
+
+        deleteStoredSet(workoutSessionExerciseId, setId);
 
         try {
             await deleteWorkoutSet(setId);
         } catch (error: any) {
-            setSavedSets(previousSets);
+            addStoredSet(workoutSessionExerciseId, deletedSet);
+
             Alert.alert("Error", error.message);
         }
     }
