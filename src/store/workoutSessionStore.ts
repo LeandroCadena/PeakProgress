@@ -126,12 +126,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                         [workoutSessionExerciseId]: (
                             state.savedSets[workoutSessionExerciseId] ?? []
                         ).map((workoutSet) =>
-                            workoutSet.id === setId
-                                ? {
-                                      ...workoutSet,
-                                      ...changes,
-                                  }
-                                : workoutSet
+                            workoutSet.id === setId ? { ...workoutSet, ...changes } : workoutSet
                         ),
                     },
                 }));
@@ -195,9 +190,19 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                 }));
             },
 
-            clearSession: () => {
-                set(initialState);
-            },
+            clearSession: () =>
+                set({
+                    sessionId: null,
+                    routineId: null,
+                    routineName: null,
+
+                    sessionExercises: [],
+                    savedSets: {},
+                    editingValues: {},
+
+                    restTimerEndAt: null,
+                    lastTimerDuration: 0,
+                }),
         }),
         {
             name: "peak-progress-workout-session",
