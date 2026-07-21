@@ -147,56 +147,6 @@ export async function createEmptyWorkoutSet(params: {
     return data as WorkoutSessionSet;
 }
 
-export async function updateWorkoutSetValue(params: {
-    setId: string;
-    field: "weight" | "reps" | "is_pr";
-    value: number | boolean;
-}) {
-    const { error } = await supabase
-        .from("workout_sets")
-        .update({
-            [params.field]: params.value,
-        })
-        .eq("id", params.setId);
-
-    if (error) throw error;
-}
-
-export async function updateWorkoutSetValues(params: {
-    setId: string;
-    weight: number;
-    reps: number;
-    isPr: boolean;
-}) {
-    const { error } = await supabase
-        .from("workout_sets")
-        .update({
-            weight: params.weight,
-            reps: params.reps,
-            is_pr: params.isPr,
-        })
-        .eq("id", params.setId);
-
-    if (error) throw error;
-}
-
-export async function toggleWorkoutSetCompleted(params: { setId: string; isCompleted: boolean }) {
-    const { error } = await supabase
-        .from("workout_sets")
-        .update({
-            is_completed: !params.isCompleted,
-        })
-        .eq("id", params.setId);
-
-    if (error) throw error;
-}
-
-export async function deleteWorkoutSet(setId: string) {
-    const { error } = await supabase.from("workout_sets").delete().eq("id", setId);
-
-    if (error) throw error;
-}
-
 export async function finishWorkoutSession(params: { sessionId: string; routineName: string }) {
     const completedAt = new Date().toISOString();
 
@@ -270,29 +220,6 @@ export async function updateWorkoutSessionTimer(params: {
             last_rest_duration_seconds: params.lastRestDurationSeconds ?? null,
         })
         .eq("id", params.sessionId);
-
-    if (error) throw error;
-}
-
-export async function updateWorkoutSessionExerciseRest(params: {
-    workoutSessionExerciseId: string;
-    restSeconds?: number;
-    exerciseRestSeconds?: number;
-}) {
-    const updates: Record<string, number> = {};
-
-    if (params.restSeconds !== undefined) {
-        updates.rest_seconds = params.restSeconds;
-    }
-
-    if (params.exerciseRestSeconds !== undefined) {
-        updates.exercise_rest_seconds = params.exerciseRestSeconds;
-    }
-
-    const { error } = await supabase
-        .from("workout_session_exercises")
-        .update(updates)
-        .eq("id", params.workoutSessionExerciseId);
 
     if (error) throw error;
 }
@@ -590,15 +517,6 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
     return createdSessionExercises ?? [];
 }
 
-export async function deleteWorkoutSessionExercise(workoutSessionExerciseId: string) {
-    const { error } = await supabase
-        .from("workout_session_exercises")
-        .delete()
-        .eq("id", workoutSessionExerciseId);
-
-    if (error) throw error;
-}
-
 export async function deleteRoutineExerciseSetsByRoutineExerciseId(routineExerciseId: string) {
     const { error } = await supabase
         .from("routine_exercise_sets")
@@ -606,28 +524,4 @@ export async function deleteRoutineExerciseSetsByRoutineExerciseId(routineExerci
         .eq("routine_exercise_id", routineExerciseId);
 
     if (error) throw error;
-}
-
-export async function reorderWorkoutSessionExercises(
-    exercises: {
-        id: string;
-        position: number;
-    }[]
-) {
-    const updates = exercises.map((exercise) =>
-        supabase
-            .from("workout_session_exercises")
-            .update({
-                position: exercise.position,
-            })
-            .eq("id", exercise.id)
-    );
-
-    const results = await Promise.all(updates);
-
-    const failed = results.find((result) => result.error);
-
-    if (failed?.error) {
-        throw failed.error;
-    }
 }

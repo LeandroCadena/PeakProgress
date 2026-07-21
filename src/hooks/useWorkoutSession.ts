@@ -9,19 +9,12 @@ import { updateWorkoutStreakAfterFinish } from "../services/streakService";
 import {
     getSavedSets,
     createEmptyWorkoutSet,
-    toggleWorkoutSetCompleted,
-    deleteWorkoutSet,
     finishWorkoutSession,
     syncWorkoutSessionToRoutine,
     getWorkoutSessionExercises,
-    deleteWorkoutSessionExercise,
-    updateWorkoutSessionExerciseRest,
     getWorkoutSessionTimer,
     updateWorkoutSessionTimer,
-    updateWorkoutSetValues,
-    updateWorkoutSetValue,
     createWorkoutSessionExercisesFromRoutine,
-    reorderWorkoutSessionExercises,
 } from "../services/workoutService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
@@ -317,7 +310,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         }
     }
 
-    async function updateSetValue(setId: string, field: "weight" | "reps", value: string) {
+    function updateSetValue(setId: string, field: "weight" | "reps", value: string) {
         updateLocalSetValue(setId, field, value);
 
         const workoutSessionExerciseId = Object.keys(savedSets).find((exerciseId) =>
@@ -333,12 +326,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 },
             });
         }
-
-        await updateWorkoutSetValue({
-            setId,
-            field,
-            value: Number(value || 0),
-        });
     }
 
     async function toggleSetCompleted(
@@ -346,10 +333,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         workoutSet: WorkoutSessionSet
     ) {
         const nextCompletedValue = !workoutSet.is_completed;
-
-        const previousSet = {
-            ...workoutSet,
-        };
 
         const { weight, reps } = getCurrentSetValues(workoutSet);
 
@@ -370,41 +353,19 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             },
         });
 
-        try {
-            await updateWorkoutSetValues({
-                setId: workoutSet.id,
-                weight,
-                reps,
-                isPr,
-            });
+        if (nextCompletedValue && isPr) {
+            playPersonalRecordSound();
+        }
 
-            await toggleWorkoutSetCompleted({
-                setId: workoutSet.id,
-                isCompleted: workoutSet.is_completed,
-            });
-
-            if (nextCompletedValue && isPr) {
-                playPersonalRecordSound();
-            }
-
-            if (nextCompletedValue) {
-                const restSeconds = getRestSecondsAfterSet({
-                    workoutSessionExerciseId,
-                    setId: workoutSet.id,
-                });
-
-                if (restSeconds > 0) {
-                    await startRestTimer(restSeconds);
-                }
-            }
-        } catch (error: any) {
-            updateStoredSet({
+        if (nextCompletedValue) {
+            const restSeconds = getRestSecondsAfterSet({
                 workoutSessionExerciseId,
                 setId: workoutSet.id,
-                changes: previousSet,
             });
 
-            Alert.alert("Error", error.message);
+            if (restSeconds > 0) {
+                await startRestTimer(restSeconds);
+            }
         }
     }
 
@@ -444,7 +405,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         startRestTimer(lastTimerDuration);
     }
 
-    async function deleteSet(setId: string) {
+    function deleteSet(setId: string) {
         const workoutSessionExerciseId = Object.keys(savedSets).find((exerciseId) =>
             savedSets[exerciseId]?.some((workoutSet) => workoutSet.id === setId)
         );
@@ -453,23 +414,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             return;
         }
 
-        const deletedSet = savedSets[workoutSessionExerciseId]?.find(
-            (workoutSet) => workoutSet.id === setId
-        );
-
-        if (!deletedSet) {
-            return;
-        }
-
         deleteStoredSet(workoutSessionExerciseId, setId);
-
-        try {
-            await deleteWorkoutSet(setId);
-        } catch (error: any) {
-            addStoredSet(workoutSessionExerciseId, deletedSet);
-
-            Alert.alert("Error", error.message);
-        }
     }
 
     async function finishWorkout() {
@@ -523,53 +468,17 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         updateStoredEditingValue(setId, field, value);
     }
 
-    async function deleteSessionExercise(workoutSessionExerciseId: string) {
-        const deletedExercise = sessionExercises.find((e) => e.id === workoutSessionExerciseId);
-
-        const deletedSets = savedSets[workoutSessionExerciseId];
-
-        if (!deletedExercise) return;
-
+    function deleteSessionExercise(workoutSessionExerciseId: string) {
         deleteStoredExercise(workoutSessionExerciseId);
-
-        try {
-            await deleteWorkoutSessionExercise(workoutSessionExerciseId);
-        } catch (error: any) {
-            setStoredSessionExercises([...sessionExercises, deletedExercise]);
-
-            if (deletedSets) {
-                setStoredSavedSets({
-                    ...savedSets,
-                    [workoutSessionExerciseId]: deletedSets,
-                });
-            }
-
-            Alert.alert("Error", error.message);
-        }
     }
 
-    async function reorderSessionExercises(reorderedExercises: WorkoutSessionExercise[]) {
-        const previousExercises = sessionExercises;
-
+    function reorderSessionExercises(reorderedExercises: WorkoutSessionExercise[]) {
         const exercisesWithPositions = reorderedExercises.map((exercise, index) => ({
             ...exercise,
             position: index,
         }));
 
         updateStoredSessionExercises(exercisesWithPositions);
-
-        try {
-            await reorderWorkoutSessionExercises(
-                exercisesWithPositions.map((exercise) => ({
-                    id: exercise.id,
-                    position: exercise.position,
-                }))
-            );
-        } catch (error: any) {
-            setStoredSessionExercises(previousExercises);
-
-            Alert.alert("Error", error.message);
-        }
     }
 
     function getRestSecondsAfterSet(params: { workoutSessionExerciseId: string; setId: string }) {
@@ -597,7 +506,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         return 0;
     }
 
-    async function updateWorkoutSetRest(workoutSessionExerciseId: string, value: number) {
+    function updateWorkoutSetRest(workoutSessionExerciseId: string, value: number) {
         updateStoredSessionExercises(
             sessionExercises.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
@@ -605,18 +514,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     : exercise
             )
         );
-
-        try {
-            await updateWorkoutSessionExerciseRest({
-                workoutSessionExerciseId,
-                restSeconds: value,
-            });
-        } catch (error) {
-            console.log("updateWorkoutSetRest error", error);
-        }
     }
 
-    async function updateWorkoutExerciseRest(workoutSessionExerciseId: string, value: number) {
+    function updateWorkoutExerciseRest(workoutSessionExerciseId: string, value: number) {
         updateStoredSessionExercises(
             sessionExercises.map((exercise) =>
                 exercise.id === workoutSessionExerciseId
@@ -624,11 +524,6 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     : exercise
             )
         );
-
-        await updateWorkoutSessionExerciseRest({
-            workoutSessionExerciseId,
-            exerciseRestSeconds: value,
-        });
     }
 
     function calculateIsPersonalRecord(params: {
