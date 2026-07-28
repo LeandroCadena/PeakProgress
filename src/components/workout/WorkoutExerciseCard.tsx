@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../../theme";
+import { colors, spacing, typography } from "../../theme";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
 import ActionMenu from "../common/ActionMenu";
 import AppButton from "../common/AppButton";
@@ -32,6 +32,7 @@ type WorkoutExerciseCardProps = {
     ) => void;
     toggleSetCompleted: (
         workoutSessionExerciseId: string,
+        exerciseId: string,
         set: WorkoutSessionSet,
     ) => void;
     deleteSet: (setId: string) => void;
@@ -43,6 +44,7 @@ type WorkoutExerciseCardProps = {
     onActionsMenuOpenChange: (open: boolean) => void;
     useGlobalTimers?: boolean;
     updateWorkoutSetRest: (workoutSessionExerciseId: string, value: number) => void;
+    currentExerciseRecord: string | null;
 };
 
 export default function WorkoutExerciseCard({
@@ -61,8 +63,9 @@ export default function WorkoutExerciseCard({
     onActionsMenuOpenChange,
     useGlobalTimers = false,
     updateWorkoutSetRest,
+    currentExerciseRecord,
 }: WorkoutExerciseCardProps) {
-    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
@@ -85,6 +88,7 @@ export default function WorkoutExerciseCard({
                 <ExerciseCardHeader
                     imageUrl={exercise.exercise_image_url_snapshot}
                     title={exerciseName}
+                    exerciseRecord={currentExerciseRecord}
                     rightContent={
                         <View style={styles.headerActions}>
                             <ActionMenu
@@ -159,7 +163,13 @@ export default function WorkoutExerciseCard({
                                 onRepsChange={(value) => updateLocalSetValue(set.id, "reps", value)}
                                 onWeightBlur={(value) => updateSetValue(set.id, "weight", value)}
                                 onRepsBlur={(value) => updateSetValue(set.id, "reps", value)}
-                                onToggleCompleted={() => toggleSetCompleted(exercise.id, set)}
+                                onToggleCompleted={() =>
+                                    toggleSetCompleted(
+                                        exercise.id,
+                                        exercise.exercise_id,
+                                        set
+                                    )
+                                }
                                 onDelete={() => deleteSet(set.id)}
                                 isTemporarySet={isTemporarySet}
                             />
@@ -224,31 +234,5 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         gap: spacing.sm,
-    },
-    menuBackdrop: {
-        ...StyleSheet.absoluteFill,
-        zIndex: 50,
-    },
-    menu: {
-        position: "absolute",
-        top: 56,
-        right: spacing.md,
-        backgroundColor: colors.card,
-        borderRadius: componentStyles.modalRadius,
-        borderWidth: 1,
-        borderColor: colors.cardBorder,
-        minWidth: 180,
-        overflow: "hidden",
-        elevation: 10,
-    },
-    menuItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
-    },
-    menuText: {
-        color: colors.text,
     },
 });

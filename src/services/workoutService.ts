@@ -12,8 +12,6 @@ export async function getActiveWorkoutSession(userId: string) {
         id,
         routine_id,
         started_at,
-        rest_timer_end_at,
-        last_rest_duration_seconds,
         routines (
             name
         )
@@ -140,7 +138,6 @@ export async function finishWorkoutSession(params: {
             total_sets: params.totalSets,
             total_volume: params.totalVolume,
             duration_minutes: durationMinutes,
-            rest_timer_end_at: null,
         })
         .eq("id", params.sessionId)
         .select("id, completed_at")
@@ -151,34 +148,6 @@ export async function finishWorkoutSession(params: {
     }
 
     return data;
-}
-
-export async function getWorkoutSessionTimer(sessionId: string) {
-    const { data, error } = await supabase
-        .from("workout_sessions")
-        .select("rest_timer_end_at, last_rest_duration_seconds")
-        .eq("id", sessionId)
-        .single();
-
-    if (error) throw error;
-
-    return data;
-}
-
-export async function updateWorkoutSessionTimer(params: {
-    sessionId: string;
-    restTimerEndAt: string | null;
-    lastRestDurationSeconds?: number | null;
-}) {
-    const { error } = await supabase
-        .from("workout_sessions")
-        .update({
-            rest_timer_end_at: params.restTimerEndAt,
-            last_rest_duration_seconds: params.lastRestDurationSeconds ?? null,
-        })
-        .eq("id", params.sessionId);
-
-    if (error) throw error;
 }
 
 export async function syncWorkoutSessionToRoutine(params: {
@@ -197,7 +166,6 @@ export async function syncWorkoutSessionToRoutine(params: {
             position: index,
             rest_seconds: sessionExercise.rest_seconds ?? 90,
             exercise_rest_seconds: sessionExercise.exercise_rest_seconds ?? 120,
-            current_pr_volume: sessionExercise.current_pr_volume ?? 0,
             session_exercise_id: sessionExercise.id,
         }));
 
@@ -255,8 +223,7 @@ export async function getWorkoutSessionExercises(
         exercise_image_url_snapshot,
         exercise_rest_seconds,
         position,
-        rest_seconds,
-        current_pr_volume
+        rest_seconds
         `
         )
         .eq("workout_session_id", sessionId)
@@ -278,7 +245,6 @@ async function getRoutineExercisesWithSets(routineId: string) {
             position,
             rest_seconds,
             exercise_rest_seconds,
-            current_pr_volume,
             exercise:exercises (
                 name,
                 image_url
@@ -317,20 +283,6 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
     const settings = await getUserSettings(params.userId);
     const routineExercises = await getRoutineExercisesWithSets(params.routineId);
 
-    const exerciseIds = routineExercises.map((item) => item.exercise_id);
-
-    const { data: records, error: recordsError } = await supabase
-        .from("user_exercise_records")
-        .select("exercise_id, best_volume")
-        .eq("user_id", params.userId)
-        .in("exercise_id", exerciseIds);
-
-    if (recordsError) throw recordsError;
-
-    const prByExerciseId = new Map(
-        (records ?? []).map((record) => [record.exercise_id, Number(record.best_volume ?? 0)])
-    );
-
     const sessionExercisesToInsert = routineExercises.map((routineExercise) => ({
         workout_session_id: params.sessionId,
         exercise_id: routineExercise.exercise_id,
@@ -343,24 +295,20 @@ export async function createWorkoutSessionExercisesFromRoutine(params: {
         exercise_rest_seconds: settings.use_global_timers
             ? settings.global_exercise_rest_seconds
             : (routineExercise.exercise_rest_seconds ?? 120),
-        current_pr_volume:
-            prByExerciseId.get(routineExercise.exercise_id) ??
-            Number(routineExercise.current_pr_volume ?? 0),
     }));
 
     const { data: createdSessionExercises, error: sessionExercisesError } = await supabase
         .from("workout_session_exercises")
         .insert(sessionExercisesToInsert).select(`
-        id,
-        workout_session_id,
-        exercise_id,
-        exercise_name_snapshot,
-        exercise_image_url_snapshot,
-        exercise_rest_seconds,
-        position,
-        rest_seconds,
-        current_pr_volume,
-        created_at
+            id,
+            workout_session_id,
+            exercise_id,
+            exercise_name_snapshot,
+            exercise_image_url_snapshot,
+            exercise_rest_seconds,
+            position,
+            rest_seconds,
+            created_at
         `);
 
     if (sessionExercisesError) throw sessionExercisesError;
@@ -499,7 +447,6 @@ export async function saveWorkoutSessionSnapshot(params: {
             position: exercise.position ?? index,
             rest_seconds: exercise.rest_seconds ?? 90,
             exercise_rest_seconds: exercise.exercise_rest_seconds ?? 120,
-            current_pr_volume: exercise.current_pr_volume ?? 0,
         }));
 
         const { error } = await supabase
@@ -568,15 +515,10 @@ export async function loadWorkoutSessionSnapshot(params: {
         });
     }
 
-    const [savedSets, timer] = await Promise.all([
-        getSavedSets(params.sessionId),
-        getWorkoutSessionTimer(params.sessionId),
-    ]);
+    const savedSets = await getSavedSets(params.sessionId);
 
     return {
         sessionExercises,
         savedSets,
-        restTimerEndAt: timer.rest_timer_end_at ?? null,
-        lastTimerDuration: timer.last_rest_duration_seconds ?? 0,
     };
 }

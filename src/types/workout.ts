@@ -9,13 +9,12 @@ export type WorkoutSessionRouteParams = {
 export type WorkoutSessionExercise = {
     id: string;
     workout_session_id: string;
-    exercise_id: string | null;
+    exercise_id: string;
     exercise_name_snapshot: string;
     exercise_image_url_snapshot?: string | null;
     position: number;
     rest_seconds: number;
     exercise_rest_seconds: number;
-    current_pr_volume: number;
 };
 
 export type WorkoutSessionSet = {

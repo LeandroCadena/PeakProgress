@@ -31,6 +31,12 @@ export const sharedStyles = StyleSheet.create({
         fontWeight: typography.weightSemiBold,
         marginBottom: spacing.xs,
     },
+    cardSubtitle: {
+        color: colors.textSecondary,
+        fontSize: typography.body,
+        fontWeight: typography.weightMedium,
+        marginBottom: spacing.xs,
+    },
     mutedText: {
         color: colors.textSecondary,
         marginTop: spacing.xs,

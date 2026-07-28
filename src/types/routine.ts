@@ -12,7 +12,6 @@ export type RoutineExercise = {
     position: number;
     rest_seconds: number;
     exercise_rest_seconds: number;
-    current_pr_volume: number;
     exercise: {
         name: string;
         image_url?: string | null;

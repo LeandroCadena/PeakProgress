@@ -2,7 +2,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import type {
+    ExerciseRecordCandidate,
+    ExerciseRecordCandidatesById,
+    ExerciseRecordsById,
+    UserExerciseRecord,
+} from "../types/progress";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
+import { createExerciseRecordCandidate } from "../utils/exerciseRecordCandidates";
 
 type UpdateSetInput = {
     workoutSessionExerciseId: string;
@@ -24,6 +31,8 @@ type WorkoutSessionState = {
 
     sessionExercises: WorkoutSessionExercise[];
     savedSets: Record<string, WorkoutSessionSet[]>;
+    exerciseRecordsById: ExerciseRecordsById;
+    exerciseRecordCandidatesById: ExerciseRecordCandidatesById;
     editingValues: Record<string, string>;
 
     restTimerEndAt: string | null;
@@ -46,6 +55,8 @@ type WorkoutSessionState = {
         routineName: string;
         sessionExercises: WorkoutSessionExercise[];
         savedSets: Record<string, WorkoutSessionSet[]>;
+        exerciseRecordsById?: ExerciseRecordsById;
+        exerciseRecordCandidatesById?: ExerciseRecordCandidatesById;
         restTimerEndAt?: string | null;
         lastTimerDuration?: number;
     }) => void;
@@ -54,6 +65,24 @@ type WorkoutSessionState = {
     replaceSessionExercises: (sessionExercises: WorkoutSessionExercise[]) => void;
     addExercise: (input: AddSessionExerciseInput) => void;
     deleteExercise: (workoutSessionExerciseId: string) => void;
+
+    setExerciseRecords: (exerciseRecordsById: ExerciseRecordsById) => void;
+    updateExerciseRecord: (exerciseId: string, record: UserExerciseRecord) => void;
+    removeExerciseRecord: (exerciseId: string) => void;
+
+    setExerciseRecordCandidates: (candidates: ExerciseRecordCandidatesById) => void;
+    addExerciseRecordCandidate: (
+        exerciseId: string,
+        completedSet: {
+            setId: string;
+            weight: number;
+            reps: number;
+        }
+    ) => ExerciseRecordCandidate | null;
+    removeExerciseRecordCandidate: (
+        exerciseId: string,
+        setId: string
+    ) => ExerciseRecordCandidate | null;
 
     updateEditingValue: (setId: string, field: "weight" | "reps", value: string) => void;
     updateSet: (input: UpdateSetInput) => void;
@@ -72,6 +101,9 @@ const initialState = {
     sessionExercises: [],
     savedSets: {},
     editingValues: {},
+
+    exerciseRecordsById: {},
+    exerciseRecordCandidatesById: {},
 
     restTimerEndAt: null,
     lastTimerDuration: 0,
@@ -123,6 +155,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                 routineName,
                 sessionExercises,
                 savedSets,
+                exerciseRecordsById = {},
+                exerciseRecordCandidatesById = {},
                 restTimerEndAt = null,
                 lastTimerDuration = 0,
             }) => {
@@ -132,6 +166,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                     routineName,
                     sessionExercises,
                     savedSets,
+                    exerciseRecordsById,
+                    exerciseRecordCandidatesById,
                     editingValues: {},
                     restTimerEndAt,
                     lastTimerDuration,
@@ -257,6 +293,157 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                 });
             },
 
+            setExerciseRecords: (exerciseRecordsById) => {
+                set({
+                    exerciseRecordsById,
+                });
+            },
+
+            updateExerciseRecord: (exerciseId, record) => {
+                set((state) => ({
+                    exerciseRecordsById: {
+                        ...state.exerciseRecordsById,
+                        [exerciseId]: record,
+                    },
+                }));
+            },
+
+            removeExerciseRecord: (exerciseId) => {
+                set((state) => {
+                    const nextRecords = {
+                        ...state.exerciseRecordsById,
+                    };
+
+                    delete nextRecords[exerciseId];
+
+                    return {
+                        exerciseRecordsById: nextRecords,
+                    };
+                });
+            },
+
+            setExerciseRecordCandidates: (candidates) => {
+                set({
+                    exerciseRecordCandidatesById: candidates,
+                });
+            },
+
+            addExerciseRecordCandidate: (exerciseId, completedSet) => {
+                let createdCandidate: ExerciseRecordCandidate | null = null;
+
+                set((state) => {
+                    const historicalRecord = state.exerciseRecordsById[exerciseId];
+
+                    const currentCandidates = state.exerciseRecordCandidatesById[exerciseId] ?? [];
+
+                    const alreadyRegistered = currentCandidates.some(
+                        (candidate) => candidate.setId === completedSet.setId
+                    );
+
+                    if (alreadyRegistered) {
+                        return {};
+                    }
+
+                    const nextCandidate = createExerciseRecordCandidate({
+                        historicalRecord,
+                        currentCandidates,
+                        setId: completedSet.setId,
+                        weight: completedSet.weight,
+                        reps: completedSet.reps,
+                    });
+
+                    if (!nextCandidate) {
+                        return {};
+                    }
+
+                    const nextCandidates = [...currentCandidates, nextCandidate].sort(
+                        (left, right) => {
+                            if (left.volume !== right.volume) {
+                                return left.volume - right.volume;
+                            }
+
+                            return left.setId.localeCompare(right.setId);
+                        }
+                    );
+
+                    createdCandidate = nextCandidate;
+
+                    return {
+                        exerciseRecordCandidatesById: {
+                            ...state.exerciseRecordCandidatesById,
+                            [exerciseId]: nextCandidates,
+                        },
+                    };
+                });
+
+                return createdCandidate;
+            },
+
+            removeExerciseRecordCandidate: (exerciseId, setId) => {
+                let currentRecord: ExerciseRecordCandidate | null = null;
+
+                set((state) => {
+                    const currentCandidates = state.exerciseRecordCandidatesById[exerciseId] ?? [];
+
+                    const candidateToRemove = currentCandidates.find(
+                        (candidate) => candidate.setId === setId
+                    );
+
+                    if (!candidateToRemove) {
+                        return {};
+                    }
+
+                    const remainingCandidates = currentCandidates.filter(
+                        (candidate) => candidate.setId !== setId
+                    );
+
+                    if (remainingCandidates.length === 0) {
+                        const nextCandidatesById = {
+                            ...state.exerciseRecordCandidatesById,
+                        };
+
+                        delete nextCandidatesById[exerciseId];
+
+                        return {
+                            exerciseRecordCandidatesById: nextCandidatesById,
+                        };
+                    }
+
+                    const highestVolume =
+                        remainingCandidates[remainingCandidates.length - 1].volume;
+
+                    const highestCandidates = remainingCandidates.filter(
+                        (candidate) => candidate.volume === highestVolume
+                    );
+
+                    const highestAlreadyHasRecord = highestCandidates.some(
+                        (candidate) => candidate.isPersonalRecord
+                    );
+
+                    const nextCandidates = highestAlreadyHasRecord
+                        ? remainingCandidates
+                        : remainingCandidates.map((candidate) =>
+                              candidate.volume === highestVolume
+                                  ? {
+                                        ...candidate,
+                                        isPersonalRecord: true,
+                                    }
+                                  : candidate
+                          );
+
+                    currentRecord = nextCandidates[nextCandidates.length - 1];
+
+                    return {
+                        exerciseRecordCandidatesById: {
+                            ...state.exerciseRecordCandidatesById,
+                            [exerciseId]: nextCandidates,
+                        },
+                    };
+                });
+
+                return currentRecord;
+            },
+
             setRestTimer: ({ restTimerEndAt, lastTimerDuration }) => {
                 set((state) => ({
                     restTimerEndAt,
@@ -278,6 +465,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>()(
                 routineName: state.routineName,
                 sessionExercises: state.sessionExercises,
                 savedSets: state.savedSets,
+                exerciseRecordsById: state.exerciseRecordsById,
+                exerciseRecordCandidatesById: state.exerciseRecordCandidatesById,
                 editingValues: state.editingValues,
                 restTimerEndAt: state.restTimerEndAt,
                 lastTimerDuration: state.lastTimerDuration,

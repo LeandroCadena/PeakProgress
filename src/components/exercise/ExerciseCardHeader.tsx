@@ -6,16 +6,23 @@ import { colors, componentStyles, sharedStyles, spacing } from "../../theme";
 type Props = {
     imageUrl?: string | null;
     title: string;
+    exerciseRecord: string | null;
     rightContent?: ReactNode;
 };
 
-export default function ExerciseCardHeader({ imageUrl, title, rightContent }: Props) {
+export default function ExerciseCardHeader({ imageUrl, title, exerciseRecord, rightContent }: Props) {
     return (
         <View style={styles.header}>
             {imageUrl ? <Image source={{ uri: imageUrl }} style={styles.image} /> : null}
 
             <View style={styles.info}>
                 <Text style={sharedStyles.cardTitle}>{title}</Text>
+
+                {
+                    exerciseRecord ?
+                        <Text style={sharedStyles.cardSubtitle}>{exerciseRecord}</Text>
+                        : null
+                }
             </View>
 
             {rightContent ? <View style={styles.rightContent}>{rightContent}</View> : null}

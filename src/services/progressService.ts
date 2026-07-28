@@ -1,4 +1,4 @@
-import { ExerciseProgress } from "../types/progress";
+import type { ExerciseProgress, ExerciseRecordsById, UserExerciseRecord } from "../types/progress";
 
 import { supabase } from "./supabase";
 
@@ -132,4 +132,35 @@ export async function upsertUserExerciseRecord(params: {
     );
 
     if (error) throw error;
+}
+
+export async function getUserExerciseRecords(userId: string): Promise<ExerciseRecordsById> {
+    const { data, error } = await supabase
+        .from("user_exercise_records")
+        .select(
+            `
+            exercise_id,
+            best_volume,
+            best_weight,
+            best_reps,
+            best_set_id
+        `
+        )
+        .eq("user_id", userId);
+
+    if (error) throw error;
+
+    return Object.fromEntries(
+        (data ?? []).map((record) => {
+            const normalizedRecord: UserExerciseRecord = {
+                exerciseId: record.exercise_id,
+                bestVolume: Number(record.best_volume ?? 0),
+                bestWeight: Number(record.best_weight ?? 0),
+                bestReps: Number(record.best_reps ?? 0),
+                bestSetId: record.best_set_id ?? null,
+            };
+
+            return [record.exercise_id, normalizedRecord];
+        })
+    );
 }

@@ -46,6 +46,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         getSetInputValue,
         updateLocalSetValue,
         deleteSessionExercise,
+        currentExerciseRecordLabel,
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
         isInitializingSession,
@@ -181,6 +182,9 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 }}
                                 useGlobalTimers={useGlobalTimers}
                                 updateWorkoutSetRest={updateWorkoutSetRest}
+                                currentExerciseRecord={currentExerciseRecordLabel(
+                                    item.exercise_id
+                                )}
                             />
 
                             {index < sessionExercises.length - 1 ? (

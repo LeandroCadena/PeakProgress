@@ -54,7 +54,6 @@ export async function getRoutineExercises(routineId: string): Promise<RoutineExe
         exercise_id,
         rest_seconds,
         exercise_rest_seconds,
-        current_pr_volume,
         position,
         exercise:exercises (
             name,
@@ -90,7 +89,6 @@ export async function addExerciseToRoutine(params: {
             exercise_id: params.exerciseId,
             rest_seconds: params.restSeconds,
             position: params.position,
-            current_pr_volume: params.currentPrVolume ?? 0,
         })
         .select("id")
         .single();

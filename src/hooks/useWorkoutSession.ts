@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
+import { getUserExerciseRecords } from "../services/progressService";
 import { getUserSettings } from "../services/settingsService";
 import { loadWorkoutSessionSnapshot } from "../services/workoutService";
 import { syncCompletedWorkout } from "../services/workoutSyncService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
+import { UserExerciseRecord } from "../types/progress";
 import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
 import {
     scheduleRestFinishedNotification,
@@ -51,6 +53,20 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const updateStoredSet = useWorkoutSessionStore((state) => state.updateSet);
     const deleteStoredSet = useWorkoutSessionStore((state) => state.deleteSet);
 
+    const exerciseRecordsById = useWorkoutSessionStore((state) => state.exerciseRecordsById);
+    const exerciseRecordCandidatesById = useWorkoutSessionStore(
+        (state) => state.exerciseRecordCandidatesById
+    );
+    const setExerciseRecordCandidates = useWorkoutSessionStore(
+        (state) => state.setExerciseRecordCandidates
+    );
+    const addExerciseRecordCandidate = useWorkoutSessionStore(
+        (state) => state.addExerciseRecordCandidate
+    );
+    const removeExerciseRecordCandidate = useWorkoutSessionStore(
+        (state) => state.removeExerciseRecordCandidate
+    );
+
     const sessionExercises = useWorkoutSessionStore((state) => state.sessionExercises);
     const deleteStoredExercise = useWorkoutSessionStore((state) => state.deleteExercise);
     const replaceStoredSessionExercises = useWorkoutSessionStore(
@@ -69,6 +85,24 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const isScreenFocusedRef = useRef(false);
     const hasFinishedRef = useRef(false);
 
+    const restoreLocalRestTimer = useCallback(() => {
+        if (storedRestTimerEndAt) {
+            const endAt = new Date(storedRestTimerEndAt).getTime();
+
+            const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+
+            setRestEndAt(remainingSeconds > 0 ? endAt : null);
+            setTimer(remainingSeconds);
+            setTimerRunning(remainingSeconds > 0);
+        } else {
+            setRestEndAt(null);
+            setTimer(0);
+            setTimerRunning(false);
+        }
+
+        setLastTimerDuration(storedLastTimerDuration);
+    }, [storedLastTimerDuration, storedRestTimerEndAt]);
+
     const ensureWorkoutSessionInitialized = useCallback(async () => {
         if (hasFinishedRef.current || !hasHydrated || !user?.id || !sessionId || !routineId) {
             return;
@@ -83,30 +117,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 sessionExercises.length > 0;
 
             if (hasStoredSession) {
-                if (storedRestTimerEndAt) {
-                    const endAt = new Date(storedRestTimerEndAt).getTime();
-
-                    const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
-
-                    setRestEndAt(remainingSeconds > 0 ? endAt : null);
-                    setTimer(remainingSeconds);
-                    setTimerRunning(remainingSeconds > 0);
-                } else {
-                    setRestEndAt(null);
-                    setTimer(0);
-                    setTimerRunning(false);
-                }
-
-                setLastTimerDuration(storedLastTimerDuration);
-
+                restoreLocalRestTimer();
                 return;
             }
 
-            const snapshot = await loadWorkoutSessionSnapshot({
-                sessionId,
-                routineId,
-                userId: user.id,
-            });
+            const [snapshot, userExerciseRecords] = await Promise.all([
+                loadWorkoutSessionSnapshot({
+                    sessionId,
+                    routineId,
+                    userId: user.id,
+                }),
+                getUserExerciseRecords(user.id),
+            ]);
 
             initializeLocalSession({
                 sessionId,
@@ -114,25 +136,13 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 routineName,
                 sessionExercises: snapshot.sessionExercises,
                 savedSets: snapshot.savedSets,
-                restTimerEndAt: snapshot.restTimerEndAt,
-                lastTimerDuration: snapshot.lastTimerDuration,
+                exerciseRecordsById: userExerciseRecords,
+                exerciseRecordCandidatesById: {},
+                restTimerEndAt: null,
+                lastTimerDuration: 0,
             });
 
-            if (snapshot.restTimerEndAt) {
-                const endAt = new Date(snapshot.restTimerEndAt).getTime();
-
-                const remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
-
-                setRestEndAt(remainingSeconds > 0 ? endAt : null);
-                setTimer(remainingSeconds);
-                setTimerRunning(remainingSeconds > 0);
-            } else {
-                setRestEndAt(null);
-                setTimer(0);
-                setTimerRunning(false);
-            }
-
-            setLastTimerDuration(snapshot.lastTimerDuration);
+            restoreLocalRestTimer();
         } catch (error: unknown) {
             const message =
                 error instanceof Error ? error.message : "Unable to initialize workout session";
@@ -148,11 +158,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         routineName,
         sessionExercises.length,
         sessionId,
-        storedLastTimerDuration,
-        storedRestTimerEndAt,
         storedRoutineId,
         storedSessionId,
         user?.id,
+        restoreLocalRestTimer,
     ]);
 
     const fetchUserSettings = useCallback(async () => {
@@ -192,11 +201,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                     lastTimerDuration,
                 });
 
-                const hadPendingNotification = await cancelRestFinishedNotification();
-
-                if (isScreenFocusedRef.current && hadPendingNotification) {
-                    playTimerFinishedSound();
-                }
+                // if (isScreenFocusedRef.current) {
+                //     playTimerFinishedSound();
+                // }
             }
         }, 1000);
 
@@ -213,9 +220,13 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         if (remainingSeconds <= 0) {
             setTimerRunning(false);
             setRestEndAt(null);
-            cancelRestFinishedNotification();
+
+            setStoredRestTimer({
+                restTimerEndAt: null,
+                lastTimerDuration,
+            });
         }
-    }, [restEndAt]);
+    }, [restEndAt, lastTimerDuration, setStoredRestTimer]);
 
     useEffect(() => {
         const subscription = AppState.addEventListener("change", (nextState) => {
@@ -283,17 +294,26 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
     async function toggleSetCompleted(
         workoutSessionExerciseId: string,
+        exerciseId: string,
         workoutSet: WorkoutSessionSet
     ) {
         const nextCompletedValue = !workoutSet.is_completed;
 
         const { weight, reps } = getCurrentSetValues(workoutSet);
 
-        const isPr = calculateIsPersonalRecord({
-            workoutSessionExerciseId,
-            weight,
-            reps,
-        });
+        let isPersonalRecord = false;
+
+        if (nextCompletedValue) {
+            const createdCandidate = addExerciseRecordCandidate(exerciseId, {
+                setId: workoutSet.id,
+                weight,
+                reps,
+            });
+
+            isPersonalRecord = createdCandidate?.isPersonalRecord ?? false;
+        } else {
+            removeExerciseRecordCandidate(exerciseId, workoutSet.id);
+        }
 
         updateStoredSet({
             workoutSessionExerciseId,
@@ -301,12 +321,12 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             changes: {
                 weight,
                 reps,
-                is_pr: isPr,
                 is_completed: nextCompletedValue,
+                is_pr: nextCompletedValue ? isPersonalRecord : false,
             },
         });
 
-        if (nextCompletedValue && isPr) {
+        if (nextCompletedValue && isPersonalRecord) {
             playPersonalRecordSound();
         }
 
@@ -361,6 +381,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             return;
         }
 
+        const workoutSet = savedSets[workoutSessionExerciseId]?.find(
+            (currentSet) => currentSet.id === setId
+        );
+
+        const sessionExercise = sessionExercises.find(
+            (exercise) => exercise.id === workoutSessionExerciseId
+        );
+
+        if (workoutSet?.is_completed && sessionExercise) {
+            removeExerciseRecordCandidate(sessionExercise.exercise_id, setId);
+        }
+
         deleteStoredSet(workoutSessionExerciseId, setId);
     }
 
@@ -382,6 +414,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 userId: user?.id ?? null,
                 sessionExercises,
                 savedSets: normalizedSavedSets,
+                exerciseRecordCandidatesById,
             });
 
             let updateRoutineAfterWorkout = true;
@@ -426,6 +459,20 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     }
 
     function deleteSessionExercise(workoutSessionExerciseId: string) {
+        const sessionExercise = sessionExercises.find(
+            (exercise) => exercise.id === workoutSessionExerciseId
+        );
+
+        if (sessionExercise) {
+            const nextCandidates = {
+                ...exerciseRecordCandidatesById,
+            };
+
+            delete nextCandidates[sessionExercise.exercise_id];
+
+            setExerciseRecordCandidates(nextCandidates);
+        }
+
         deleteStoredExercise(workoutSessionExerciseId);
     }
 
@@ -483,20 +530,39 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         );
     }
 
-    function calculateIsPersonalRecord(params: {
-        workoutSessionExerciseId: string;
-        weight: number;
-        reps: number;
-    }) {
-        const exercise = sessionExercises.find(
-            (item) => item.id === params.workoutSessionExerciseId
-        );
+    const getCurrentExerciseRecord = useCallback(
+        (exerciseId: string): UserExerciseRecord | null => {
+            const historicalRecord = exerciseRecordsById[exerciseId];
 
-        const currentPrVolume = Number(exercise?.current_pr_volume ?? 0);
-        const currentVolume = params.weight * params.reps;
+            const bestCandidate = exerciseRecordCandidatesById[exerciseId]?.at(-1);
 
-        return currentVolume > currentPrVolume;
-    }
+            if (bestCandidate) {
+                return {
+                    exerciseId,
+                    bestVolume: bestCandidate.volume,
+                    bestWeight: bestCandidate.weight,
+                    bestReps: bestCandidate.reps,
+                    bestSetId: bestCandidate.setId,
+                };
+            }
+
+            return historicalRecord ?? null;
+        },
+        [exerciseRecordsById, exerciseRecordCandidatesById]
+    );
+
+    const currentExerciseRecordLabel = useCallback(
+        (exerciseId: string): string | null => {
+            const currentRecord = getCurrentExerciseRecord(exerciseId);
+
+            if (!currentRecord) {
+                return null;
+            }
+
+            return `Current PR: ${currentRecord.bestWeight} kg × ${currentRecord.bestReps}`;
+        },
+        [getCurrentExerciseRecord]
+    );
 
     function getCurrentSetValues(set: WorkoutSessionSet) {
         const weight = Number(editingValues[`${set.id}-weight`] ?? set.weight ?? 0);
@@ -537,6 +603,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         getSetInputValue,
         updateLocalSetValue,
         deleteSessionExercise,
+        currentExerciseRecordLabel,
 
         getRestSecondsAfterSet,
         updateWorkoutSetRest,

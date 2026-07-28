@@ -1,3 +1,4 @@
+import { ExerciseRecordCandidatesById } from "../types/progress";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 
 import { upsertUserExerciseRecord } from "./progressService";
@@ -18,6 +19,7 @@ type SyncWorkoutInput = {
     userId: string | null;
     sessionExercises: WorkoutSessionExercise[];
     savedSets: SavedSetsByExercise;
+    exerciseRecordCandidatesById: ExerciseRecordCandidatesById;
 };
 
 type WorkoutSummary = {
@@ -49,60 +51,33 @@ export async function updateRoutineFromCompletedWorkout({
 
 async function syncExerciseRecords({
     userId,
-    savedSets,
+    exerciseRecordCandidatesById,
 }: {
     userId: string;
-    savedSets: SavedSetsByExercise;
+    exerciseRecordCandidatesById: ExerciseRecordCandidatesById;
 }) {
-    const completedPrSets = Object.values(savedSets)
-        .flat()
-        .filter(
-            (workoutSet) => workoutSet.is_completed && workoutSet.is_pr && workoutSet.exercise_id
-        );
+    const recordPromises = Object.entries(exerciseRecordCandidatesById).flatMap(
+        ([exerciseId, candidates]) => {
+            const bestCandidate = candidates.at(-1);
 
-    const bestByExercise: Record<
-        string,
-        {
-            setId: string;
-            volume: number;
-            weight: number;
-            reps: number;
+            if (!bestCandidate) {
+                return [];
+            }
+
+            return [
+                upsertUserExerciseRecord({
+                    userId,
+                    exerciseId,
+                    bestVolume: bestCandidate.volume,
+                    bestWeight: bestCandidate.weight,
+                    bestReps: bestCandidate.reps,
+                    bestSetId: bestCandidate.setId,
+                }),
+            ];
         }
-    > = {};
-
-    completedPrSets.forEach((workoutSet) => {
-        const exerciseId = workoutSet.exercise_id!;
-
-        const weight = Number(workoutSet.weight ?? 0);
-
-        const reps = Number(workoutSet.reps ?? 0);
-
-        const volume = weight * reps;
-
-        const currentBest = bestByExercise[exerciseId];
-
-        if (!currentBest || volume > currentBest.volume) {
-            bestByExercise[exerciseId] = {
-                setId: workoutSet.id,
-                volume,
-                weight,
-                reps,
-            };
-        }
-    });
-
-    await Promise.all(
-        Object.entries(bestByExercise).map(([exerciseId, record]) =>
-            upsertUserExerciseRecord({
-                userId,
-                exerciseId,
-                bestVolume: record.volume,
-                bestWeight: record.weight,
-                bestReps: record.reps,
-                bestSetId: record.setId,
-            })
-        )
     );
+
+    await Promise.all(recordPromises);
 }
 
 export async function syncCompletedWorkout({
@@ -111,6 +86,7 @@ export async function syncCompletedWorkout({
     userId,
     sessionExercises,
     savedSets,
+    exerciseRecordCandidatesById,
 }: SyncWorkoutInput): Promise<void> {
     const { totalSets, totalVolume } = calculateWorkoutSummary(savedSets);
 
@@ -128,7 +104,7 @@ export async function syncCompletedWorkout({
     });
 
     await Promise.all([
-        userId ? syncExerciseRecords({ userId, savedSets }) : Promise.resolve(),
+        userId ? syncExerciseRecords({ userId, exerciseRecordCandidatesById }) : Promise.resolve(),
 
         userId ? updateWorkoutStreakAfterFinish(userId) : Promise.resolve(),
     ]);

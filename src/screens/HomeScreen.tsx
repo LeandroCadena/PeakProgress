@@ -12,6 +12,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../hooks/useProfile";
 import { getDashboardStats, getRecentWorkouts } from "../services/dashboardService";
 import { getActiveWorkoutSession } from "../services/workoutService";
+import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { colors, sharedStyles, spacing, typography } from "../theme";
 import { DashboardStats, RecentWorkout } from "../types/dashboard";
 
@@ -31,6 +32,16 @@ export default function HomeScreen({ navigation }: any) {
         streakStatus: "empty",
         streakDaysRemaining: null,
     });
+
+    const localSessionId = useWorkoutSessionStore((state) => state.sessionId);
+    const localRestTimerEndAt = useWorkoutSessionStore(
+        (state) => state.restTimerEndAt
+    );
+
+    const activeRestTimerEndAt =
+        activeSession?.id === localSessionId
+            ? localRestTimerEndAt
+            : activeSession?.rest_timer_end_at;
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -129,7 +140,9 @@ export default function HomeScreen({ navigation }: any) {
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
                     elapsedText={getElapsedText(activeSession.started_at)}
-                    restRemainingText={getRestRemainingText(activeSession.rest_timer_end_at)}
+                    restRemainingText={getRestRemainingText(
+                        activeRestTimerEndAt
+                    )}
                     onPress={() =>
                         navigation.navigate("WorkoutSession", {
                             sessionId: activeSession.id,

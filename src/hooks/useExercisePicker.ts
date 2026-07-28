@@ -2,7 +2,6 @@ import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 
-import { useAuth } from "../context/AuthContext";
 import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
 import { addExerciseToRoutine } from "../services/routineService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
@@ -24,8 +23,6 @@ export function useExercisePicker({
     mode,
     sessionId,
 }: Params) {
-    const { user } = useAuth();
-
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
     const [filterMode, setFilterMode] = useState<FilterMode>("region");
@@ -125,7 +122,6 @@ export function useExercisePicker({
                 position: currentCount,
                 rest_seconds: 90,
                 exercise_rest_seconds: 120,
-                current_pr_volume: 0,
             };
 
             const firstSet: WorkoutSessionSet = {
