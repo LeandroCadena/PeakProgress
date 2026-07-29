@@ -36,11 +36,7 @@ export default function WorkoutSetRow({
     isTemporarySet,
 }: WorkoutSetRowProps) {
     return (
-        <SwipeableCard
-            compact
-            enabled={!isTemporarySet}
-            onActionPress={onDelete}
-        >
+        <SwipeableCard compact enabled={!isTemporarySet} onActionPress={onDelete}>
             <View style={styles.rowContainer}>
                 <View style={styles.row}>
                     <Text style={styles.setNumber}>{displaySetNumber}</Text>
@@ -50,12 +46,8 @@ export default function WorkoutSetRow({
                         keyboardType="numeric"
                         value={weightValue}
                         disabled={set.is_completed}
-                        onChangeText={(value) =>
-                            onWeightChange(sanitizeIntegerInput(value))
-                        }
-                        onEndEditing={(event) =>
-                            onWeightBlur(event.nativeEvent.text)
-                        }
+                        onChangeText={(value) => onWeightChange(sanitizeIntegerInput(value))}
+                        onEndEditing={(event) => onWeightBlur(event.nativeEvent.text)}
                     />
 
                     <AppInput
@@ -63,12 +55,8 @@ export default function WorkoutSetRow({
                         keyboardType="numeric"
                         value={repsValue}
                         disabled={set.is_completed}
-                        onChangeText={(value) =>
-                            onRepsChange(sanitizeIntegerInput(value))
-                        }
-                        onEndEditing={(event) =>
-                            onRepsBlur(event.nativeEvent.text)
-                        }
+                        onChangeText={(value) => onRepsChange(sanitizeIntegerInput(value))}
+                        onEndEditing={(event) => onRepsBlur(event.nativeEvent.text)}
                     />
 
                     <Pressable
@@ -80,9 +68,7 @@ export default function WorkoutSetRow({
                         onPress={onToggleCompleted}
                         disabled={isTemporarySet}
                     >
-                        <Text style={styles.checkboxText}>
-                            {set.is_completed ? "✓" : ""}
-                        </Text>
+                        <Text style={styles.checkboxText}>{set.is_completed ? "✓" : ""}</Text>
                     </Pressable>
                 </View>
             </View>

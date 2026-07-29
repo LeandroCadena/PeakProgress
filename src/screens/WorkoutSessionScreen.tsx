@@ -2,9 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import DraggableFlatList, {
-    RenderItemParams,
-} from "react-native-draggable-flatlist";
+import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ActionMenu from "../components/common/ActionMenu";
@@ -17,17 +15,12 @@ import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
 import { colors, sharedStyles, spacing } from "../theme";
-import {
-    WorkoutSessionExercise,
-    WorkoutSessionRouteParams,
-} from "../types/workout";
-
+import { WorkoutSessionExercise, WorkoutSessionRouteParams } from "../types/workout";
 
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
     const { sessionId, routineId, routineName } = route.params;
-    const [openExerciseMenuId, setOpenExerciseMenuId] =
-        useState<string | null>(null);
+    const [openExerciseMenuId, setOpenExerciseMenuId] = useState<string | null>(null);
 
     const insets = useSafeAreaInsets();
 
@@ -58,18 +51,13 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         sessionId,
         routineId,
         routineName,
-        onFinish: ({
-            updateRoutineAfterWorkout,
-        }) =>
-            navigation.navigate(
-                "WorkoutSummary",
-                {
-                    sessionId,
-                    routineId,
-                    routineName,
-                    updateRoutineAfterWorkout,
-                },
-            ),
+        onFinish: ({ updateRoutineAfterWorkout }) =>
+            navigation.navigate("WorkoutSummary", {
+                sessionId,
+                routineId,
+                routineName,
+                updateRoutineAfterWorkout,
+            }),
     });
 
     return (
@@ -106,21 +94,13 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                         }
                     />
 
-                    <Text
-                        numberOfLines={1}
-                        style={sharedStyles.cardTitle}
-                    >
+                    <Text numberOfLines={1} style={sharedStyles.cardTitle}>
                         {routineName}
                     </Text>
-
                 </View>
 
                 <AppButton
-                    title={
-                        isFinishingWorkout
-                            ? "Finishing..."
-                            : "Finish"
-                    }
+                    title={isFinishingWorkout ? "Finishing..." : "Finish"}
                     variant="primary"
                     disabled={isFinishingWorkout}
                     onPress={finishWorkout}
@@ -182,9 +162,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 }}
                                 useGlobalTimers={useGlobalTimers}
                                 updateWorkoutSetRest={updateWorkoutSetRest}
-                                currentExerciseRecord={currentExerciseRecordLabel(
-                                    item.exercise_id
-                                )}
+                                currentExerciseRecord={currentExerciseRecordLabel(item.exercise_id)}
                             />
 
                             {index < sessionExercises.length - 1 ? (
@@ -192,9 +170,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                     label="Rest before next exercise"
                                     value={item.exercise_rest_seconds ?? 120}
                                     editable={!useGlobalTimers}
-                                    onChange={(value) =>
-                                        updateWorkoutExerciseRest(item.id, value)
-                                    }
+                                    onChange={(value) => updateWorkoutExerciseRest(item.id, value)}
                                 />
                             ) : null}
                         </View>
@@ -211,13 +187,11 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 currentCount:
                                     sessionExercises.length > 0
                                         ? Math.max(
-                                            ...sessionExercises.map(
-                                                (item) => item.position ?? 0,
-                                            ),
-                                        ) + 1
+                                              ...sessionExercises.map((item) => item.position ?? 0)
+                                          ) + 1
                                         : 0,
                                 currentExerciseIds: sessionExercises.map(
-                                    (item) => item.exercise_id,
+                                    (item) => item.exercise_id
                                 ),
                             })
                         }

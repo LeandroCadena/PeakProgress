@@ -1,22 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import {
-    colors,
-    componentStyles,
-    spacing,
-    typography,
-} from "../../theme";
-import {
-    RoutineExercise,
-    RoutineExerciseSet,
-} from "../../types/routine";
+import { colors, componentStyles, spacing, typography } from "../../theme";
+import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import ActionMenu from "../common/ActionMenu";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -32,28 +19,17 @@ type Props = {
     isDragging: boolean;
     sets: RoutineExerciseSet[];
     onUpdateSet: (
+        routineExerciseId: string,
         setId: string,
         field: "weight" | "reps",
-        value: string,
+        value: string
     ) => void;
     onAddSet: () => void;
-    onDeleteSet: (
-        routineExerciseId: string,
-        setId: string,
-    ) => void;
-    onUpdateSetRest: (
-        routineExerciseId: string,
-        value: number,
-    ) => void;
-    updateLocalTemplateSetValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string,
-    ) => void;
+    onDeleteSet: (routineExerciseId: string, setId: string) => void;
+    onUpdateSetRest: (routineExerciseId: string, value: number) => void;
+    updateLocalTemplateSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
     isActionsMenuOpen: boolean;
-    onActionsMenuOpenChange: (
-        open: boolean,
-    ) => void;
+    onActionsMenuOpenChange: (open: boolean) => void;
 };
 
 export default function RoutineExerciseCard({
@@ -70,22 +46,14 @@ export default function RoutineExerciseCard({
     isActionsMenuOpen,
     onActionsMenuOpenChange,
 }: Props) {
-    const [isCollapsed, setIsCollapsed] =
-        useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
-        <Card
-            style={[
-                styles.card,
-                isDragging && styles.cardDragging,
-            ]}
-        >
+        <Card style={[styles.card, isDragging && styles.cardDragging]}>
             <Pressable
                 onPress={() => {
                     if (!isDragging) {
-                        setIsCollapsed(
-                            (previous) => !previous,
-                        );
+                        setIsCollapsed((previous) => !previous);
                     }
                 }}
                 onLongPress={onDrag}
@@ -93,16 +61,12 @@ export default function RoutineExerciseCard({
             >
                 <ExerciseCardHeader
                     imageUrl={item.exercise?.image_url}
-                    title={
-                        item.exercise?.name ?? "Exercise"
-                    }
+                    title={item.exercise?.name ?? "Exercise"}
                     rightContent={
                         <View style={styles.headerActions}>
                             <ActionMenu
                                 open={isActionsMenuOpen}
-                                onOpenChange={
-                                    onActionsMenuOpenChange
-                                }
+                                onOpenChange={onActionsMenuOpenChange}
                                 disabled={isDragging}
                                 items={[
                                     {
@@ -117,19 +81,13 @@ export default function RoutineExerciseCard({
                                     <Ionicons
                                         name="ellipsis-vertical"
                                         size={22}
-                                        color={
-                                            colors.textSecondary
-                                        }
+                                        color={colors.textSecondary}
                                     />
                                 }
                             />
 
                             <Ionicons
-                                name={
-                                    isCollapsed
-                                        ? "chevron-down"
-                                        : "chevron-up"
-                                }
+                                name={isCollapsed ? "chevron-down" : "chevron-up"}
                                 size={22}
                                 color={colors.text}
                             />
@@ -142,82 +100,37 @@ export default function RoutineExerciseCard({
                 <>
                     <RestTimeEditor
                         label="Rest between sets"
-                        value={
-                            item.rest_seconds ?? 90
-                        }
+                        value={item.rest_seconds ?? 90}
                         editable
-                        onChange={(value) =>
-                            onUpdateSetRest(
-                                item.id,
-                                value,
-                            )
-                        }
+                        onChange={(value) => onUpdateSetRest(item.id, value)}
                     />
 
                     <View style={styles.divider} />
 
                     <View style={styles.setTableHeader}>
-                        <Text
-                            style={
-                                styles.setNumberHeader
-                            }
-                        >
-                            Set
-                        </Text>
+                        <Text style={styles.setNumberHeader}>Set</Text>
 
-                        <Text
-                            style={styles.setHeaderText}
-                        >
-                            Weight
-                        </Text>
+                        <Text style={styles.setHeaderText}>Weight</Text>
 
-                        <Text
-                            style={styles.setHeaderText}
-                        >
-                            Reps
-                        </Text>
+                        <Text style={styles.setHeaderText}>Reps</Text>
                     </View>
 
                     {sets.map((set, index) => {
-                        const isTemporarySet =
-                            set.id.startsWith("temp-");
+                        const isTemporarySet = set.id.startsWith("temp-");
 
                         return (
                             <RoutineExerciseSetRow
                                 key={set.id}
                                 set={set}
-                                displaySetNumber={
-                                    index + 1
+                                displaySetNumber={index + 1}
+                                onDraftChange={(field, value) =>
+                                    updateLocalTemplateSetValue(set.id, field, value)
                                 }
-                                onDraftChange={(
-                                    field,
-                                    value,
-                                ) =>
-                                    updateLocalTemplateSetValue(
-                                        set.id,
-                                        field,
-                                        value,
-                                    )
+                                onUpdate={(field, value) =>
+                                    onUpdateSet(item.id, set.id, field, value)
                                 }
-                                onUpdate={(
-                                    field,
-                                    value,
-                                ) =>
-                                    onUpdateSet(
-                                        set.id,
-                                        field,
-                                        value,
-                                    )
-                                }
-                                onDelete={() =>
-                                    onDeleteSet(
-                                        item.id,
-                                        set.id,
-                                    )
-                                }
-                                isTemporarySet={
-                                    isTemporarySet
-                                }
+                                onDelete={() => onDeleteSet(item.id, set.id)}
+                                isTemporarySet={isTemporarySet}
                             />
                         );
                     })}
@@ -236,8 +149,7 @@ export default function RoutineExerciseCard({
 
 const styles = StyleSheet.create({
     card: {
-        borderWidth:
-            componentStyles.borderWidth,
+        borderWidth: componentStyles.borderWidth,
         borderColor: colors.cardBorder,
         gap: spacing.md,
     },

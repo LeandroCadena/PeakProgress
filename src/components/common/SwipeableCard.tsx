@@ -1,15 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { ReactNode, useCallback } from "react";
-import {
-    StyleSheet,
-    useWindowDimensions,
-    View,
-} from "react-native";
-import {
-    Gesture,
-    GestureDetector,
-} from "react-native-gesture-handler";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
     Extrapolation,
     interpolate,
@@ -21,10 +14,7 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 
-import {
-    colors,
-    componentStyles,
-} from "../../theme";
+import { colors, componentStyles } from "../../theme";
 
 const CARD_DELETE_THRESHOLD = 64;
 const COMPACT_DELETE_THRESHOLD = 52;
@@ -56,10 +46,7 @@ export default function SwipeableCard({
     const isDeleting = useSharedValue(false);
 
     const deleteThreshold =
-        fullSwipeThreshold ??
-        (compact
-            ? COMPACT_DELETE_THRESHOLD
-            : CARD_DELETE_THRESHOLD);
+        fullSwipeThreshold ?? (compact ? COMPACT_DELETE_THRESHOLD : CARD_DELETE_THRESHOLD);
 
     const finishDelete = useCallback(() => {
         onActionPress();
@@ -92,7 +79,7 @@ export default function SwipeableCard({
                         damping: 20,
                         stiffness: 220,
                         mass: 0.7,
-                    }),
+                    })
                 );
 
                 return;
@@ -110,21 +97,18 @@ export default function SwipeableCard({
                         if (finished) {
                             runOnJS(finishDelete)();
                         }
-                    },
-                ),
+                    }
+                )
             );
         })
         .onFinalize(() => {
-            if (
-                !isDeleting.get() &&
-                Math.abs(translateX.get()) < deleteThreshold
-            ) {
+            if (!isDeleting.get() && Math.abs(translateX.get()) < deleteThreshold) {
                 translateX.set(
                     withSpring(0, {
                         damping: 20,
                         stiffness: 220,
                         mass: 0.7,
-                    }),
+                    })
                 );
             }
         });
@@ -140,49 +124,27 @@ export default function SwipeableCard({
     const animatedDeleteBackgroundStyle = useAnimatedStyle(() => {
         const distance = Math.abs(translateX.get());
 
-        const darkeningEnd = Math.max(
-            deleteThreshold + 1,
-            screenWidth * 0.65,
-        );
+        const darkeningEnd = Math.max(deleteThreshold + 1, screenWidth * 0.65);
 
         return {
             backgroundColor: interpolateColor(
                 distance,
-                [
-                    0,
-                    deleteThreshold,
-                    darkeningEnd,
-                ],
-                [
-                    colors.danger,
-                    colors.danger,
-                    DELETE_ARMED_COLOR,
-                ],
+                [0, deleteThreshold, darkeningEnd],
+                [colors.danger, colors.danger, DELETE_ARMED_COLOR]
             ),
         };
     });
 
     const animatedCardOverlayStyle = useAnimatedStyle(() => {
         const distance = Math.abs(translateX.get());
-        const darkeningEnd = Math.max(
-            deleteThreshold + 1,
-            screenWidth * 0.65,
-        );
+        const darkeningEnd = Math.max(deleteThreshold + 1, screenWidth * 0.65);
 
         return {
             opacity: interpolate(
                 distance,
-                [
-                    0,
-                    deleteThreshold,
-                    darkeningEnd,
-                ],
-                [
-                    0,
-                    0,
-                    0.32,
-                ],
-                Extrapolation.CLAMP,
+                [0, deleteThreshold, darkeningEnd],
+                [0, 0, 0.32],
+                Extrapolation.CLAMP
             ),
         };
     });
@@ -191,33 +153,14 @@ export default function SwipeableCard({
         const distance = Math.abs(translateX.get());
 
         return {
-            opacity: interpolate(
-                distance,
-                [
-                    8,
-                    deleteThreshold,
-                ],
-                [
-                    0,
-                    1,
-                ],
-                Extrapolation.CLAMP,
-            ),
+            opacity: interpolate(distance, [8, deleteThreshold], [0, 1], Extrapolation.CLAMP),
             transform: [
                 {
                     scale: interpolate(
                         distance,
-                        [
-                            0,
-                            deleteThreshold,
-                            deleteThreshold * 2,
-                        ],
-                        [
-                            0.75,
-                            1,
-                            1.15,
-                        ],
-                        Extrapolation.CLAMP,
+                        [0, deleteThreshold, deleteThreshold * 2],
+                        [0.75, 1, 1.15],
+                        Extrapolation.CLAMP
                     ),
                 },
             ],
@@ -225,12 +168,7 @@ export default function SwipeableCard({
     });
 
     return (
-        <View
-            style={[
-                styles.container,
-                compact && styles.compactContainer,
-            ]}
-        >
+        <View style={[styles.container, compact && styles.compactContainer]}>
             <Animated.View
                 style={[
                     styles.deleteBackground,
@@ -245,11 +183,7 @@ export default function SwipeableCard({
                         animatedDeleteIconStyle,
                     ]}
                 >
-                    <Ionicons
-                        name="trash"
-                        size={compact ? 20 : 24}
-                        color={colors.text}
-                    />
+                    <Ionicons name="trash" size={compact ? 20 : 24} color={colors.text} />
                 </Animated.View>
             </Animated.View>
 
@@ -264,10 +198,7 @@ export default function SwipeableCard({
                     <View style={styles.content}>
                         {showSwipeHint ? (
                             <LinearGradient
-                                colors={[
-                                    "rgba(249, 115, 22, 0)",
-                                    "rgba(249, 115, 22, 0.10)",
-                                ]}
+                                colors={["rgba(249, 115, 22, 0)", "rgba(249, 115, 22, 0.10)"]}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
                                 pointerEvents="none"

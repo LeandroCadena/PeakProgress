@@ -81,14 +81,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const [activeWorkout, setActiveWorkout] = useState<ActiveWorkout | null>(null);
     const [now, setNow] = useState(() => Date.now());
 
-    /*
-     * Temporary compatibility state.
-     *
-     * These values can be removed when RoutineHeader and the old edit modal
-     * are replaced by the new fixed header.
-     */
-    const [editRoutineVisible, setEditRoutineVisible] = useState(false);
-
     useEffect(() => {
         const intervalId = setInterval(() => {
             setNow(Date.now());
@@ -150,30 +142,16 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         updateEditingValue(setId, field, value);
     }
 
-    function findRoutineExerciseIdForSet(setId: string): string | null {
-        for (const [routineExerciseId, sets] of Object.entries(setsByExerciseId)) {
-            const containsSet = sets.some((setItem) => setItem.id === setId);
-
-            if (containsSet) {
-                return routineExerciseId;
-            }
-        }
-
-        return null;
-    }
-
-    function updateTemplateSet(setId: string, field: "weight" | "reps", value: string) {
+    function updateTemplateSet(
+        routineExerciseId: string,
+        setId: string,
+        field: "weight" | "reps",
+        value: string
+    ) {
         const normalizedValue = value.trim() === "" ? 0 : Number(value);
 
         if (!Number.isFinite(normalizedValue) || normalizedValue < 0) {
             Alert.alert("Validation", "Please enter a valid positive number");
-            return;
-        }
-
-        const routineExerciseId = findRoutineExerciseIdForSet(setId);
-
-        if (!routineExerciseId) {
-            Alert.alert("Error", "Routine exercise set not found");
             return;
         }
 
@@ -445,20 +423,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         }
     }
 
-    /*
-     * Temporary compatibility functions.
-     *
-     * The editor is now always active. These aliases allow the existing
-     * RoutineDetailScreen to compile until the fixed header is introduced.
-     */
-    function startEditingRoutine() {
-        // The routine editor is always active now.
-    }
-
-    function cancelEditingRoutine() {
-        discardChanges();
-    }
-
     return {
         routineTitle: name,
         routineExercises: exercises,
@@ -501,20 +465,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
         openExerciseMenuId,
         setOpenExerciseMenuId,
-
-        /*
-         * Temporary aliases used by the current screen.
-         */
-        isEditingRoutine: true,
-        draftRoutineName: name,
-        setDraftRoutineName: setName,
-        startEditingRoutine,
-        cancelEditingRoutine,
-
-        editRoutineVisible,
-        setEditRoutineVisible,
-        editRoutineName: name,
-        setEditRoutineName: setName,
     };
 }
 

@@ -25,9 +25,7 @@ export default function ScreenContainer({ children, scroll = false, style, conte
 
     return (
         <View style={[styles.container, style]}>
-            <View style={[styles.content, contentStyle]}>
-                {children}
-            </View>
+            <View style={[styles.content, contentStyle]}>{children}</View>
         </View>
     );
 }

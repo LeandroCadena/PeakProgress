@@ -10,12 +10,7 @@ import {
     View,
 } from "react-native";
 
-import {
-    colors,
-    componentStyles,
-    spacing,
-    typography,
-} from "../../theme";
+import { colors, componentStyles, spacing, typography } from "../../theme";
 
 type ActionMenuItem = {
     key: string;
@@ -46,26 +41,23 @@ export default function ActionMenu({
 }: Props) {
     const triggerRef = useRef<View>(null);
 
-    const [triggerLayout, setTriggerLayout] =
-        useState<LayoutRectangle | null>(null);
+    const [triggerLayout, setTriggerLayout] = useState<LayoutRectangle | null>(null);
 
     const openMenu = useCallback(() => {
         if (disabled) {
             return;
         }
 
-        triggerRef.current?.measureInWindow(
-            (x, y, width, height) => {
-                setTriggerLayout({
-                    x,
-                    y,
-                    width,
-                    height,
-                });
+        triggerRef.current?.measureInWindow((x, y, width, height) => {
+            setTriggerLayout({
+                x,
+                y,
+                width,
+                height,
+            });
 
-                onOpenChange(true);
-            },
-        );
+            onOpenChange(true);
+        });
     }, [disabled, onOpenChange]);
 
     const closeMenu = useCallback(() => {
@@ -81,41 +73,28 @@ export default function ActionMenu({
             closeMenu();
             item.onPress();
         },
-        [closeMenu],
+        [closeMenu]
     );
 
-    const menuTop = triggerLayout
-        ? triggerLayout.y + triggerLayout.height + spacing.xs
-        : 0;
+    const menuTop = triggerLayout ? triggerLayout.y + triggerLayout.height + spacing.xs : 0;
 
     const { width: screenWidth } = useWindowDimensions();
 
     const menuLeft = triggerLayout
         ? Math.min(
-            screenWidth - MENU_WIDTH - SCREEN_EDGE_PADDING,
-            Math.max(
-                SCREEN_EDGE_PADDING,
-                triggerLayout.x +
-                triggerLayout.width -
-                MENU_WIDTH,
-            ),
-        )
+              screenWidth - MENU_WIDTH - SCREEN_EDGE_PADDING,
+              Math.max(SCREEN_EDGE_PADDING, triggerLayout.x + triggerLayout.width - MENU_WIDTH)
+          )
         : SCREEN_EDGE_PADDING;
 
     return (
         <>
-            <View
-                ref={triggerRef}
-                collapsable={false}
-            >
+            <View ref={triggerRef} collapsable={false}>
                 <Pressable
                     onPress={openMenu}
                     disabled={disabled}
                     hitSlop={10}
-                    style={({ pressed }) => [
-                        styles.trigger,
-                        pressed && styles.triggerPressed,
-                    ]}
+                    style={({ pressed }) => [styles.trigger, pressed && styles.triggerPressed]}
                 >
                     {trigger}
                 </Pressable>
@@ -129,10 +108,7 @@ export default function ActionMenu({
                 onRequestClose={closeMenu}
             >
                 <View style={styles.modalContainer}>
-                    <Pressable
-                        style={StyleSheet.absoluteFill}
-                        onPress={closeMenu}
-                    />
+                    <Pressable style={StyleSheet.absoluteFill} onPress={closeMenu} />
 
                     {triggerLayout ? (
                         <View
@@ -148,32 +124,23 @@ export default function ActionMenu({
                                 <Pressable
                                     key={item.key}
                                     disabled={item.disabled}
-                                    onPress={() =>
-                                        handleItemPress(item)
-                                    }
+                                    onPress={() => handleItemPress(item)}
                                     style={({ pressed }) => [
                                         styles.menuItem,
-                                        pressed &&
-                                        styles.menuItemPressed,
-                                        item.disabled &&
-                                        styles.menuItemDisabled,
+                                        pressed && styles.menuItemPressed,
+                                        item.disabled && styles.menuItemDisabled,
                                     ]}
                                 >
                                     <Ionicons
                                         name={item.icon}
                                         size={20}
-                                        color={
-                                            item.destructive
-                                                ? colors.danger
-                                                : colors.text
-                                        }
+                                        color={item.destructive ? colors.danger : colors.text}
                                     />
 
                                     <Text
                                         style={[
                                             styles.menuItemText,
-                                            item.destructive &&
-                                            styles.destructiveText,
+                                            item.destructive && styles.destructiveText,
                                         ]}
                                     >
                                         {item.label}

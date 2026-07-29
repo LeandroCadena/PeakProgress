@@ -31,15 +31,11 @@ type RoutineEditorState = {
 
     setName: (name: string) => void;
 
-    replaceExercises: (exercises: RoutineExercise[]) => void;
-
     reorderExercises: (exercises: RoutineExercise[]) => void;
 
     addExercise: (exercise: RoutineExercise, sets?: RoutineExerciseSet[]) => void;
 
     deleteExercise: (routineExerciseId: string) => void;
-
-    replaceSets: (setsByExerciseId: Record<string, RoutineExerciseSet[]>) => void;
 
     addSet: (routineExerciseId: string, set: RoutineExerciseSet) => void;
 
@@ -136,13 +132,6 @@ export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
         });
     },
 
-    replaceExercises: (exercises) => {
-        set({
-            exercises: cloneExercises(exercises),
-            hasUnsavedChanges: true,
-        });
-    },
-
     reorderExercises: (exercises) => {
         const reorderedExercises = exercises.map((exercise, index) => ({
             ...exercise,
@@ -211,14 +200,6 @@ export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
                 editingValues: nextEditingValues,
                 hasUnsavedChanges: true,
             };
-        });
-    },
-
-    replaceSets: (setsByExerciseId) => {
-        set({
-            setsByExerciseId: cloneSetsByExerciseId(setsByExerciseId),
-            editingValues: {},
-            hasUnsavedChanges: true,
         });
     },
 

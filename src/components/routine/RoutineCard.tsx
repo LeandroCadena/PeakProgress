@@ -48,7 +48,7 @@ export default function RoutineCard({
                         <Pressable
                             style={[styles.button, buttonDisabled && styles.disabled]}
                             disabled={buttonDisabled}
-                            onPress={onPressButton ?? (() => { })}
+                            onPress={onPressButton ?? (() => {})}
                         >
                             <Text style={styles.text}>{buttonTitle}</Text>
                         </Pressable>

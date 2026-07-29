@@ -1,19 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import {
-    RouteProp,
-    useNavigation,
-    useRoute,
-} from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import {
-    Alert,
-    StyleSheet,
-    TextInput,
-    View,
-} from "react-native";
-import DraggableFlatList, {
-    RenderItemParams,
-} from "react-native-draggable-flatlist";
+import { Alert, StyleSheet, TextInput, View } from "react-native";
+import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ActionMenu from "../components/common/ActionMenu";
@@ -25,11 +14,7 @@ import RoutineExerciseCard from "../components/routine/RoutineExerciseCard";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import RestTimeEditor from "../components/workout/RestTimeEditor";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
-import {
-    colors,
-    sharedStyles,
-    spacing,
-} from "../theme";
+import { colors, sharedStyles, spacing } from "../theme";
 import type { RoutineExercise } from "../types/routine";
 
 type RoutineDetailRouteParams = {
@@ -42,25 +27,13 @@ type RoutineDetailRouteParams = {
 export default function RoutineDetailScreen() {
     const navigation = useNavigation<any>();
 
-    const route =
-        useRoute<
-            RouteProp<
-                RoutineDetailRouteParams,
-                "RoutineDetail"
-            >
-        >();
+    const route = useRoute<RouteProp<RoutineDetailRouteParams, "RoutineDetail">>();
 
-    const {
-        routineId,
-        routineName,
-    } = route.params;
+    const { routineId, routineName } = route.params;
 
     const insets = useSafeAreaInsets();
 
-    const [
-        isRoutineMenuOpen,
-        setIsRoutineMenuOpen,
-    ] = useState(false);
+    const [isRoutineMenuOpen, setIsRoutineMenuOpen] = useState(false);
 
     const {
         routineTitle,
@@ -106,45 +79,32 @@ export default function RoutineDetailScreen() {
     });
 
     useEffect(() => {
-        const unsubscribe = navigation.addListener(
-            "beforeRemove",
-            (event: any) => {
-                if (!hasUnsavedChanges) {
-                    return;
-                }
+        const unsubscribe = navigation.addListener("beforeRemove", (event: any) => {
+            if (!hasUnsavedChanges) {
+                return;
+            }
 
-                event.preventDefault();
+            event.preventDefault();
 
-                Alert.alert(
-                    "Discard changes?",
-                    "You have unsaved changes in this routine.",
-                    [
-                        {
-                            text: "Keep Editing",
-                            style: "cancel",
-                        },
-                        {
-                            text: "Discard",
-                            style: "destructive",
-                            onPress: () => {
-                                discardRoutineChanges();
+            Alert.alert("Discard changes?", "You have unsaved changes in this routine.", [
+                {
+                    text: "Keep Editing",
+                    style: "cancel",
+                },
+                {
+                    text: "Discard",
+                    style: "destructive",
+                    onPress: () => {
+                        discardRoutineChanges();
 
-                                navigation.dispatch(
-                                    event.data.action,
-                                );
-                            },
-                        },
-                    ],
-                );
-            },
-        );
+                        navigation.dispatch(event.data.action);
+                    },
+                },
+            ]);
+        });
 
         return unsubscribe;
-    }, [
-        discardRoutineChanges,
-        hasUnsavedChanges,
-        navigation,
-    ]);
+    }, [discardRoutineChanges, hasUnsavedChanges, navigation]);
 
     async function handlePrimaryAction() {
         setIsRoutineMenuOpen(false);
@@ -159,26 +119,20 @@ export default function RoutineDetailScreen() {
     }
 
     function handleDeleteRoutine() {
-        Alert.alert(
-            "Delete routine?",
-            "This action cannot be undone.",
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel",
-                },
-                {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: deleteRoutine,
-                },
-            ],
-        );
+        Alert.alert("Delete routine?", "This action cannot be undone.", [
+            {
+                text: "Cancel",
+                style: "cancel",
+            },
+            {
+                text: "Delete",
+                style: "destructive",
+                onPress: deleteRoutine,
+            },
+        ]);
     }
 
-    function handleDeleteExercise(
-        routineExerciseId: string,
-    ) {
+    function handleDeleteExercise(routineExerciseId: string) {
         Alert.alert(
             "Delete exercise?",
             "The exercise and its sets will be removed from this routine.",
@@ -191,12 +145,10 @@ export default function RoutineDetailScreen() {
                     text: "Delete",
                     style: "destructive",
                     onPress: () => {
-                        deleteRoutineExercise(
-                            routineExerciseId,
-                        );
+                        deleteRoutineExercise(routineExerciseId);
                     },
                 },
-            ],
+            ]
         );
     }
 
@@ -209,18 +161,9 @@ export default function RoutineDetailScreen() {
             routineId,
             currentCount:
                 routineExercises.length > 0
-                    ? Math.max(
-                        ...routineExercises.map(
-                            (exercise) =>
-                                exercise.position ?? 0,
-                        ),
-                    ) + 1
+                    ? Math.max(...routineExercises.map((exercise) => exercise.position ?? 0)) + 1
                     : 0,
-            currentExerciseIds:
-                routineExercises.map(
-                    (exercise) =>
-                        exercise.exercise_id,
-                ),
+            currentExerciseIds: routineExercises.map((exercise) => exercise.exercise_id),
         });
     }
 
@@ -229,68 +172,35 @@ export default function RoutineDetailScreen() {
         setOpenExerciseMenuId(null);
     }
 
-    function renderExercise({
-        item,
-        drag,
-        isActive,
-        getIndex,
-    }: RenderItemParams<RoutineExercise>) {
+    function renderExercise({ item, drag, isActive, getIndex }: RenderItemParams<RoutineExercise>) {
         const index = getIndex() ?? 0;
 
         return (
-            <View
-                style={[
-                    styles.exerciseItem,
-                    isActive &&
-                    styles.activeExerciseItem,
-                ]}
-            >
+            <View style={[styles.exerciseItem, isActive && styles.activeExerciseItem]}>
                 <RoutineExerciseCard
                     item={item}
-                    sets={
-                        routineExerciseSets[item.id] ??
-                        []
-                    }
-                    onAddSet={() =>
-                        addTemplateSet(item.id)
-                    }
+                    sets={routineExerciseSets[item.id] ?? []}
+                    onAddSet={() => addTemplateSet(item.id)}
                     onUpdateSet={updateTemplateSet}
                     onDeleteSet={deleteTemplateSet}
-                    updateLocalTemplateSetValue={
-                        updateLocalTemplateSetValue
-                    }
+                    updateLocalTemplateSetValue={updateLocalTemplateSetValue}
                     onUpdateSetRest={updateSetRest}
-                    onDelete={() =>
-                        handleDeleteExercise(item.id)
-                    }
+                    onDelete={() => handleDeleteExercise(item.id)}
                     onDrag={drag}
                     isDragging={isActive}
-                    isActionsMenuOpen={
-                        openExerciseMenuId === item.id
-                    }
-                    onActionsMenuOpenChange={(
-                        open,
-                    ) => {
-                        setOpenExerciseMenuId(
-                            open ? item.id : null,
-                        );
+                    isActionsMenuOpen={openExerciseMenuId === item.id}
+                    onActionsMenuOpenChange={(open) => {
+                        setOpenExerciseMenuId(open ? item.id : null);
                     }}
                 />
 
-                {index <
-                    routineExercises.length - 1 ? (
+                {index < routineExercises.length - 1 ? (
                     <RestTimeEditor
                         label="Rest before next exercise"
-                        value={
-                            item.exercise_rest_seconds ??
-                            120
-                        }
+                        value={item.exercise_rest_seconds ?? 120}
                         editable
                         onChange={(value) => {
-                            updateExerciseRest(
-                                item.id,
-                                value,
-                            );
+                            updateExerciseRest(item.id, value);
                         }}
                     />
                 ) : null}
@@ -298,62 +208,45 @@ export default function RoutineDetailScreen() {
         );
     }
 
-    const isPrimaryActionLoading =
-        isSavingRoutine || isStartingWorkout;
+    const isPrimaryActionLoading = isSavingRoutine || isStartingWorkout;
 
-    const primaryActionTitle =
-        hasUnsavedChanges
-            ? isSavingRoutine
-                ? "Saving..."
-                : "Save"
-            : isStartingWorkout
-                ? "Starting..."
-                : "Start Workout";
+    const primaryActionTitle = hasUnsavedChanges
+        ? isSavingRoutine
+            ? "Saving..."
+            : "Save"
+        : isStartingWorkout
+          ? "Starting..."
+          : "Start Workout";
 
     return (
-        <ScreenContainer
-            contentStyle={styles.screenContent}
-        >
+        <ScreenContainer contentStyle={styles.screenContent}>
             <View
                 style={[
                     styles.headerContainer,
                     {
-                        paddingTop:
-                            insets.top + spacing.md,
+                        paddingTop: insets.top + spacing.md,
                     },
                 ]}
             >
-                <View
-                    style={
-                        styles.leftHeaderContainer
-                    }
-                >
+                <View style={styles.leftHeaderContainer}>
                     <ActionMenu
                         open={isRoutineMenuOpen}
-                        onOpenChange={
-                            setIsRoutineMenuOpen
-                        }
-                        disabled={
-                            isLoadingRoutine ||
-                            isSavingRoutine
-                        }
+                        onOpenChange={setIsRoutineMenuOpen}
+                        disabled={isLoadingRoutine || isSavingRoutine}
                         items={[
                             {
                                 key: "delete",
                                 label: "Delete Routine",
                                 icon: "trash-outline",
                                 destructive: true,
-                                onPress:
-                                    handleDeleteRoutine,
+                                onPress: handleDeleteRoutine,
                             },
                         ]}
                         trigger={
                             <Ionicons
                                 name="ellipsis-vertical"
                                 size={22}
-                                color={
-                                    colors.textSecondary
-                                }
+                                color={colors.textSecondary}
                             />
                         }
                     />
@@ -361,39 +254,22 @@ export default function RoutineDetailScreen() {
                     <TextInput
                         value={routineTitle}
                         onChangeText={setRoutineName}
-                        editable={
-                            !isLoadingRoutine &&
-                            !isSavingRoutine
-                        }
+                        editable={!isLoadingRoutine && !isSavingRoutine}
                         numberOfLines={1}
                         placeholder="Routine name"
-                        placeholderTextColor={
-                            colors.textSecondary
-                        }
-                        selectionColor={
-                            colors.primary
-                        }
-                        style={[
-                            sharedStyles.cardTitle,
-                            styles.titleInput,
-                        ]}
+                        placeholderTextColor={colors.textSecondary}
+                        selectionColor={colors.primary}
+                        style={[sharedStyles.cardTitle, styles.titleInput]}
                     />
                 </View>
 
                 <AppButton
                     title={primaryActionTitle}
                     variant="primary"
-                    disabled={
-                        isLoadingRoutine ||
-                        isPrimaryActionLoading
-                    }
+                    disabled={isLoadingRoutine || isPrimaryActionLoading}
                     onPress={handlePrimaryAction}
-                    style={
-                        styles.rightHeaderContainer
-                    }
-                    showChevron={
-                        !hasUnsavedChanges
-                    }
+                    style={styles.rightHeaderContainer}
+                    showChevron={!hasUnsavedChanges}
                 />
             </View>
 
@@ -401,9 +277,7 @@ export default function RoutineDetailScreen() {
                 data={routineExercises}
                 keyExtractor={(item) => item.id}
                 renderItem={renderExercise}
-                showsVerticalScrollIndicator={
-                    false
-                }
+                showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={styles.list}
                 activationDistance={24}
@@ -426,35 +300,20 @@ export default function RoutineDetailScreen() {
                     <AppButton
                         title="+ Add Exercise"
                         variant="success"
-                        disabled={
-                            isLoadingRoutine ||
-                            isSavingRoutine
-                        }
-                        onPress={
-                            navigateToExercisePicker
-                        }
+                        disabled={isLoadingRoutine || isSavingRoutine}
+                        onPress={navigateToExercisePicker}
                     />
                 }
             />
 
             <ActiveWorkoutModal
-                visible={
-                    activeWorkoutModalVisible
-                }
-                routineName={
-                    activeWorkoutRoutineName
-                }
-                elapsedText={
-                    activeWorkoutElapsedText
-                }
+                visible={activeWorkoutModalVisible}
+                routineName={activeWorkoutRoutineName}
+                elapsedText={activeWorkoutElapsedText}
                 onResume={resumeActiveWorkout}
-                onDiscardAndStart={
-                    discardAndStartWorkout
-                }
+                onDiscardAndStart={discardAndStartWorkout}
                 onCancel={() => {
-                    setActiveWorkoutModalVisible(
-                        false,
-                    );
+                    setActiveWorkoutModalVisible(false);
                 }}
                 isStarting={isStartingWorkout}
             />

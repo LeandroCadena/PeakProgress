@@ -28,23 +28,14 @@ type Summary = {
 
 export default function WorkoutSummaryScreen({ navigation }: any) {
     const route = useRoute<RouteProp<RouteParams, "WorkoutSummary">>();
-    const {
-        sessionId,
-        routineId,
-        routineName,
-        updateRoutineAfterWorkout,
-    } = route.params;
+    const { sessionId, routineId, routineName, updateRoutineAfterWorkout } = route.params;
 
     const [summary, setSummary] = useState<Summary | null>(null);
-    const [
-        routineUpdateStatus,
-        setRoutineUpdateStatus,
-    ] = useState<
+    const [routineUpdateStatus, setRoutineUpdateStatus] = useState<
         "idle" | "updating" | "success" | "error"
     >("idle");
 
-    const hasAttemptedRoutineUpdateRef =
-        useRef(false);
+    const hasAttemptedRoutineUpdateRef = useRef(false);
 
     const fetchSummary = useCallback(async () => {
         try {
@@ -60,11 +51,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
     }, [fetchSummary]);
 
     useEffect(() => {
-        if (
-            !summary ||
-            !updateRoutineAfterWorkout ||
-            hasAttemptedRoutineUpdateRef.current
-        ) {
+        if (!summary || !updateRoutineAfterWorkout || hasAttemptedRoutineUpdateRef.current) {
             return;
         }
 
@@ -81,22 +68,14 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
 
                 setRoutineUpdateStatus("success");
             } catch (error) {
-                console.log(
-                    "Automatic routine update failed",
-                    error,
-                );
+                console.log("Automatic routine update failed", error);
 
                 setRoutineUpdateStatus("error");
             }
         }
 
         updateRoutine();
-    }, [
-        routineId,
-        sessionId,
-        summary,
-        updateRoutineAfterWorkout,
-    ]);
+    }, [routineId, sessionId, summary, updateRoutineAfterWorkout]);
 
     return (
         <ScreenContainer>
@@ -117,21 +96,16 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
             </View>
 
             {routineUpdateStatus === "updating" ? (
-                <Text style={styles.syncText}>
-                    Updating routine...
-                </Text>
+                <Text style={styles.syncText}>Updating routine...</Text>
             ) : null}
 
             {routineUpdateStatus === "success" ? (
-                <Text style={styles.syncText}>
-                    Routine updated
-                </Text>
+                <Text style={styles.syncText}>Routine updated</Text>
             ) : null}
 
             {routineUpdateStatus === "error" ? (
                 <Text style={styles.syncErrorText}>
-                    Workout saved, but the routine could not
-                    be updated.
+                    Workout saved, but the routine could not be updated.
                 </Text>
             ) : null}
 

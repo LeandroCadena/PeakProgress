@@ -1,35 +1,17 @@
 import { useEffect, useState } from "react";
-import {
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import {
-    colors,
-    componentStyles,
-    spacing,
-    typography,
-} from "../../theme";
+import { colors, componentStyles, spacing, typography } from "../../theme";
 import { RoutineExerciseSet } from "../../types/routine";
-import {
-    displayZeroAsEmpty,
-    sanitizeIntegerInput,
-} from "../../utils/numberInput";
+import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
 import SwipeableCard from "../common/SwipeableCard";
 
 type Props = {
     set: RoutineExerciseSet;
     displaySetNumber: number;
-    onDraftChange: (
-        field: "weight" | "reps",
-        value: string,
-    ) => void;
-    onUpdate: (
-        field: "weight" | "reps",
-        value: string,
-    ) => void;
+    onDraftChange: (field: "weight" | "reps", value: string) => void;
+    onUpdate: (field: "weight" | "reps", value: string) => void;
     onDelete: () => void;
     isTemporarySet?: boolean;
 };
@@ -42,96 +24,52 @@ export default function RoutineExerciseSetRow({
     onDelete,
     isTemporarySet,
 }: Props) {
-    const [weightValue, setWeightValue] =
-        useState(
-            displayZeroAsEmpty(set.weight),
-        );
+    const [weightValue, setWeightValue] = useState(displayZeroAsEmpty(set.weight));
 
-    const [repsValue, setRepsValue] =
-        useState(
-            displayZeroAsEmpty(set.reps),
-        );
+    const [repsValue, setRepsValue] = useState(displayZeroAsEmpty(set.reps));
 
     useEffect(() => {
-        setWeightValue(
-            displayZeroAsEmpty(set.weight),
-        );
+        setWeightValue(displayZeroAsEmpty(set.weight));
 
-        setRepsValue(
-            displayZeroAsEmpty(set.reps),
-        );
-    }, [
-        set.id,
-        set.weight,
-        set.reps,
-    ]);
+        setRepsValue(displayZeroAsEmpty(set.reps));
+    }, [set.id, set.weight, set.reps]);
 
     function handleWeightChange(value: string) {
-        const sanitizedValue =
-            sanitizeIntegerInput(value);
+        const sanitizedValue = sanitizeIntegerInput(value);
 
         setWeightValue(sanitizedValue);
 
-        onDraftChange(
-            "weight",
-            sanitizedValue,
-        );
+        onDraftChange("weight", sanitizedValue);
     }
 
     function handleRepsChange(value: string) {
-        const sanitizedValue =
-            sanitizeIntegerInput(value);
+        const sanitizedValue = sanitizeIntegerInput(value);
 
         setRepsValue(sanitizedValue);
 
-        onDraftChange(
-            "reps",
-            sanitizedValue,
-        );
+        onDraftChange("reps", sanitizedValue);
     }
 
     return (
-        <SwipeableCard
-            compact
-            enabled={!isTemporarySet}
-            onActionPress={onDelete}
-        >
+        <SwipeableCard compact enabled={!isTemporarySet} onActionPress={onDelete}>
             <View style={styles.row}>
-                <Text style={styles.setNumber}>
-                    {displaySetNumber}
-                </Text>
+                <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
                 <AppInput
                     style={styles.setRow}
                     value={weightValue}
                     keyboardType="numeric"
-                    onChangeText={
-                        handleWeightChange
-                    }
-                    onEndEditing={() =>
-                        onUpdate(
-                            "weight",
-                            weightValue,
-                        )
-                    }
+                    onChangeText={handleWeightChange}
+                    onEndEditing={() => onUpdate("weight", weightValue)}
                 />
 
-                <View
-                    style={styles.repsContainer}
-                >
+                <View style={styles.repsContainer}>
                     <AppInput
                         style={styles.setRow}
                         value={repsValue}
                         keyboardType="numeric"
-                        onChangeText={
-                            handleRepsChange
-                        }
-                        onEndEditing={() =>
-                            onUpdate(
-                                "reps",
-                                repsValue,
-                            )
-                        }
+                        onChangeText={handleRepsChange}
+                        onEndEditing={() => onUpdate("reps", repsValue)}
                     />
                 </View>
             </View>
@@ -146,8 +84,7 @@ const styles = StyleSheet.create({
         gap: spacing.sm,
     },
     setNumber: {
-        width:
-            componentStyles.setNumberWidth,
+        width: componentStyles.setNumberWidth,
         color: colors.textSecondary,
         fontWeight: typography.weightBold,
     },

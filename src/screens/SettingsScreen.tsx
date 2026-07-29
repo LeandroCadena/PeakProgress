@@ -78,8 +78,9 @@ export default function SettingsScreen() {
                         value={settings.sounds_enabled}
                         onValueChange={(value) =>
                             updateSetting({
-                                sounds_enabled: value
-                            })}
+                                sounds_enabled: value,
+                            })
+                        }
                     />
                 </View>
             </Card>
@@ -95,8 +96,9 @@ export default function SettingsScreen() {
                         value={settings.notifications_enabled}
                         onValueChange={(value) =>
                             updateSetting({
-                                notifications_enabled: value
-                            })}
+                                notifications_enabled: value,
+                            })
+                        }
                     />
                 </View>
             </Card>
@@ -104,13 +106,10 @@ export default function SettingsScreen() {
             <Card style={styles.settingCard}>
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.label}>
-                            Update Routine After Workout
-                        </Text>
+                        <Text style={styles.label}>Update Routine After Workout</Text>
 
                         <Text style={styles.helperText}>
-                            Automatically use your completed workout
-                            as the new routine template.
+                            Automatically use your completed workout as the new routine template.
                         </Text>
                     </View>
 
@@ -118,7 +117,7 @@ export default function SettingsScreen() {
                         value={settings.update_routine_after_workout}
                         onValueChange={(value) =>
                             updateSetting({
-                                update_routine_after_workout: value
+                                update_routine_after_workout: value,
                             })
                         }
                     />
@@ -136,7 +135,7 @@ export default function SettingsScreen() {
                         value={settings.use_global_timers}
                         onValueChange={(value) =>
                             updateSetting({
-                                use_global_timers: value
+                                use_global_timers: value,
                             })
                         }
                     />
@@ -154,7 +153,7 @@ export default function SettingsScreen() {
                             placeholder="90"
                             onChangeText={(value) =>
                                 updateSetting({
-                                    global_set_rest_seconds: Number(value || 0)
+                                    global_set_rest_seconds: Number(value || 0),
                                 })
                             }
                         />

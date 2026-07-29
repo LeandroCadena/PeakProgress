@@ -15,25 +15,13 @@ import WorkoutSetRow from "./WorkoutSetRow";
 type WorkoutExerciseCardProps = {
     exercise: WorkoutSessionExercise;
     savedSets: WorkoutSessionSet[];
-    getSetInputValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: number | null,
-    ) => string;
-    updateLocalSetValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string,
-    ) => void;
-    updateSetValue: (
-        setId: string,
-        field: "weight" | "reps",
-        value: string,
-    ) => void;
+    getSetInputValue: (setId: string, field: "weight" | "reps", value: number | null) => string;
+    updateLocalSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
+    updateSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
     toggleSetCompleted: (
         workoutSessionExerciseId: string,
         exerciseId: string,
-        set: WorkoutSessionSet,
+        set: WorkoutSessionSet
     ) => void;
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
@@ -70,12 +58,7 @@ export default function WorkoutExerciseCard({
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
 
     return (
-        <Card
-            style={[
-                styles.card,
-                isDragging && styles.cardDragging,
-            ]}
-        >
+        <Card style={[styles.card, isDragging && styles.cardDragging]}>
             <Pressable
                 onPress={() => {
                     if (!isDragging) {
@@ -93,9 +76,7 @@ export default function WorkoutExerciseCard({
                         <View style={styles.headerActions}>
                             <ActionMenu
                                 open={isActionsMenuOpen}
-                                onOpenChange={
-                                    onActionsMenuOpenChange
-                                }
+                                onOpenChange={onActionsMenuOpenChange}
                                 disabled={isDragging}
                                 items={[
                                     {
@@ -110,19 +91,13 @@ export default function WorkoutExerciseCard({
                                     <Ionicons
                                         name="ellipsis-vertical"
                                         size={22}
-                                        color={
-                                            colors.textSecondary
-                                        }
+                                        color={colors.textSecondary}
                                     />
                                 }
                             />
 
                             <Ionicons
-                                name={
-                                    isCollapsed
-                                        ? "chevron-down"
-                                        : "chevron-up"
-                                }
+                                name={isCollapsed ? "chevron-down" : "chevron-up"}
                                 size={22}
                                 color={colors.text}
                             />
@@ -159,16 +134,14 @@ export default function WorkoutExerciseCard({
                                 displaySetNumber={index + 1}
                                 weightValue={getSetInputValue(set.id, "weight", set.weight)}
                                 repsValue={getSetInputValue(set.id, "reps", set.reps)}
-                                onWeightChange={(value) => updateLocalSetValue(set.id, "weight", value)}
+                                onWeightChange={(value) =>
+                                    updateLocalSetValue(set.id, "weight", value)
+                                }
                                 onRepsChange={(value) => updateLocalSetValue(set.id, "reps", value)}
                                 onWeightBlur={(value) => updateSetValue(set.id, "weight", value)}
                                 onRepsBlur={(value) => updateSetValue(set.id, "reps", value)}
                                 onToggleCompleted={() =>
-                                    toggleSetCompleted(
-                                        exercise.id,
-                                        exercise.exercise_id,
-                                        set
-                                    )
+                                    toggleSetCompleted(exercise.id, exercise.exercise_id, set)
                                 }
                                 onDelete={() => deleteSet(set.id)}
                                 isTemporarySet={isTemporarySet}

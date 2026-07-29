@@ -34,9 +34,7 @@ export default function HomeScreen({ navigation }: any) {
     });
 
     const localSessionId = useWorkoutSessionStore((state) => state.sessionId);
-    const localRestTimerEndAt = useWorkoutSessionStore(
-        (state) => state.restTimerEndAt
-    );
+    const localRestTimerEndAt = useWorkoutSessionStore((state) => state.restTimerEndAt);
 
     const activeRestTimerEndAt =
         activeSession?.id === localSessionId
@@ -140,9 +138,7 @@ export default function HomeScreen({ navigation }: any) {
                 <ActiveWorkoutBanner
                     routineName={activeSession.routines?.name ?? "Workout"}
                     elapsedText={getElapsedText(activeSession.started_at)}
-                    restRemainingText={getRestRemainingText(
-                        activeRestTimerEndAt
-                    )}
+                    restRemainingText={getRestRemainingText(activeRestTimerEndAt)}
                     onPress={() =>
                         navigation.navigate("WorkoutSession", {
                             sessionId: activeSession.id,
@@ -182,10 +178,10 @@ export default function HomeScreen({ navigation }: any) {
                         stats.streakStatus === "empty"
                             ? "Start today"
                             : stats.streakStatus === "warning"
-                                ? "Keep it up"
-                                : stats.streakStatus === "expired"
-                                    ? "Start again"
-                                    : `${stats.streakWeeks} active weeks`
+                              ? "Keep it up"
+                              : stats.streakStatus === "expired"
+                                ? "Start again"
+                                : `${stats.streakWeeks} active weeks`
                     }
                 />
             </View>
@@ -219,7 +215,7 @@ export default function HomeScreen({ navigation }: any) {
                                 workout.completed_at,
                                 workout.workout_session_exercises?.length ?? 0
                             )}
-                            onPress={() => { }}
+                            onPress={() => {}}
                         />
                     ))}
                 </View>

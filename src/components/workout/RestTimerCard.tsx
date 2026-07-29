@@ -17,11 +17,7 @@ export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: P
             </View>
 
             <Pressable style={styles.restartButton} onPress={onRestart}>
-                <Ionicons
-                    name="reload-outline"
-                    size={28}
-                    color={colors.text}
-                />
+                <Ionicons name="reload-outline" size={28} color={colors.text} />
             </Pressable>
         </View>
     );
