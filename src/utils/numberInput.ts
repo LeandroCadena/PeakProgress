@@ -17,7 +17,3 @@ export function displayZeroAsEmpty(value: number | string | null | undefined) {
 
     return stringValue === "0" ? "" : stringValue;
 }
-
-export function normalizeEmptyNumber(value: string) {
-    return value.trim() === "" ? 0 : Number(value);
-}

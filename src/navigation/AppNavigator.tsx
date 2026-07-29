@@ -19,7 +19,7 @@ import WorkoutSummaryScreen from "../screens/WorkoutSummaryScreen";
 
 import MainTabs from "./MainTabs";
 
-export type RootStackParamList = {
+type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     Main: undefined;

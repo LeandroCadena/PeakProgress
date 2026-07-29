@@ -30,7 +30,7 @@ async function configureNotificationChannel() {
     });
 }
 
-export async function requestNotificationPermissions() {
+async function requestNotificationPermissions() {
     if (Platform.OS === "web") return false;
 
     /*

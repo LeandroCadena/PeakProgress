@@ -12,12 +12,12 @@
     "@supabase/supabase-js": "^2.108.2",
     "expo": "~56.0.12",
     "expo-audio": "~56.0.12",
-    "expo-constants": "~56.0.18",
     "expo-crypto": "~56.0.4",
     "expo-dev-client": "~56.0.20",
     "expo-linear-gradient": "~56.0.4",
     "expo-notifications": "~56.0.18",
-    "expo-status-bar": "~56.0.4",
+    "expo-system-ui": "~56.0.5",
+    "expo-updates": "~56.0.23",
     "lucide-react-native": "^1.21.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -29,7 +29,6 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
     "react-native-svg": "15.15.4",
-    "react-native-swipeable-item": "^2.0.9",
     "react-native-web": "^0.21.2",
     "zustand": "^5.0.14"
   },
@@ -37,8 +36,7 @@
     "@types/react": "~19.2.2",
     "eslint": "^9.39.4",
     "eslint-config-expo": "^56.0.4",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.32.0",
+    "knip": "^6.29.0",
     "prettier": "^3.8.4",
     "typescript": "~6.0.3"
   },
@@ -48,7 +46,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "eslint src",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check:unused": "knip"
   },
   "private": true
 }

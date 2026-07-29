@@ -2,18 +2,6 @@ import type { ExerciseProgress, ExerciseRecordsById, UserExerciseRecord } from "
 
 import { supabase } from "./supabase";
 
-export type WorkoutSetProgress = {
-    id: string;
-    exercise_id: string | null;
-    exercise_name_snapshot: string | null;
-    weight: number | null;
-    reps: number;
-    exercise: {
-        id: string;
-        name: string;
-    } | null;
-};
-
 export async function getExerciseProgress(userId: string): Promise<ExerciseProgress[]> {
     const { data, error } = await supabase
         .from("user_exercise_records")
@@ -56,56 +44,6 @@ export async function getExerciseProgressPoints(exerciseId: string) {
     if (error) throw error;
 
     return data ?? [];
-}
-
-export async function getBestExerciseVolume(params: { exerciseId: string; userId: string }) {
-    const { data, error } = await supabase
-        .from("workout_sets")
-        .select(
-            `
-        weight,
-        reps,
-        workout_sessions!inner (
-            user_id,
-            completed_at,
-            discarded_at
-        )
-        `
-        )
-        .eq("exercise_id", params.exerciseId)
-        .eq("workout_sessions.user_id", params.userId)
-        .not("workout_sessions.completed_at", "is", null)
-        .is("workout_sessions.discarded_at", null);
-
-    if (error) throw error;
-
-    return (data ?? []).reduce((best, set) => {
-        const volume = Number(set.weight ?? 0) * Number(set.reps ?? 0);
-        return Math.max(best, volume);
-    }, 0);
-}
-
-export async function getUserExerciseRecord(params: { userId: string; exerciseId: string }) {
-    const { data, error } = await supabase
-        .from("user_exercise_records")
-        .select(
-            `
-        id,
-        user_id,
-        exercise_id,
-        best_volume,
-        best_weight,
-        best_reps,
-        best_set_id
-        `
-        )
-        .eq("user_id", params.userId)
-        .eq("exercise_id", params.exerciseId)
-        .maybeSingle();
-
-    if (error) throw error;
-
-    return data;
 }
 
 export async function upsertUserExerciseRecord(params: {

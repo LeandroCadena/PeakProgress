@@ -1,0 +1,14 @@
+{
+    "$schema": "https://unpkg.com/knip@latest/schema.json",
+    "entry": [
+        "App.tsx"
+    ],
+    "project": [
+        "**/*.{ts,tsx,js,jsx}",
+        "!node_modules/**",
+        "!android/**",
+        "!ios/**",
+        "!dist/**",
+        "!coverage/**"
+    ]
+}

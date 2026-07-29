@@ -45,7 +45,7 @@ export async function createWorkoutSession(params: { userId: string; routineId: 
     return data;
 }
 
-export async function discardWorkoutSession(sessionId: string) {
+async function discardWorkoutSession(sessionId: string) {
     const { error } = await supabase
         .from("workout_sessions")
         .update({
@@ -275,7 +275,7 @@ async function getRoutineExercisesWithSets(routineId: string) {
     }));
 }
 
-export async function createWorkoutSessionExercisesFromRoutine(params: {
+async function createWorkoutSessionExercisesFromRoutine(params: {
     sessionId: string;
     routineId: string;
     userId: string;

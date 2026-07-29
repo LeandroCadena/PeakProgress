@@ -8,7 +8,7 @@ import ProgressScreen from "../screens/ProgressScreen";
 import RoutinesScreen from "../screens/RoutinesScreen";
 import { colors } from "../theme";
 
-export type MainTabsParamList = {
+type MainTabsParamList = {
     Home: undefined;
     Routines: undefined;
     Exercises: undefined;

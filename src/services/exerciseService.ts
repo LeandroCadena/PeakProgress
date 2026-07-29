@@ -2,17 +2,6 @@ import { Exercise, Muscle, FilterMode, MuscleRegion } from "../types/exercise";
 
 import { supabase } from "./supabase";
 
-export async function getExercises(): Promise<Exercise[]> {
-    const { data, error } = await supabase
-        .from("exercises")
-        .select("id, name, equipment, difficulty")
-        .order("name", { ascending: true });
-
-    if (error) throw error;
-
-    return data ?? [];
-}
-
 export async function getMuscles(): Promise<Muscle[]> {
     const { data, error } = await supabase.from("muscles").select("id, name").order("name");
 
