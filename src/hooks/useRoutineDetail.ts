@@ -4,141 +4,253 @@ import { Alert } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import {
-    updateRoutine,
+    createRoutineExerciseSets,
     deleteRoutineById,
+    deleteRoutineExercise as deleteRoutineExerciseService,
     getRoutineExercises,
+    getRoutineExerciseSetsByRoutineId,
+    updateRoutine,
     updateRoutineExerciseConfig,
     updateRoutineExercisePosition,
-    deleteRoutineExercise as deleteRoutineExerciseService,
-    createRoutineExerciseSet,
-    updateRoutineExerciseSet,
-    deleteRoutineExerciseSet,
-    createRoutineExerciseSets,
-    getRoutineExerciseSetsByRoutineId,
 } from "../services/routineService";
 import {
-    deleteRoutineExerciseSetsByRoutineExerciseId,
-    getOrCreateWorkoutAfterDiscard,
-    getActiveWorkoutSession,
     createWorkoutSession,
+    deleteRoutineExerciseSetsByRoutineExerciseId,
+    getActiveWorkoutSession,
+    getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
-import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
+import { useRoutineEditorStore } from "../store/routineEditorStore";
+import type { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 
 type Params = {
     routineId: string;
     routineName: string;
-    routineDescription: string;
     navigation: any;
 };
 
-export function useRoutineDetail({
-    routineId,
-    routineName,
-    routineDescription,
-    navigation,
-}: Params) {
+type ActiveWorkout = {
+    id: string;
+    routine_id: string;
+    started_at: string;
+    routines?:
+        | {
+              name?: string | null;
+          }
+        | {
+              name?: string | null;
+          }[]
+        | null;
+};
+
+export function useRoutineDetail({ routineId, routineName, navigation }: Params) {
     const { user } = useAuth();
 
-    const [routineTitle, setRoutineTitle] = useState(routineName);
-    const [routineExercises, setRoutineExercises] = useState<RoutineExercise[]>([]);
-    const [routineExercisesChanged, setRoutineExercisesChanged] = useState(false);
-    const [isStartingWorkout, setIsStartingWorkout] = useState(false);
-    const [templateSetDraftValues, setTemplateSetDraftValues] = useState<Record<string, string>>(
-        {}
-    );
+    const editorRoutineId = useRoutineEditorStore((state) => state.routineId);
+    const name = useRoutineEditorStore((state) => state.name);
 
-    const [editRoutineVisible, setEditRoutineVisible] = useState(false);
-    const [editRoutineName, setEditRoutineName] = useState(routineName);
-    const [editRoutineDescription, setEditRoutineDescription] = useState(routineDescription);
-    const [routineExerciseSets, setRoutineExerciseSets] = useState<
-        Record<string, RoutineExerciseSet[]>
-    >({});
+    const exercises = useRoutineEditorStore((state) => state.exercises);
+    const setsByExerciseId = useRoutineEditorStore((state) => state.setsByExerciseId);
+    const editingValues = useRoutineEditorStore((state) => state.editingValues);
+    const originalSnapshot = useRoutineEditorStore((state) => state.originalSnapshot);
+    const hasUnsavedChanges = useRoutineEditorStore((state) => state.hasUnsavedChanges);
+
+    const initializeEditor = useRoutineEditorStore((state) => state.initializeEditor);
+    const setName = useRoutineEditorStore((state) => state.setName);
+
+    const reorderExercises = useRoutineEditorStore((state) => state.reorderExercises);
+    const deleteExercise = useRoutineEditorStore((state) => state.deleteExercise);
+
+    const addSet = useRoutineEditorStore((state) => state.addSet);
+    const updateSet = useRoutineEditorStore((state) => state.updateSet);
+    const deleteSet = useRoutineEditorStore((state) => state.deleteSet);
+    const updateEditingValue = useRoutineEditorStore((state) => state.updateEditingValue);
+    const updateStoreSetRest = useRoutineEditorStore((state) => state.updateSetRest);
+    const updateStoreExerciseRest = useRoutineEditorStore((state) => state.updateExerciseRest);
+
+    const markSaved = useRoutineEditorStore((state) => state.markSaved);
+    const discardChanges = useRoutineEditorStore((state) => state.discardChanges);
+    const clearEditor = useRoutineEditorStore((state) => state.clearEditor);
+
+    const [isLoadingRoutine, setIsLoadingRoutine] = useState(false);
+    const [isSavingRoutine, setIsSavingRoutine] = useState(false);
+    const [isStartingWorkout, setIsStartingWorkout] = useState(false);
+
     const [openExerciseMenuId, setOpenExerciseMenuId] = useState<string | null>(null);
 
-    const [isEditingRoutine, setIsEditingRoutine] = useState(false);
-    const [draftRoutineName, setDraftRoutineName] = useState(routineName);
-    const [draftRoutineDescription, setDraftRoutineDescription] = useState(routineDescription);
-
     const [activeWorkoutModalVisible, setActiveWorkoutModalVisible] = useState(false);
-    const [activeWorkout, setActiveWorkout] = useState<any>(null);
+    const [activeWorkout, setActiveWorkout] = useState<ActiveWorkout | null>(null);
     const [now, setNow] = useState(() => Date.now());
+
+    /*
+     * Temporary compatibility state.
+     *
+     * These values can be removed when RoutineHeader and the old edit modal
+     * are replaced by the new fixed header.
+     */
+    const [editRoutineVisible, setEditRoutineVisible] = useState(false);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
             setNow(Date.now());
         }, 1000);
 
-        return () => clearInterval(intervalId);
+        return () => {
+            clearInterval(intervalId);
+        };
     }, []);
 
-    const fetchRoutineExercises = useCallback(async () => {
-        try {
-            const exercises = await getRoutineExercises(routineId);
-            setRoutineExercises(exercises);
+    const fetchRoutine = useCallback(
+        async (options?: { force?: boolean }) => {
+            const force = options?.force ?? false;
+            const editorAlreadyInitialized = editorRoutineId === routineId;
 
-            const setsByExercise = await getRoutineExerciseSetsByRoutineId(routineId);
-            setRoutineExerciseSets(setsByExercise);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }, [routineId]);
+            if (editorAlreadyInitialized && hasUnsavedChanges && !force) {
+                return;
+            }
+
+            setIsLoadingRoutine(true);
+
+            try {
+                const [routineExercises, routineExerciseSets] = await Promise.all([
+                    getRoutineExercises(routineId),
+                    getRoutineExerciseSetsByRoutineId(routineId),
+                ]);
+
+                initializeEditor({
+                    routineId,
+                    name: routineName,
+                    exercises: routineExercises,
+                    setsByExerciseId: routineExerciseSets,
+                });
+            } catch (error: any) {
+                Alert.alert("Error", error.message);
+            } finally {
+                setIsLoadingRoutine(false);
+            }
+        },
+        [editorRoutineId, hasUnsavedChanges, initializeEditor, routineId, routineName]
+    );
 
     useFocusEffect(
         useCallback(() => {
-            fetchRoutineExercises();
-        }, [fetchRoutineExercises])
+            void fetchRoutine();
+        }, [fetchRoutine])
     );
 
-    async function deleteRoutineExercise(routineExerciseId: string) {
-        try {
-            await deleteRoutineExerciseService(routineExerciseId);
-            await fetchRoutineExercises();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
+    function reorderRoutineExercises(reorderedExercises: RoutineExercise[]) {
+        reorderExercises(reorderedExercises);
     }
 
-    async function saveRoutineChanges() {
-        if (!draftRoutineName.trim()) {
-            Alert.alert("Validation", "Routine name is required");
+    function deleteRoutineExercise(routineExerciseId: string) {
+        deleteExercise(routineExerciseId);
+        setOpenExerciseMenuId(null);
+    }
+
+    function updateLocalTemplateSetValue(setId: string, field: "weight" | "reps", value: string) {
+        updateEditingValue(setId, field, value);
+    }
+
+    function findRoutineExerciseIdForSet(setId: string): string | null {
+        for (const [routineExerciseId, sets] of Object.entries(setsByExerciseId)) {
+            const containsSet = sets.some((setItem) => setItem.id === setId);
+
+            if (containsSet) {
+                return routineExerciseId;
+            }
+        }
+
+        return null;
+    }
+
+    function updateTemplateSet(setId: string, field: "weight" | "reps", value: string) {
+        const normalizedValue = value.trim() === "" ? 0 : Number(value);
+
+        if (!Number.isFinite(normalizedValue) || normalizedValue < 0) {
+            Alert.alert("Validation", "Please enter a valid positive number");
             return;
         }
 
-        const routineInfoChanged =
-            draftRoutineName.trim() !== routineTitle ||
-            draftRoutineDescription.trim() !== editRoutineDescription.trim();
+        const routineExerciseId = findRoutineExerciseIdForSet(setId);
 
-        const routineSetsChanged = Object.keys(templateSetDraftValues).length > 0;
-        const shouldPersistRoutineExercises = routineSetsChanged || routineExercisesChanged;
-
-        if (!routineInfoChanged && !shouldPersistRoutineExercises) {
-            setIsEditingRoutine(false);
+        if (!routineExerciseId) {
+            Alert.alert("Error", "Routine exercise set not found");
             return;
         }
 
-        try {
-            if (shouldPersistRoutineExercises) {
-                await persistRoutineChanges();
-            }
+        updateEditingValue(setId, field, value);
 
-            if (routineInfoChanged) {
-                await updateRoutine({
-                    routineId,
-                    name: draftRoutineName,
-                    description: draftRoutineDescription,
-                });
-                setRoutineTitle(draftRoutineName.trim());
-                setEditRoutineDescription(draftRoutineDescription);
-            }
-            setIsEditingRoutine(false);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
+        updateSet({
+            routineExerciseId,
+            setId,
+            changes: {
+                [field]: normalizedValue,
+            },
+        });
+    }
+
+    function addTemplateSet(routineExerciseId: string) {
+        const currentSets = setsByExerciseId[routineExerciseId] ?? [];
+        const lastSet = currentSets[currentSets.length - 1];
+
+        const lastWeight = lastSet ? getSetDraftValue(lastSet, "weight") : 0;
+
+        const lastReps = lastSet ? getSetDraftValue(lastSet, "reps") : 0;
+
+        const temporarySet: RoutineExerciseSet = {
+            id: createTemporaryId(),
+            routine_exercise_id: routineExerciseId,
+            reps: lastReps,
+            weight: lastWeight,
+            is_pr: false,
+            created_at: new Date().toISOString(),
+        };
+
+        addSet(routineExerciseId, temporarySet);
+    }
+
+    function deleteTemplateSet(routineExerciseId: string, setId: string) {
+        deleteSet(routineExerciseId, setId);
+    }
+
+    function updateSetRest(routineExerciseId: string, value: number) {
+        updateStoreSetRest(routineExerciseId, value);
+    }
+
+    function updateExerciseRest(routineExerciseId: string, value: number) {
+        updateStoreExerciseRest(routineExerciseId, value);
+    }
+
+    function getSetDraftValue(routineSet: RoutineExerciseSet, field: "weight" | "reps"): number {
+        const draftValue = editingValues[`${field}:${routineSet.id}`];
+
+        if (draftValue === undefined || draftValue.trim() === "") {
+            return Number(routineSet[field] ?? 0);
+        }
+
+        const numericValue = Number(draftValue);
+
+        return Number.isFinite(numericValue) ? numericValue : Number(routineSet[field] ?? 0);
+    }
+
+    async function persistDeletedExercises() {
+        const originalExercises = originalSnapshot?.exercises ?? [];
+        const currentExerciseIds = new Set(exercises.map((exercise) => exercise.id));
+
+        const deletedExercises = originalExercises.filter(
+            (exercise) => !currentExerciseIds.has(exercise.id)
+        );
+
+        for (const deletedExercise of deletedExercises) {
+            await deleteRoutineExerciseSetsByRoutineExerciseId(deletedExercise.id);
+            await deleteRoutineExerciseService(deletedExercise.id);
         }
     }
 
-    async function persistRoutineChanges() {
+    async function persistRoutineExercises() {
+        await persistDeletedExercises();
+
         await Promise.all(
-            routineExercises.map((routineExercise, index) =>
+            exercises.map((routineExercise, index) =>
                 updateRoutineExercisePosition({
                     routineExerciseId: routineExercise.id,
                     position: index,
@@ -146,43 +258,72 @@ export function useRoutineDetail({
             )
         );
 
-        for (const routineExercise of routineExercises) {
-            const currentSets = routineExerciseSets[routineExercise.id] ?? [];
-
-            await deleteRoutineExerciseSetsByRoutineExerciseId(routineExercise.id);
-
-            const setsToInsert = currentSets.map((set) => {
-                const weightDraft = templateSetDraftValues[`weight:${set.id}`];
-                const repsDraft = templateSetDraftValues[`reps:${set.id}`];
-
-                return {
-                    routine_exercise_id: routineExercise.id,
-                    reps:
-                        repsDraft !== undefined && repsDraft.trim() !== ""
-                            ? Number(repsDraft)
-                            : Number(set.reps ?? 0),
-                    weight:
-                        weightDraft !== undefined && weightDraft.trim() !== ""
-                            ? Number(weightDraft)
-                            : Number(set.weight ?? 0),
-                };
-            });
-
-            await createRoutineExerciseSets(setsToInsert);
-
+        for (const routineExercise of exercises) {
             await updateRoutineExerciseConfig({
                 routineExerciseId: routineExercise.id,
                 restSeconds: routineExercise.rest_seconds ?? 90,
                 exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
             });
+
+            await deleteRoutineExerciseSetsByRoutineExerciseId(routineExercise.id);
+
+            const currentSets = setsByExerciseId[routineExercise.id] ?? [];
+
+            const setsToInsert = currentSets.map((routineSet) => ({
+                routine_exercise_id: routineExercise.id,
+                reps: getSetDraftValue(routineSet, "reps"),
+                weight: getSetDraftValue(routineSet, "weight"),
+            }));
+
+            await createRoutineExerciseSets(setsToInsert);
         }
-        setTemplateSetDraftValues({});
-        setRoutineExercisesChanged(false);
+    }
+
+    async function saveRoutineChanges(): Promise<boolean> {
+        const normalizedName = name.trim();
+
+        if (!normalizedName) {
+            Alert.alert("Validation", "Routine name is required");
+            return false;
+        }
+
+        if (!hasUnsavedChanges || isSavingRoutine) {
+            return true;
+        }
+
+        setIsSavingRoutine(true);
+
+        try {
+            await updateRoutine({
+                routineId,
+                name: normalizedName,
+            });
+
+            await persistRoutineExercises();
+
+            /*
+             * Keep the Store values normalized before creating the new
+             * original snapshot.
+             */
+            if (normalizedName !== name) {
+                setName(normalizedName);
+            }
+
+            markSaved();
+
+            return true;
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+            return false;
+        } finally {
+            setIsSavingRoutine(false);
+        }
     }
 
     async function deleteRoutine() {
         try {
             await deleteRoutineById(routineId);
+            clearEditor();
             navigation.goBack();
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -190,19 +331,30 @@ export function useRoutineDetail({
     }
 
     async function startWorkout() {
+        if (hasUnsavedChanges) {
+            Alert.alert(
+                "Unsaved changes",
+                "Save your routine changes before starting the workout."
+            );
+            return;
+        }
+
         if (!user) {
             Alert.alert("Error", "User not found");
             return;
         }
-        if (isStartingWorkout) return;
+
+        if (isStartingWorkout) {
+            return;
+        }
 
         setIsStartingWorkout(true);
 
         try {
-            const active = await getActiveWorkoutSession(user.id);
+            const currentActiveWorkout = await getActiveWorkoutSession(user.id);
 
-            if (active) {
-                setActiveWorkout(active);
+            if (currentActiveWorkout) {
+                setActiveWorkout(currentActiveWorkout);
                 setActiveWorkoutModalVisible(true);
                 return;
             }
@@ -215,7 +367,7 @@ export function useRoutineDetail({
             navigation.navigate("WorkoutSession", {
                 sessionId: session.id,
                 routineId,
-                routineName,
+                routineName: name,
             });
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -224,145 +376,37 @@ export function useRoutineDetail({
         }
     }
 
-    function startEditingRoutine() {
-        setDraftRoutineName(routineTitle);
-        setDraftRoutineDescription(editRoutineDescription);
-        setIsEditingRoutine(true);
-    }
-
-    function cancelEditingRoutine() {
-        setTemplateSetDraftValues({});
-        setDraftRoutineName(routineTitle);
-        setDraftRoutineDescription(editRoutineDescription);
-        setIsEditingRoutine(false);
-    }
-
-    function reorderRoutineExercises(reorderedExercises: RoutineExercise[]) {
-        const exercisesWithUpdatedPosition = reorderedExercises.map((exercise, index) => ({
-            ...exercise,
-            position: index,
-        }));
-
-        setRoutineExercises(exercisesWithUpdatedPosition);
-        setRoutineExercisesChanged(true);
-    }
-
-    async function updateTemplateSet(setId: string, field: "weight" | "reps", value: string) {
-        const numericValue = value.trim() === "" ? 0 : Number(value);
-
-        if (Number.isNaN(numericValue)) {
-            Alert.alert("Validation", "Please enter a valid number");
-            return;
+    function getActiveRoutineName(workout: ActiveWorkout) {
+        if (Array.isArray(workout.routines)) {
+            return workout.routines[0]?.name;
         }
 
-        try {
-            await updateRoutineExerciseSet({
-                setId,
-                field,
-                value: numericValue,
-            });
-
-            await fetchRoutineExercises();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function addTemplateSet(routineExerciseId: string) {
-        const currentSets = routineExerciseSets[routineExerciseId] ?? [];
-        const lastSet = currentSets[currentSets.length - 1];
-
-        const lastWeight = lastSet
-            ? (templateSetDraftValues[`${lastSet.id}-weight`] ?? String(lastSet.weight ?? 0))
-            : "0";
-
-        const lastReps = lastSet
-            ? (templateSetDraftValues[`${lastSet.id}-reps`] ?? String(lastSet.reps ?? 0))
-            : "0";
-
-        const tempId = `temp-${Date.now()}`;
-        const createdAt = new Date().toISOString();
-
-        const tempSet: RoutineExerciseSet = {
-            id: tempId,
-            routine_exercise_id: routineExerciseId,
-            reps: Number(lastReps),
-            weight: Number(lastWeight),
-            is_pr: false,
-            created_at: createdAt,
-        };
-
-        setRoutineExerciseSets((prev) => ({
-            ...prev,
-            [routineExerciseId]: [...(prev[routineExerciseId] ?? []), tempSet],
-        }));
-
-        try {
-            const createdSet = await createRoutineExerciseSet({
-                routineExerciseId,
-                reps: Number(lastReps),
-                weight: Number(lastWeight),
-            });
-
-            setRoutineExerciseSets((prev) => ({
-                ...prev,
-                [routineExerciseId]: (prev[routineExerciseId] ?? []).map((set) =>
-                    set.id === tempId ? createdSet : set
-                ),
-            }));
-        } catch (error: any) {
-            setRoutineExerciseSets((prev) => ({
-                ...prev,
-                [routineExerciseId]: (prev[routineExerciseId] ?? []).filter(
-                    (set) => set.id !== tempId
-                ),
-            }));
-
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    async function deleteTemplateSet(routineExerciseId: string, setId: string) {
-        const previousSets = routineExerciseSets;
-
-        setRoutineExerciseSets((prev) => ({
-            ...prev,
-            [routineExerciseId]: (prev[routineExerciseId] ?? []).filter((set) => set.id !== setId),
-        }));
-
-        try {
-            await deleteRoutineExerciseSet(setId);
-        } catch (error: any) {
-            setRoutineExerciseSets(previousSets);
-            Alert.alert("Error", error.message);
-        }
-    }
-
-    function updateLocalTemplateSetValue(setId: string, field: "weight" | "reps", value: string) {
-        const key = `${field}:${setId}`;
-
-        setTemplateSetDraftValues((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
-    }
-
-    function getActiveRoutineName(active: any) {
-        return Array.isArray(active.routines) ? active.routines[0]?.name : active.routines?.name;
+        return workout.routines?.name;
     }
 
     function getElapsedText(startedAt: string) {
-        const diffMs = now - new Date(startedAt).getTime();
-        const minutes = Math.floor(diffMs / 60000);
-        const hours = Math.floor(minutes / 60);
-        const restMinutes = minutes % 60;
+        const startedAtTimestamp = new Date(startedAt).getTime();
 
-        if (hours > 0) return `${hours}h ${restMinutes}m`;
-        return `${minutes}m`;
+        if (!Number.isFinite(startedAtTimestamp)) {
+            return "0m";
+        }
+
+        const elapsedMilliseconds = Math.max(0, now - startedAtTimestamp);
+        const totalMinutes = Math.floor(elapsedMilliseconds / 60_000);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        }
+
+        return `${totalMinutes}m`;
     }
 
     function resumeActiveWorkout() {
-        if (!activeWorkout) return;
+        if (!activeWorkout) {
+            return;
+        }
 
         setActiveWorkoutModalVisible(false);
 
@@ -374,8 +418,9 @@ export function useRoutineDetail({
     }
 
     async function discardAndStartWorkout() {
-        if (!user || !activeWorkout) return;
-        if (isStartingWorkout) return;
+        if (!user || !activeWorkout || isStartingWorkout) {
+            return;
+        }
 
         setIsStartingWorkout(true);
 
@@ -391,7 +436,7 @@ export function useRoutineDetail({
             navigation.navigate("WorkoutSession", {
                 sessionId: session.id,
                 routineId,
-                routineName,
+                routineName: name,
             });
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -400,64 +445,48 @@ export function useRoutineDetail({
         }
     }
 
-    function updateSetRest(routineExerciseId: string, value: number) {
-        setRoutineExercisesChanged(true);
-
-        setRoutineExercises((prev) =>
-            prev.map((exercise) =>
-                exercise.id === routineExerciseId ? { ...exercise, rest_seconds: value } : exercise
-            )
-        );
+    /*
+     * Temporary compatibility functions.
+     *
+     * The editor is now always active. These aliases allow the existing
+     * RoutineDetailScreen to compile until the fixed header is introduced.
+     */
+    function startEditingRoutine() {
+        // The routine editor is always active now.
     }
 
-    function updateExerciseRest(routineExerciseId: string, value: number) {
-        setRoutineExercisesChanged(true);
-
-        setRoutineExercises((prev) =>
-            prev.map((exercise) =>
-                exercise.id === routineExerciseId
-                    ? {
-                          ...exercise,
-                          exercise_rest_seconds: value,
-                      }
-                    : exercise
-            )
-        );
+    function cancelEditingRoutine() {
+        discardChanges();
     }
 
     return {
-        routineTitle,
-        routineExercises,
-        reorderRoutineExercises,
+        routineTitle: name,
+        routineExercises: exercises,
+        routineExerciseSets: setsByExerciseId,
 
-        editRoutineVisible,
-        setEditRoutineVisible,
-        editRoutineName,
-        editRoutineDescription,
-        setEditRoutineName,
-        setEditRoutineDescription,
-
-        deleteRoutineExercise,
-        saveRoutineChanges,
-        deleteRoutine,
-        startWorkout,
+        hasUnsavedChanges,
+        isLoadingRoutine,
+        isSavingRoutine,
         isStartingWorkout,
 
-        isEditingRoutine,
-        draftRoutineName,
-        draftRoutineDescription,
-        setDraftRoutineName,
-        setDraftRoutineDescription,
-        startEditingRoutine,
-        cancelEditingRoutine,
+        setRoutineName: setName,
+        reorderRoutineExercises,
+        deleteRoutineExercise,
 
-        routineExerciseSets,
         updateTemplateSet,
         addTemplateSet,
         deleteTemplateSet,
-
-        templateSetDraftValues,
         updateLocalTemplateSetValue,
+
+        updateSetRest,
+        updateExerciseRest,
+
+        saveRoutineChanges,
+        discardRoutineChanges: discardChanges,
+        reloadRoutine: () => fetchRoutine({ force: true }),
+
+        deleteRoutine,
+        startWorkout,
 
         activeWorkoutModalVisible,
         activeWorkoutRoutineName: activeWorkout
@@ -470,10 +499,25 @@ export function useRoutineDetail({
         resumeActiveWorkout,
         discardAndStartWorkout,
 
-        updateSetRest,
-        updateExerciseRest,
-
         openExerciseMenuId,
         setOpenExerciseMenuId,
+
+        /*
+         * Temporary aliases used by the current screen.
+         */
+        isEditingRoutine: true,
+        draftRoutineName: name,
+        setDraftRoutineName: setName,
+        startEditingRoutine,
+        cancelEditingRoutine,
+
+        editRoutineVisible,
+        setEditRoutineVisible,
+        editRoutineName: name,
+        setEditRoutineName: setName,
     };
+}
+
+function createTemporaryId() {
+    return `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }

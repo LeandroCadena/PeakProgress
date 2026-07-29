@@ -6,7 +6,7 @@ import { colors, componentStyles, sharedStyles, spacing } from "../../theme";
 type Props = {
     imageUrl?: string | null;
     title: string;
-    exerciseRecord: string | null;
+    exerciseRecord?: string | null;
     rightContent?: ReactNode;
 };
 

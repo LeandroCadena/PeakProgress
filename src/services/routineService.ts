@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
 export async function getRoutines(): Promise<Routine[]> {
     const { data, error } = await supabase
         .from("routines")
-        .select("id, name, description")
+        .select("id, name")
         .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -13,26 +13,20 @@ export async function getRoutines(): Promise<Routine[]> {
     return data ?? [];
 }
 
-export async function createRoutine(params: { userId: string; name: string; description: string }) {
+export async function createRoutine(params: { userId: string; name: string }) {
     const { error } = await supabase.from("routines").insert({
         user_id: params.userId,
         name: params.name.trim(),
-        description: params.description.trim() || null,
     });
 
     if (error) throw error;
 }
 
-export async function updateRoutine(params: {
-    routineId: string;
-    name: string;
-    description: string;
-}) {
+export async function updateRoutine(params: { routineId: string; name: string }) {
     const { error } = await supabase
         .from("routines")
         .update({
             name: params.name.trim(),
-            description: params.description.trim() || null,
         })
         .eq("id", params.routineId);
 

@@ -25,7 +25,6 @@ export default function RoutinesScreen({ navigation }: any) {
 
     const [routines, setRoutines] = useState<Routine[]>([]);
     const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
 
     const [activeWorkoutModalVisible, setActiveWorkoutModalVisible] = useState(false);
     const [activeWorkout, setActiveWorkout] = useState<any>(null);
@@ -82,11 +81,9 @@ export default function RoutinesScreen({ navigation }: any) {
             await createRoutineService({
                 userId: user.id,
                 name,
-                description,
             });
 
             setName("");
-            setDescription("");
             await fetchRoutines();
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -242,12 +239,10 @@ export default function RoutinesScreen({ navigation }: any) {
                 renderItem={({ item }) => (
                     <RoutineCard
                         title={item.name}
-                        subtitle={item.description ?? ""}
                         onPress={() =>
                             navigation.navigate("RoutineDetail", {
                                 routineId: item.id,
                                 routineName: item.name,
-                                routineDescription: item.description ?? "",
                             })
                         }
                         showButton={true}

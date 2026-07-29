@@ -1,9 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import {
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
 
-import { colors, componentStyles, spacing, typography } from "../../theme";
-import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
+import {
+    colors,
+    componentStyles,
+    spacing,
+    typography,
+} from "../../theme";
+import {
+    RoutineExercise,
+    RoutineExerciseSet,
+} from "../../types/routine";
 import ActionMenu from "../common/ActionMenu";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -15,23 +28,37 @@ import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 type Props = {
     item: RoutineExercise;
     onDelete: () => void;
-    isEditing: boolean;
     onDrag: () => void;
     isDragging: boolean;
     sets: RoutineExerciseSet[];
-    onUpdateSet: (setId: string, field: "weight" | "reps", value: string) => void;
+    onUpdateSet: (
+        setId: string,
+        field: "weight" | "reps",
+        value: string,
+    ) => void;
     onAddSet: () => void;
-    onDeleteSet: (routineExerciseId: string, setId: string) => void;
-    onUpdateSetRest: (routineExerciseId: string, value: number) => void;
-    updateLocalTemplateSetValue: (setId: string, field: "weight" | "reps", value: string) => void;
+    onDeleteSet: (
+        routineExerciseId: string,
+        setId: string,
+    ) => void;
+    onUpdateSetRest: (
+        routineExerciseId: string,
+        value: number,
+    ) => void;
+    updateLocalTemplateSetValue: (
+        setId: string,
+        field: "weight" | "reps",
+        value: string,
+    ) => void;
     isActionsMenuOpen: boolean;
-    onActionsMenuOpenChange: (open: boolean) => void;
+    onActionsMenuOpenChange: (
+        open: boolean,
+    ) => void;
 };
 
 export default function RoutineExerciseCard({
     item,
     onDelete,
-    isEditing,
     onDrag,
     isDragging,
     sets,
@@ -43,7 +70,8 @@ export default function RoutineExerciseCard({
     isActionsMenuOpen,
     onActionsMenuOpenChange,
 }: Props) {
-    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isCollapsed, setIsCollapsed] =
+        useState(false);
 
     return (
         <Card
@@ -55,49 +83,53 @@ export default function RoutineExerciseCard({
             <Pressable
                 onPress={() => {
                     if (!isDragging) {
-                        setIsCollapsed((prev) => !prev);
+                        setIsCollapsed(
+                            (previous) => !previous,
+                        );
                     }
                 }}
-                onLongPress={isEditing ? onDrag : undefined}
+                onLongPress={onDrag}
                 delayLongPress={250}
             >
                 <ExerciseCardHeader
                     imageUrl={item.exercise?.image_url}
-                    title={item.exercise?.name ?? "Exercise"}
+                    title={
+                        item.exercise?.name ?? "Exercise"
+                    }
                     rightContent={
                         <View style={styles.headerActions}>
-                            <View>
-                                {isEditing ? (
-                                    <ActionMenu
-                                        open={isActionsMenuOpen}
-                                        onOpenChange={
-                                            onActionsMenuOpenChange
-                                        }
-                                        disabled={isDragging}
-                                        items={[
-                                            {
-                                                key: "delete",
-                                                label: "Delete exercise",
-                                                icon: "trash-outline",
-                                                destructive: true,
-                                                onPress: onDelete,
-                                            },
-                                        ]}
-                                        trigger={
-                                            <Ionicons
-                                                name="ellipsis-vertical"
-                                                size={22}
-                                                color={
-                                                    colors.textSecondary
-                                                }
-                                            />
+                            <ActionMenu
+                                open={isActionsMenuOpen}
+                                onOpenChange={
+                                    onActionsMenuOpenChange
+                                }
+                                disabled={isDragging}
+                                items={[
+                                    {
+                                        key: "delete",
+                                        label: "Delete exercise",
+                                        icon: "trash-outline",
+                                        destructive: true,
+                                        onPress: onDelete,
+                                    },
+                                ]}
+                                trigger={
+                                    <Ionicons
+                                        name="ellipsis-vertical"
+                                        size={22}
+                                        color={
+                                            colors.textSecondary
                                         }
                                     />
-                                ) : null}
-                            </View>
+                                }
+                            />
 
                             <Ionicons
-                                name={isCollapsed ? "chevron-down" : "chevron-up"}
+                                name={
+                                    isCollapsed
+                                        ? "chevron-down"
+                                        : "chevron-up"
+                                }
                                 size={22}
                                 color={colors.text}
                             />
@@ -105,46 +137,97 @@ export default function RoutineExerciseCard({
                     }
                 />
             </Pressable>
+
             {!isCollapsed ? (
                 <>
                     <RestTimeEditor
                         label="Rest between sets"
-                        value={item.rest_seconds ?? 90}
-                        editable={isEditing}
-                        onChange={(value) => onUpdateSetRest(item.id, value)}
+                        value={
+                            item.rest_seconds ?? 90
+                        }
+                        editable
+                        onChange={(value) =>
+                            onUpdateSetRest(
+                                item.id,
+                                value,
+                            )
+                        }
                     />
-                    <View style={styles.setHeader}>
-                        <Text style={styles.setNumberHeader}>Set</Text>
-                        <Text style={styles.setHeaderText}>Weight</Text>
-                        <Text style={styles.setHeaderText}>Reps</Text>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.setTableHeader}>
+                        <Text
+                            style={
+                                styles.setNumberHeader
+                            }
+                        >
+                            Set
+                        </Text>
+
+                        <Text
+                            style={styles.setHeaderText}
+                        >
+                            Weight
+                        </Text>
+
+                        <Text
+                            style={styles.setHeaderText}
+                        >
+                            Reps
+                        </Text>
                     </View>
 
                     {sets.map((set, index) => {
-                        const isTemporarySet = set.id.startsWith("temp-");
+                        const isTemporarySet =
+                            set.id.startsWith("temp-");
+
                         return (
                             <RoutineExerciseSetRow
                                 key={set.id}
                                 set={set}
-                                isEditing={isEditing}
-                                displaySetNumber={index + 1}
-                                onDraftChange={(field, value) =>
-                                    updateLocalTemplateSetValue(set.id, field, value)
+                                displaySetNumber={
+                                    index + 1
                                 }
-                                onUpdate={(field, value) => onUpdateSet(set.id, field, value)}
-                                onDelete={() => onDeleteSet(item.id, set.id)}
-                                isTemporarySet={isTemporarySet}
+                                onDraftChange={(
+                                    field,
+                                    value,
+                                ) =>
+                                    updateLocalTemplateSetValue(
+                                        set.id,
+                                        field,
+                                        value,
+                                    )
+                                }
+                                onUpdate={(
+                                    field,
+                                    value,
+                                ) =>
+                                    onUpdateSet(
+                                        set.id,
+                                        field,
+                                        value,
+                                    )
+                                }
+                                onDelete={() =>
+                                    onDeleteSet(
+                                        item.id,
+                                        set.id,
+                                    )
+                                }
+                                isTemporarySet={
+                                    isTemporarySet
+                                }
                             />
                         );
                     })}
 
-                    {isEditing ? (
-                        <AppButton
-                            style={styles.addButton}
-                            title="+ Add Set"
-                            variant="success"
-                            onPress={onAddSet}
-                        />
-                    ) : null}
+                    <AppButton
+                        style={styles.addSetButton}
+                        title="+ Add Set"
+                        variant="success"
+                        onPress={onAddSet}
+                    />
                 </>
             ) : null}
         </Card>
@@ -152,15 +235,23 @@ export default function RoutineExerciseCard({
 }
 
 const styles = StyleSheet.create({
-    setHeader: {
+    card: {
+        borderWidth:
+            componentStyles.borderWidth,
+        borderColor: colors.cardBorder,
+        gap: spacing.md,
+    },
+    cardDragging: {
+        borderColor: colors.primary,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: colors.cardBorder,
+    },
+    setTableHeader: {
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.sm,
-        marginTop: spacing.lg,
-        marginBottom: spacing.sm,
-    },
-    addButton: {
-        marginTop: spacing.md,
     },
     setNumberHeader: {
         width: 28,
@@ -174,19 +265,14 @@ const styles = StyleSheet.create({
         fontSize: typography.small,
         fontWeight: typography.weightBold,
     },
+    addSetButton: {
+        marginTop: spacing.sm,
+    },
     headerActions: {
         flex: 1,
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
         gap: spacing.sm,
-    },
-    card: {
-        borderWidth: componentStyles.borderWidth,
-        borderColor: colors.cardBorder,
-        gap: spacing.md,
-    },
-    cardDragging: {
-        borderColor: colors.primary,
     },
 });

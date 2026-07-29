@@ -38,7 +38,6 @@ type RootStackParamList = {
     RoutineDetail: {
         routineId: string;
         routineName: string;
-        routineDescription: string;
     };
     WorkoutSession: {
         sessionId: string;

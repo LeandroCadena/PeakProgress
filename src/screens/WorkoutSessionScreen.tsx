@@ -88,8 +88,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                         onOpenChange={setIsRoutineMenuOpen}
                         items={[
                             {
-                                key: "workout-settings",
-                                label: "Workout settings",
+                                key: "Settings",
+                                label: "Settings",
                                 icon: "settings-outline",
                                 onPress: () => {
                                     setIsRoutineMenuOpen(false);
