@@ -4,6 +4,7 @@ import { Alert } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import {
+    addExerciseToRoutine,
     createRoutineExerciseSets,
     deleteRoutineById,
     deleteRoutineExercise as deleteRoutineExerciseService,
@@ -67,7 +68,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const updateStoreSetRest = useRoutineEditorStore((state) => state.updateSetRest);
     const updateStoreExerciseRest = useRoutineEditorStore((state) => state.updateExerciseRest);
 
-    const markSaved = useRoutineEditorStore((state) => state.markSaved);
     const discardChanges = useRoutineEditorStore((state) => state.discardChanges);
     const clearEditor = useRoutineEditorStore((state) => state.clearEditor);
 
@@ -227,28 +227,40 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     async function persistRoutineExercises() {
         await persistDeletedExercises();
 
-        await Promise.all(
-            exercises.map((routineExercise, index) =>
-                updateRoutineExercisePosition({
-                    routineExerciseId: routineExercise.id,
+        for (const [index, routineExercise] of exercises.entries()) {
+            const isTemporaryExercise = routineExercise.id.startsWith("temp-");
+
+            const persistedRoutineExerciseId = isTemporaryExercise
+                ? (
+                      await addExerciseToRoutine({
+                          routineId,
+                          exerciseId: routineExercise.exercise_id,
+                          position: index,
+                          restSeconds: routineExercise.rest_seconds ?? 90,
+                          exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
+                      })
+                  ).id
+                : routineExercise.id;
+
+            if (!isTemporaryExercise) {
+                await updateRoutineExercisePosition({
+                    routineExerciseId: persistedRoutineExerciseId,
                     position: index,
-                })
-            )
-        );
+                });
 
-        for (const routineExercise of exercises) {
-            await updateRoutineExerciseConfig({
-                routineExerciseId: routineExercise.id,
-                restSeconds: routineExercise.rest_seconds ?? 90,
-                exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
-            });
+                await updateRoutineExerciseConfig({
+                    routineExerciseId: persistedRoutineExerciseId,
+                    restSeconds: routineExercise.rest_seconds ?? 90,
+                    exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
+                });
 
-            await deleteRoutineExerciseSetsByRoutineExerciseId(routineExercise.id);
+                await deleteRoutineExerciseSetsByRoutineExerciseId(persistedRoutineExerciseId);
+            }
 
             const currentSets = setsByExerciseId[routineExercise.id] ?? [];
 
             const setsToInsert = currentSets.map((routineSet) => ({
-                routine_exercise_id: routineExercise.id,
+                routine_exercise_id: persistedRoutineExerciseId,
                 reps: getSetDraftValue(routineSet, "reps"),
                 weight: getSetDraftValue(routineSet, "weight"),
             }));
@@ -279,15 +291,17 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
             await persistRoutineExercises();
 
-            /*
-             * Keep the Store values normalized before creating the new
-             * original snapshot.
-             */
-            if (normalizedName !== name) {
-                setName(normalizedName);
-            }
+            const [persistedExercises, persistedSetsByExerciseId] = await Promise.all([
+                getRoutineExercises(routineId),
+                getRoutineExerciseSetsByRoutineId(routineId),
+            ]);
 
-            markSaved();
+            initializeEditor({
+                routineId,
+                name: normalizedName,
+                exercises: persistedExercises,
+                setsByExerciseId: persistedSetsByExerciseId,
+            });
 
             return true;
         } catch (error: any) {

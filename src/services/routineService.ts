@@ -73,8 +73,8 @@ export async function addExerciseToRoutine(params: {
     routineId: string;
     exerciseId: string;
     restSeconds: number;
+    exerciseRestSeconds: number;
     position: number;
-    currentPrVolume?: number;
 }) {
     const { data, error } = await supabase
         .from("routine_exercises")
@@ -82,6 +82,7 @@ export async function addExerciseToRoutine(params: {
             routine_id: params.routineId,
             exercise_id: params.exerciseId,
             rest_seconds: params.restSeconds,
+            exercise_rest_seconds: params.exerciseRestSeconds,
             position: params.position,
         })
         .select("id")

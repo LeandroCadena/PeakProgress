@@ -9,6 +9,11 @@ export type RoutineEditorSnapshot = {
     setsByExerciseId: Record<string, RoutineExerciseSet[]>;
 };
 
+type AddRoutineExerciseInput = {
+    exercise: RoutineExercise;
+    sets: RoutineExerciseSet[];
+};
+
 type UpdateRoutineSetInput = {
     routineExerciseId: string;
     setId: string;
@@ -33,7 +38,7 @@ type RoutineEditorState = {
 
     reorderExercises: (exercises: RoutineExercise[]) => void;
 
-    addExercise: (exercise: RoutineExercise, sets?: RoutineExerciseSet[]) => void;
+    addExercise: (input: AddRoutineExerciseInput) => void;
 
     deleteExercise: (routineExerciseId: string) => void;
 
@@ -145,7 +150,7 @@ export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
         });
     },
 
-    addExercise: (exercise, sets = []) => {
+    addExercise: ({ exercise, sets }) => {
         set((state) => {
             const alreadyExists = state.exercises.some(
                 (currentExercise) => currentExercise.exercise_id === exercise.exercise_id

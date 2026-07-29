@@ -3,9 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 
 import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
-import { addExerciseToRoutine } from "../services/routineService";
+import { useRoutineEditorStore } from "../store/routineEditorStore";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
+import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 
 type Params = {
@@ -32,6 +33,7 @@ export function useExercisePicker({
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const filterOptions = filterMode === "muscle" ? muscles : regions;
 
+    const addRoutineExercise = useRoutineEditorStore((state) => state.addExercise);
     const addSessionExercise = useWorkoutSessionStore((state) => state.addExercise);
 
     async function fetchMuscles() {
@@ -71,7 +73,6 @@ export function useExercisePicker({
     }, [filterMode, selectedFilterIds]);
 
     useEffect(() => {
-        console.log(showAdded);
         fetchExercises();
     }, [fetchExercises, filterMode, selectedFilterIds, showAdded]);
 
@@ -93,11 +94,35 @@ export function useExercisePicker({
                     throw new Error("Routine ID is required.");
                 }
 
-                await addExerciseToRoutine({
-                    routineId,
-                    exerciseId: exercise.id,
+                const routineExerciseId = `temp-${Crypto.randomUUID()}`;
+                const routineSetId = `temp-${Crypto.randomUUID()}`;
+                const createdAt = new Date().toISOString();
+
+                const routineExercise: RoutineExercise = {
+                    id: routineExerciseId,
+                    routine_id: routineId,
+                    exercise_id: exercise.id,
                     position: currentCount,
-                    restSeconds: 0,
+                    rest_seconds: 90,
+                    exercise_rest_seconds: 120,
+                    exercise: {
+                        name: exercise.name,
+                        image_url: exercise.image_url ?? null,
+                    },
+                };
+
+                const firstSet: RoutineExerciseSet = {
+                    id: routineSetId,
+                    routine_exercise_id: routineExerciseId,
+                    reps: 0,
+                    weight: 0,
+                    is_pr: false,
+                    created_at: createdAt,
+                };
+
+                addRoutineExercise({
+                    exercise: routineExercise,
+                    sets: [firstSet],
                 });
 
                 onExerciseAdded();
