@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { colors, componentStyles, typography } from "../theme";
 
 export default function RegisterScreen({ navigation }: any) {
     const { signUp } = useAuth();
+    const { showToast } = useToast();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -17,10 +19,16 @@ export default function RegisterScreen({ navigation }: any) {
     async function handleRegister() {
         try {
             await signUp(email.trim(), password);
-            Alert.alert("Account created", "Please check your email to confirm your account.");
+            showToast({
+                type: "success",
+                message: "Account created. Please check your email to confirm your account.",
+            });
             navigation.navigate("Login");
         } catch (error: any) {
-            Alert.alert("Register error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Register error.",
+            });
         }
     }
 

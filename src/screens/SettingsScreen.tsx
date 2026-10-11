@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
 import { colors, sharedStyles, spacing } from "../theme";
 import { setNotificationsEnabled } from "../utils/notifications";
@@ -12,6 +13,7 @@ import { setSoundsEnabled } from "../utils/sounds";
 
 export default function SettingsScreen() {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [settings, setSettings] = useState<UserSettings | null>(null);
 
     const fetchSettings = useCallback(async () => {
@@ -23,9 +25,12 @@ export default function SettingsScreen() {
             setSoundsEnabled(data.sounds_enabled);
             setNotificationsEnabled(data.notifications_enabled);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error fetching settings",
+            });
         }
-    }, [user]);
+    }, [user, showToast]);
 
     useEffect(() => {
         fetchSettings();
@@ -50,7 +55,10 @@ export default function SettingsScreen() {
                 setNotificationsEnabled(updates.notifications_enabled);
             }
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error updating settings",
+            });
         }
     }
 

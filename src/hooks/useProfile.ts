@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
-    getProfile,
-    upsertProfile,
-    getWeightLogs,
     createWeightLog,
+    getProfile,
+    getWeightLogs,
     removeWeightLog,
+    upsertProfile,
 } from "../services/profileService";
 import { WeightLog } from "../types/profile";
 
 export function useProfile() {
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const [fullName, setFullName] = useState("");
     const [goal, setGoal] = useState("");
@@ -36,9 +37,12 @@ export function useProfile() {
             setHeightCm(profile.height_cm?.toString() ?? "");
             setWeightKg(profile.weight_kg?.toString() ?? "");
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load profile.",
+            });
         }
-    }, [user?.id]);
+    }, [user?.id, showToast]);
 
     useEffect(() => {
         fetchProfile();
@@ -58,9 +62,15 @@ export function useProfile() {
                 weightKg,
             });
 
-            Alert.alert("Success", "Profile updated");
+            showToast({
+                type: "success",
+                message: "Profile updated",
+            });
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to save profile.",
+            });
         }
     }
 
@@ -69,7 +79,10 @@ export function useProfile() {
             const data = await getWeightLogs();
             setWeightLogs(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load weight logs.",
+            });
         }
     }
 
@@ -86,7 +99,10 @@ export function useProfile() {
 
             await fetchWeightLogs();
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to add weight log.",
+            });
         }
     }
 
@@ -96,7 +112,10 @@ export function useProfile() {
 
             await fetchWeightLogs();
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to delete weight log.",
+            });
         }
     }
 

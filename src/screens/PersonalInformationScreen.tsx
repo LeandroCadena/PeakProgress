@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { Text, StyleSheet, Alert, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
@@ -8,6 +8,7 @@ import Card from "../components/common/Card";
 import IconButton from "../components/common/IconButton";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { useProfile } from "../hooks/useProfile";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { supabase } from "../services/supabase";
@@ -15,6 +16,7 @@ import { colors, sharedStyles, spacing, typography } from "../theme";
 
 export default function PersonalInformationScreen() {
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,17 +44,26 @@ export default function PersonalInformationScreen() {
 
     async function handleChangePassword() {
         if (!newPassword.trim()) {
-            Alert.alert("Validation", "Password is required");
+            showToast({
+                type: "error",
+                message: "Password is required",
+            });
             return;
         }
 
         if (newPassword.length < 6) {
-            Alert.alert("Validation", "Password must be at least 6 characters");
+            showToast({
+                type: "error",
+                message: "Password must be at least 6 characters",
+            });
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            Alert.alert("Validation", "Passwords do not match");
+            showToast({
+                type: "error",
+                message: "Passwords do not match",
+            });
             return;
         }
 
@@ -61,9 +72,15 @@ export default function PersonalInformationScreen() {
             setNewPassword("");
             setConfirmPassword("");
             setEditingSection(null);
-            Alert.alert("Success", "Password updated successfully");
+            showToast({
+                type: "success",
+                message: "Password updated successfully",
+            });
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error updating password",
+            });
         }
     }
 
@@ -71,12 +88,18 @@ export default function PersonalInformationScreen() {
         const email = newEmail.trim();
 
         if (!email) {
-            Alert.alert("Validation", "Email is required");
+            showToast({
+                type: "error",
+                message: "Email is required",
+            });
             return;
         }
 
         if (!email.includes("@")) {
-            Alert.alert("Validation", "Please enter a valid email");
+            showToast({
+                type: "error",
+                message: "Please enter a valid email",
+            });
             return;
         }
 
@@ -84,12 +107,15 @@ export default function PersonalInformationScreen() {
             await updateUserEmail(email);
             setNewEmail("");
             setEditingSection(null);
-            Alert.alert(
-                "Verification required",
-                "Check your new email address to confirm the change."
-            );
+            showToast({
+                type: "success",
+                message: "Check your new email address to confirm the change.",
+            });
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error updating email",
+            });
         }
     }
 

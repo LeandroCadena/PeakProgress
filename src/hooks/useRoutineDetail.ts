@@ -1,8 +1,8 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
     addExerciseToRoutine,
     createRoutineExerciseSets,
@@ -45,6 +45,7 @@ type ActiveWorkout = {
 
 export function useRoutineDetail({ routineId, routineName, navigation }: Params) {
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const editorRoutineId = useRoutineEditorStore((state) => state.routineId);
     const name = useRoutineEditorStore((state) => state.name);
@@ -115,12 +116,15 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                     setsByExerciseId: routineExerciseSets,
                 });
             } catch (error: any) {
-                Alert.alert("Error", error.message);
+                showToast({
+                    type: "error",
+                    message: error instanceof Error ? error.message : "Unable to load routine.",
+                });
             } finally {
                 setIsLoadingRoutine(false);
             }
         },
-        [editorRoutineId, hasUnsavedChanges, initializeEditor, routineId, routineName]
+        [editorRoutineId, hasUnsavedChanges, initializeEditor, routineId, routineName, showToast]
     );
 
     useFocusEffect(
@@ -151,7 +155,10 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         const normalizedValue = value.trim() === "" ? 0 : Number(value);
 
         if (!Number.isFinite(normalizedValue) || normalizedValue < 0) {
-            Alert.alert("Validation", "Please enter a valid positive number");
+            showToast({
+                type: "error",
+                message: "Please enter a valid positive number",
+            });
             return;
         }
 
@@ -273,7 +280,10 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         const normalizedName = name.trim();
 
         if (!normalizedName) {
-            Alert.alert("Validation", "Routine name is required");
+            showToast({
+                type: "warning",
+                message: "Routine name is required.",
+            });
             return false;
         }
 
@@ -305,7 +315,13 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
             return true;
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "An error occurred while saving the routine.",
+            });
             return false;
         } finally {
             setIsSavingRoutine(false);
@@ -318,15 +334,18 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
     async function startWorkout() {
         if (hasUnsavedChanges) {
-            Alert.alert(
-                "Unsaved changes",
-                "Save your routine changes before starting the workout."
-            );
+            showToast({
+                type: "warning",
+                message: "Save your routine changes before starting the workout.",
+            });
             return;
         }
 
         if (!user) {
-            Alert.alert("Error", "User not found");
+            showToast({
+                type: "error",
+                message: "User not found",
+            });
             return;
         }
 
@@ -356,7 +375,13 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 routineName: name,
             });
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "An error occurred while starting the workout.",
+            });
         } finally {
             setIsStartingWorkout(false);
         }
@@ -425,7 +450,13 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 routineName: name,
             });
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "An error occurred while discarding the workout.",
+            });
         } finally {
             setIsStartingWorkout(false);
         }

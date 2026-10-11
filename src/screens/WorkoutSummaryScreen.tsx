@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import StatCard from "../components/common/StatCard";
+import { useToast } from "../context/ToastContext";
 import { getWorkoutSummary } from "../services/historyService";
 import { updateRoutineFromCompletedWorkout } from "../services/workoutSyncService";
 import { colors, sharedStyles, spacing, typography } from "../theme";
@@ -27,6 +28,7 @@ type Summary = {
 };
 
 export default function WorkoutSummaryScreen({ navigation }: any) {
+    const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "WorkoutSummary">>();
     const { sessionId, routineId, routineName, updateRoutineAfterWorkout } = route.params;
 
@@ -42,9 +44,12 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
             const data = await getWorkoutSummary(sessionId);
             setSummary(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error fetching workout summary",
+            });
         }
-    }, [sessionId]);
+    }, [sessionId, showToast]);
 
     useEffect(() => {
         fetchSummary();

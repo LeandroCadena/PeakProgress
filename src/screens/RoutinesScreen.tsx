@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useEffect, useState, useCallback } from "react";
-import { Text, StyleSheet, FlatList, Alert } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { FlatList, StyleSheet, Text } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import EmptyStateCard from "../components/common/EmptyStateCard";
@@ -9,7 +9,8 @@ import RoutineCard from "../components/routine/RoutineCard";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import { useAuth } from "../context/AuthContext";
-import { getRoutines, createRoutine as createRoutineService } from "../services/routineService";
+import { useToast } from "../context/ToastContext";
+import { createRoutine as createRoutineService, getRoutines } from "../services/routineService";
 import {
     createWorkoutSession,
     getActiveWorkoutSession,
@@ -20,8 +21,9 @@ import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [activeSession, setActiveSession] = useState<any>(null);
-    const [now, setNow] = useState(Date.now());
+    const [now, setNow] = useState(() => Date.now());
 
     const [routines, setRoutines] = useState<Routine[]>([]);
     const [name, setName] = useState("");
@@ -39,6 +41,18 @@ export default function RoutinesScreen({ navigation }: any) {
         return () => clearInterval(intervalId);
     }, []);
 
+    const fetchRoutines = useCallback(async () => {
+        try {
+            const data = await getRoutines();
+            setRoutines(data);
+        } catch (error: any) {
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error fetching routines",
+            });
+        }
+    }, [showToast]);
+
     const fetchActiveSession = useCallback(async () => {
         if (!user) return;
 
@@ -54,26 +68,25 @@ export default function RoutinesScreen({ navigation }: any) {
         useCallback(() => {
             fetchRoutines();
             fetchActiveSession();
-        }, [fetchActiveSession])
+        }, [fetchRoutines, fetchActiveSession])
     );
 
-    async function fetchRoutines() {
-        try {
-            const data = await getRoutines();
-            setRoutines(data);
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
-    }
+
 
     async function createRoutine() {
         if (!user?.id) {
-            Alert.alert("Auth error", "User is not logged in");
+            showToast({
+                type: "error",
+                message: "User is not logged in",
+            });
             return;
         }
 
         if (!name.trim()) {
-            Alert.alert("Validation", "Routine name is required");
+            showToast({
+                type: "error",
+                message: "Routine name is required",
+            });
             return;
         }
 
@@ -86,13 +99,19 @@ export default function RoutinesScreen({ navigation }: any) {
             setName("");
             await fetchRoutines();
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error creating routine",
+            });
         }
     }
 
     async function startWorkout(routine: Routine) {
         if (!user) {
-            Alert.alert("Error", "User not found");
+            showToast({
+                type: "error",
+                message: "User not found",
+            });
             return;
         }
         if (startingRoutineId === routine.id) return;
@@ -120,14 +139,17 @@ export default function RoutinesScreen({ navigation }: any) {
                 routineName: routine.name,
             });
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error starting workout",
+            });
         } finally {
             setStartingRoutineId(null);
         }
     }
 
     function getElapsedText(startedAt: string) {
-        const diffMs = Date.now() - new Date(startedAt).getTime();
+        const diffMs = now - new Date(startedAt).getTime();
         const minutes = Math.floor(diffMs / 60000);
         const hours = Math.floor(minutes / 60);
         const restMinutes = minutes % 60;
@@ -169,7 +191,10 @@ export default function RoutinesScreen({ navigation }: any) {
                 routineName: pendingRoutine.name,
             });
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error discarding workout",
+            });
         } finally {
             setStartingRoutineId(null);
         }

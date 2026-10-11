@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Alert, Image, Pressable } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import ScreenContainer from "../components/common/ScreenContainer";
@@ -9,6 +9,7 @@ import StatCard from "../components/common/StatCard";
 import RoutineCard from "../components/routine/RoutineCard";
 import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { useProfile } from "../hooks/useProfile";
 import { getDashboardStats, getRecentWorkouts } from "../services/dashboardService";
 import { getActiveWorkoutSession } from "../services/workoutService";
@@ -18,6 +19,7 @@ import { DashboardStats, RecentWorkout } from "../types/dashboard";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const { fullName } = useProfile();
     const [activeSession, setActiveSession] = useState<any>(null);
     const [recentWorkouts, setRecentWorkouts] = useState<RecentWorkout[]>([]);
@@ -59,7 +61,10 @@ export default function HomeScreen({ navigation }: any) {
             const recent = await getRecentWorkouts(user.id);
             setRecentWorkouts(recent);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load dashboard stats.",
+            });
         }
     }, [user]);
 
@@ -178,10 +183,10 @@ export default function HomeScreen({ navigation }: any) {
                         stats.streakStatus === "empty"
                             ? "Start today"
                             : stats.streakStatus === "warning"
-                              ? "Keep it up"
-                              : stats.streakStatus === "expired"
-                                ? "Start again"
-                                : `${stats.streakWeeks} active weeks`
+                                ? "Keep it up"
+                                : stats.streakStatus === "expired"
+                                    ? "Start again"
+                                    : `${stats.streakWeeks} active weeks`
                     }
                 />
             </View>
@@ -215,7 +220,7 @@ export default function HomeScreen({ navigation }: any) {
                                 workout.completed_at,
                                 workout.workout_session_exercises?.length ?? 0
                             )}
-                            onPress={() => {}}
+                            onPress={() => { }}
                         />
                     ))}
                 </View>

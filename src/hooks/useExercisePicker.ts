@@ -1,7 +1,7 @@
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
 
+import { useToast } from "../context/ToastContext";
 import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
 import { useRoutineEditorStore } from "../store/routineEditorStore";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
@@ -26,6 +26,7 @@ export function useExercisePicker({
     mode,
     sessionId,
 }: Params) {
+    const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
     const [filterMode, setFilterMode] = useState<FilterMode>("region");
@@ -46,7 +47,10 @@ export function useExercisePicker({
             const data = await getMuscles();
             setMuscles(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load exercises.",
+            });
         }
     }
 
@@ -55,7 +59,10 @@ export function useExercisePicker({
             const data = await getMuscleRegions();
             setRegions(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load exercises.",
+            });
         }
     }
 
@@ -74,9 +81,12 @@ export function useExercisePicker({
             data.forEach((exercise) => exerciseCache.current.set(exercise.id, exercise));
             setExercises(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load exercises.",
+            });
         }
-    }, [filterMode, selectedFilterIds]);
+    }, [filterMode, selectedFilterIds, showToast]);
 
     useEffect(() => {
         fetchExercises();
@@ -191,10 +201,10 @@ export function useExercisePicker({
             setSelectedExerciseIds([]);
             onExerciseAdded();
         } catch (error: unknown) {
-            Alert.alert(
-                "Error",
-                error instanceof Error ? error.message : "Unable to add exercises."
-            );
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to add exercises.",
+            });
         } finally {
             addingRef.current = false;
             setIsAdding(false);

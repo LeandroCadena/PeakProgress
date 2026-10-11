@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { colors, spacing, typography } from "../theme";
 
 export default function LoginScreen({ navigation }: any) {
     const { signIn } = useAuth();
+    const { showToast } = useToast();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -18,7 +20,10 @@ export default function LoginScreen({ navigation }: any) {
         try {
             await signIn(email.trim(), password);
         } catch (error: any) {
-            Alert.alert("Login error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Login error.",
+            });
         }
     }
 

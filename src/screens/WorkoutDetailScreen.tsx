@@ -1,10 +1,11 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Text, StyleSheet, FlatList, Alert } from "react-native";
+import { FlatList, StyleSheet, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useToast } from "../context/ToastContext";
 import { getWorkoutSets } from "../services/historyService";
 import { colors, sharedStyles, spacing, typography } from "../theme";
 
@@ -27,7 +28,7 @@ export type WorkoutSet = {
 export default function WorkoutDetailScreen() {
     const route = useRoute<RouteProp<RouteParams, "WorkoutDetail">>();
     const { sessionId, routineName } = route.params;
-
+    const { showToast } = useToast();
     const [sets, setSets] = useState<WorkoutSet[]>([]);
 
     const fetchSets = useCallback(async () => {
@@ -35,9 +36,12 @@ export default function WorkoutDetailScreen() {
             const data = await getWorkoutSets(sessionId);
             setSets(data as WorkoutSet[]);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error fetching workout sets",
+            });
         }
-    }, [sessionId]);
+    }, [sessionId, showToast]);
 
     useEffect(() => {
         fetchSets();

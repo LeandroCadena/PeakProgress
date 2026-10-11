@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppInput from "../components/common/AppInput";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
-import { getMuscles, getExercisesByFilter, getMuscleRegions } from "../services/exerciseService";
+import { useToast } from "../context/ToastContext";
+import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
 import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
+    const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [filterMode, setFilterMode] = useState<FilterMode>("muscle");
     const [selectedFilterIds, setSelectedFilterIds] = useState<string[]>([]);
@@ -27,7 +29,10 @@ export default function ExercisesScreen({ navigation }: any) {
             setMuscles(musclesData);
             setRegions(regionsData);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load filters.",
+            });
         }
     }
 
@@ -44,9 +49,12 @@ export default function ExercisesScreen({ navigation }: any) {
 
             setExercises(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load exercises.",
+            });
         }
-    }, [filterMode, selectedFilterIds]);
+    }, [filterMode, selectedFilterIds, showToast]);
 
     useEffect(() => {
         fetchExercises();

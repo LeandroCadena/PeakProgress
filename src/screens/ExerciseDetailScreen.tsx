@@ -1,12 +1,14 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, Image, StyleSheet, Alert } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 import Card from "../components/common/Card";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useToast } from "../context/ToastContext";
 import { getExerciseDetail } from "../services/exerciseService";
 import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
+
 
 type RouteParams = {
     ExerciseDetail: {
@@ -15,6 +17,7 @@ type RouteParams = {
 };
 
 export default function ExerciseDetailScreen() {
+    const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "ExerciseDetail">>();
     const { exerciseId } = route.params;
 
@@ -25,9 +28,12 @@ export default function ExerciseDetailScreen() {
             const data = await getExerciseDetail(exerciseId);
             setExercise(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load exercise details.",
+            });
         }
-    }, [exerciseId]);
+    }, [exerciseId, showToast]);
 
     useEffect(() => {
         fetchExerciseDetail();

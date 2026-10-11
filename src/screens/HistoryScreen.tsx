@@ -1,10 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { Text, StyleSheet, FlatList, Pressable, Alert } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useToast } from "../context/ToastContext";
 import { getCompletedWorkoutSessions } from "../services/historyService";
 import { colors, sharedStyles, spacing } from "../theme";
 
@@ -21,6 +22,7 @@ type WorkoutSession = {
 };
 
 export default function HistoryScreen({ navigation }: any) {
+    const { showToast } = useToast();
     const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
     async function fetchSessions() {
@@ -28,7 +30,10 @@ export default function HistoryScreen({ navigation }: any) {
             const data = await getCompletedWorkoutSessions();
             setSessions(data as WorkoutSession[]);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load workout history.",
+            });
         }
     }
 

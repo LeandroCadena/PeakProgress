@@ -1,17 +1,19 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { Text, StyleSheet, FlatList, Alert, Pressable } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getExerciseProgress } from "../services/progressService";
 import { colors, sharedStyles, spacing, typography } from "../theme";
 import { ExerciseProgress } from "../types/progress";
 
 export default function ProgressScreen({ navigation }: any) {
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const [records, setRecords] = useState<ExerciseProgress[]>([]);
 
@@ -22,9 +24,12 @@ export default function ProgressScreen({ navigation }: any) {
             const progress = await getExerciseProgress(user.id);
             setRecords(progress);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error fetching progress",
+            });
         }
-    }, [user]);
+    }, [user, showToast]);
 
     useFocusEffect(
         useCallback(() => {

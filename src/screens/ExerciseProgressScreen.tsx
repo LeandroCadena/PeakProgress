@@ -1,11 +1,12 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Text, StyleSheet, Dimensions, Alert } from "react-native";
+import { Dimensions, StyleSheet, Text } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useToast } from "../context/ToastContext";
 import { getExerciseProgressPoints } from "../services/progressService";
 import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 
@@ -23,6 +24,7 @@ type ProgressPoint = {
 };
 
 export default function ExerciseProgressScreen() {
+    const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "ExerciseProgress">>();
     const { exerciseId, exerciseName } = route.params;
 
@@ -33,9 +35,12 @@ export default function ExerciseProgressScreen() {
             const data = await getExerciseProgressPoints(exerciseId);
             setPoints(data);
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load exercise progress.",
+            });
         }
-    }, [exerciseId]);
+    }, [exerciseId, showToast]);
 
     useEffect(() => {
         fetchExerciseProgress();
@@ -43,17 +48,17 @@ export default function ExerciseProgressScreen() {
 
     const chartData = points.length
         ? {
-              labels: points.map((_, index) => `${index + 1}`),
-              datasets: [
-                  {
-                      data: points.map((point) => Number(point.weight ?? 0)),
-                  },
-              ],
-          }
+            labels: points.map((_, index) => `${index + 1}`),
+            datasets: [
+                {
+                    data: points.map((point) => Number(point.weight ?? 0)),
+                },
+            ],
+        }
         : {
-              labels: ["0"],
-              datasets: [{ data: [0] }],
-          };
+            labels: ["0"],
+            datasets: [{ data: [0] }],
+        };
 
     return (
         <ScreenContainer>

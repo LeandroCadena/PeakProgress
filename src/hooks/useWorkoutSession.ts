@@ -1,9 +1,10 @@
 import { useFocusEffect } from "@react-navigation/native";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, AppState } from "react-native";
+import { AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getUserExerciseRecords } from "../services/progressService";
 import { getUserSettings } from "../services/settingsService";
 import { loadWorkoutSessionSnapshot } from "../services/workoutService";
@@ -30,6 +31,7 @@ type Params = {
 
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const storedSessionId = useWorkoutSessionStore((state) => state.sessionId);
     const storedRoutineId = useWorkoutSessionStore((state) => state.routineId);
@@ -147,7 +149,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             const message =
                 error instanceof Error ? error.message : "Unable to initialize workout session";
 
-            Alert.alert("Error", message);
+            showToast({
+                type: "error",
+                message,
+            });
         } finally {
             setIsInitializingSession(false);
         }
@@ -162,6 +167,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         storedSessionId,
         user?.id,
         restoreLocalRestTimer,
+        showToast,
     ]);
 
     const fetchUserSettings = useCallback(async () => {
