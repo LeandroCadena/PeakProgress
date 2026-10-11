@@ -5,6 +5,19 @@ const REST_NOTIFICATION_ID = "rest-finished";
 const REST_NOTIFICATION_CHANNEL_ID = "workout-rest";
 
 let notificationsEnabled = true;
+let restNotificationQueue: Promise<void> = Promise.resolve();
+let restNotificationVersion = 0;
+
+function enqueueRestNotificationOperation<T>(operation: () => Promise<T>): Promise<T> {
+    const result = restNotificationQueue.then(operation);
+
+    restNotificationQueue = result.then(
+        () => undefined,
+        () => undefined
+    );
+
+    return result;
+}
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -50,38 +63,55 @@ async function requestNotificationPermissions() {
     return requestedPermissions.status === "granted";
 }
 
-export async function scheduleRestFinishedNotification(seconds: number) {
-    if (!notificationsEnabled) return null;
-    if (Platform.OS === "web") return null;
-    if (seconds <= 0) return null;
-
-    const hasPermission = await requestNotificationPermissions();
-
-    if (!hasPermission) {
+export async function scheduleRestFinishedNotification(endAt: number) {
+    if (
+        !notificationsEnabled ||
+        Platform.OS === "web" ||
+        !Number.isFinite(endAt) ||
+        endAt <= Date.now()
+    ) {
         return null;
     }
 
-    await cancelRestFinishedNotification();
+    const version = ++restNotificationVersion;
 
-    return Notifications.scheduleNotificationAsync({
-        identifier: REST_NOTIFICATION_ID,
-        content: {
-            title: "Rest finished",
-            body: "Time for your next set.",
-            sound: true,
-            data: {
-                type: "rest-finished",
+    const hasPermission = await requestNotificationPermissions();
+
+    if (!hasPermission || version !== restNotificationVersion) {
+        return null;
+    }
+
+    return enqueueRestNotificationOperation(async () => {
+        if (version !== restNotificationVersion) {
+            return null;
+        }
+
+        await cancelRestFinishedNotificationInternal();
+
+        if (version !== restNotificationVersion || endAt <= Date.now()) {
+            return null;
+        }
+
+        return Notifications.scheduleNotificationAsync({
+            identifier: REST_NOTIFICATION_ID,
+            content: {
+                title: "Rest finished",
+                body: "Time for your next set.",
+                sound: true,
+                data: {
+                    type: "rest-finished",
+                },
             },
-        },
-        trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-            seconds,
-            channelId: Platform.OS === "android" ? REST_NOTIFICATION_CHANNEL_ID : undefined,
-        },
+            trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.DATE,
+                date: new Date(endAt),
+                channelId: Platform.OS === "android" ? REST_NOTIFICATION_CHANNEL_ID : undefined,
+            },
+        });
     });
 }
 
-export async function cancelRestFinishedNotification() {
+async function cancelRestFinishedNotificationInternal() {
     if (Platform.OS === "web") return false;
 
     const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
@@ -99,4 +129,10 @@ export async function cancelRestFinishedNotification() {
     }
 
     return hadPendingNotification;
+}
+
+export function cancelRestFinishedNotification() {
+    restNotificationVersion += 1;
+
+    return enqueueRestNotificationOperation(cancelRestFinishedNotificationInternal);
 }

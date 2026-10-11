@@ -76,6 +76,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     );
 
     const [isInitializingSession, setIsInitializingSession] = useState(true);
+    const [initializationError, setInitializationError] = useState<string | null>(null);
     const [isFinishingWorkout, setIsFinishingWorkout] = useState(false);
     const [timer, setTimer] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
@@ -86,6 +87,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const timerVersionRef = useRef(0);
     const isScreenFocusedRef = useRef(false);
     const hasFinishedRef = useRef(false);
+    const initializingSessionRef = useRef<string | null>(null);
+    const activeSessionKeyRef = useRef<string | null>(null);
+
+    activeSessionKeyRef.current =
+        user?.id && sessionId && routineId ? `${user.id}:${sessionId}:${routineId}` : null;
 
     const restoreLocalRestTimer = useCallback(() => {
         if (storedRestTimerEndAt) {
@@ -110,13 +116,18 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             return;
         }
 
+        const initializationKey = `${user.id}:${sessionId}:${routineId}`;
+
+        if (initializingSessionRef.current === initializationKey) {
+            return;
+        }
+
+        initializingSessionRef.current = initializationKey;
         setIsInitializingSession(true);
+        setInitializationError(null);
 
         try {
-            const hasStoredSession =
-                storedSessionId === sessionId &&
-                storedRoutineId === routineId &&
-                sessionExercises.length > 0;
+            const hasStoredSession = storedSessionId === sessionId && storedRoutineId === routineId;
 
             if (hasStoredSession) {
                 restoreLocalRestTimer();
@@ -132,6 +143,10 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 getUserExerciseRecords(user.id),
             ]);
 
+            if (activeSessionKeyRef.current !== initializationKey || hasFinishedRef.current) {
+                return;
+            }
+
             initializeLocalSession({
                 sessionId,
                 routineId,
@@ -143,25 +158,28 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 restTimerEndAt: null,
                 lastTimerDuration: 0,
             });
-
-            restoreLocalRestTimer();
         } catch (error: unknown) {
             const message =
                 error instanceof Error ? error.message : "Unable to initialize workout session";
-
+            setInitializationError(message);
             showToast({
                 type: "error",
                 message,
             });
         } finally {
-            setIsInitializingSession(false);
+            if (initializingSessionRef.current === initializationKey) {
+                initializingSessionRef.current = null;
+            }
+
+            if (activeSessionKeyRef.current === initializationKey) {
+                setIsInitializingSession(false);
+            }
         }
     }, [
         hasHydrated,
         initializeLocalSession,
         routineId,
         routineName,
-        sessionExercises.length,
         sessionId,
         storedRoutineId,
         storedSessionId,
@@ -170,12 +188,23 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         showToast,
     ]);
 
+    const retryInitializeSession = useCallback(() => {
+        void ensureWorkoutSessionInitialized();
+    }, [ensureWorkoutSessionInitialized]);
+
     const fetchUserSettings = useCallback(async () => {
         if (!user?.id) return;
 
-        const settings = await getUserSettings(user.id);
-        setUseGlobalTimers(settings.use_global_timers);
-    }, [user?.id]);
+        try {
+            const settings = await getUserSettings(user.id);
+            setUseGlobalTimers(settings.use_global_timers);
+        } catch (error: unknown) {
+            showToast({
+                type: "error",
+                message: error instanceof Error ? error.message : "Unable to load workout settings",
+            });
+        }
+    }, [user?.id, showToast]);
 
     useFocusEffect(
         useCallback(() => {
@@ -365,11 +394,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             lastTimerDuration: restSeconds,
         });
 
-        await cancelRestFinishedNotification();
-
         if (currentVersion !== timerVersionRef.current) return;
 
-        await scheduleRestFinishedNotification(restSeconds);
+        await scheduleRestFinishedNotification(endAt);
     }
 
     function restartLastTimer() {
@@ -438,7 +465,19 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             setSessionSyncSuccess();
 
             hasFinishedRef.current = true;
+            timerVersionRef.current += 1;
+
+            setTimerRunning(false);
+            setRestEndAt(null);
+            setTimer(0);
+
             clearStoredSession();
+
+            try {
+                await cancelRestFinishedNotification();
+            } catch (error) {
+                console.warn("Unable to cancel rest notification", error);
+            }
 
             onFinish({
                 updateRoutineAfterWorkout,
@@ -596,6 +635,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     return {
         sessionExercises,
         isInitializingSession,
+        initializationError,
+        retryInitializeSession,
         isFinishingWorkout,
         savedSets,
         timer,

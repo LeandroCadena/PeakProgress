@@ -52,8 +52,10 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         updateWorkoutSetRest,
         updateWorkoutExerciseRest,
         isInitializingSession,
+        retryInitializeSession,
         isFinishingWorkout,
         reorderSessionExercises,
+        initializationError,
         isRoutineMenuOpen,
         setIsRoutineMenuOpen,
     } = useWorkoutSession({
@@ -75,7 +77,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     }
 
     function handleFinishWorkout() {
-        if (isFinishingWorkout || isInitializingSession) return;
+        if (isFinishingWorkout || isInitializingSession || initializationError) return;
 
         setDialogError(null);
         setDialog({ type: "finishWorkout" });
@@ -148,7 +150,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 <AppButton
                     title={isFinishingWorkout ? "Finishing..." : "Finish"}
                     variant="primary"
-                    disabled={isFinishingWorkout || isInitializingSession}
+                    disabled={isFinishingWorkout || isInitializingSession || !!initializationError}
                     onPress={handleFinishWorkout}
                     style={styles.rightHeaderContainer}
                     showChevron
@@ -173,6 +175,19 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 ListEmptyComponent={
                     isInitializingSession ? (
                         <LoadingCard />
+                    ) : initializationError ? (
+                        <View style={styles.initializationErrorContainer}>
+                            <EmptyStateCard
+                                title="Unable to load workout"
+                                message={initializationError}
+                            />
+
+                            <AppButton
+                                title="Retry"
+                                variant="primary"
+                                onPress={retryInitializeSession}
+                            />
+                        </View>
                     ) : (
                         <EmptyStateCard
                             title="No exercises yet"
@@ -226,6 +241,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                     <AppButton
                         title="+ Add Exercise"
                         variant="success"
+                        disabled={isInitializingSession || !!initializationError || isFinishingWorkout}
                         onPress={() =>
                             navigation.navigate("ExercisePicker", {
                                 mode: "session",
@@ -347,5 +363,8 @@ const styles = StyleSheet.create({
     activeExerciseItem: {
         opacity: 0.96,
         elevation: 6,
+    },
+    initializationErrorContainer: {
+        gap: spacing.md,
     },
 });
