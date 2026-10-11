@@ -313,13 +313,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     }
 
     async function deleteRoutine() {
-        try {
-            await deleteRoutineById(routineId);
-            clearEditor();
-            navigation.goBack();
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-        }
+        await deleteRoutineById(routineId);
     }
 
     async function startWorkout() {
@@ -464,6 +458,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         reloadRoutine: () => fetchRoutine({ force: true }),
 
         deleteRoutine,
+        clearRoutineEditor: clearEditor,
         startWorkout,
 
         activeWorkoutModalVisible,

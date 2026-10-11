@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ActionMenu from "../components/common/ActionMenu";
 import AppButton from "../components/common/AppButton";
+import AppDialog from "../components/common/AppDialog";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
@@ -17,10 +18,18 @@ import { useWorkoutSession } from "../hooks/useWorkoutSession";
 import { colors, sharedStyles, spacing } from "../theme";
 import { WorkoutSessionExercise, WorkoutSessionRouteParams } from "../types/workout";
 
+type WorkoutDialogState =
+    | { type: "deleteExercise"; exerciseId: string }
+    | { type: "finishWorkout" }
+    | null;
+
 export default function WorkoutSessionScreen({ navigation }: any) {
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
     const { sessionId, routineId, routineName } = route.params;
     const [openExerciseMenuId, setOpenExerciseMenuId] = useState<string | null>(null);
+
+    const [dialog, setDialog] = useState<WorkoutDialogState>(null);
+    const [dialogError, setDialogError] = useState<string | null>(null);
 
     const insets = useSafeAreaInsets();
 
@@ -59,6 +68,43 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 updateRoutineAfterWorkout,
             }),
     });
+
+    function handleDeleteExercise(exerciseId: string) {
+        setOpenExerciseMenuId(null);
+        setDialog({ type: "deleteExercise", exerciseId });
+    }
+
+    function handleFinishWorkout() {
+        if (isFinishingWorkout || isInitializingSession) return;
+
+        setDialogError(null);
+        setDialog({ type: "finishWorkout" });
+    }
+
+    async function confirmDialog() {
+        if (!dialog) return;
+
+        if (dialog.type === "deleteExercise") {
+            await deleteSessionExercise(dialog.exerciseId);
+            setDialog(null);
+            return;
+        }
+
+        if (dialog.type === "finishWorkout") {
+            setDialogError(null);
+
+            try {
+                await finishWorkout();
+                setDialog(null);
+            } catch (error: unknown) {
+                setDialogError(
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to finish workout. Please try again."
+                );
+            }
+        }
+    }
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
@@ -102,8 +148,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 <AppButton
                     title={isFinishingWorkout ? "Finishing..." : "Finish"}
                     variant="primary"
-                    disabled={isFinishingWorkout}
-                    onPress={finishWorkout}
+                    disabled={isFinishingWorkout || isInitializingSession}
+                    onPress={handleFinishWorkout}
                     style={styles.rightHeaderContainer}
                     showChevron
                 />
@@ -153,7 +199,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 toggleSetCompleted={toggleSetCompleted}
                                 deleteSet={deleteSet}
                                 addEmptySet={addEmptySet}
-                                onDeleteExercise={() => deleteSessionExercise(item.id)}
+                                onDeleteExercise={() => handleDeleteExercise(item.id)}
                                 onDrag={drag}
                                 isDragging={isActive}
                                 isActionsMenuOpen={openExerciseMenuId === item.id}
@@ -187,8 +233,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 currentCount:
                                     sessionExercises.length > 0
                                         ? Math.max(
-                                              ...sessionExercises.map((item) => item.position ?? 0)
-                                          ) + 1
+                                            ...sessionExercises.map((item) => item.position ?? 0)
+                                        ) + 1
                                         : 0,
                                 currentExerciseIds: sessionExercises.map(
                                     (item) => item.exercise_id
@@ -208,6 +254,29 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                     />
                 </View>
             ) : null}
+
+            <AppDialog
+                visible={dialog !== null}
+                title={
+                    dialog?.type === "finishWorkout"
+                        ? "Finish workout?"
+                        : "Delete exercise?"
+                }
+                message={
+                    dialog?.type === "finishWorkout"
+                        ? "Are you sure you want to finish this workout?"
+                        : "The exercise and its sets will be removed from this workout."
+                }
+                errorMessage={dialogError}
+                confirmLabel={dialog?.type === "finishWorkout" ? "Finish" : "Delete"}
+                cancelLabel="Cancel"
+                variant={dialog?.type === "finishWorkout" ? "primary" : "danger"}
+                onConfirm={confirmDialog}
+                onCancel={() => {
+                    setDialog(null);
+                    setDialogError(null);
+                }}
+            />
         </ScreenContainer>
     );
 }

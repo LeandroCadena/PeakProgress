@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { Alert, StyleSheet, TextInput, View } from "react-native";
+import { NavigationAction, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useEffect, useRef, useState } from "react";
+import { StyleSheet, TextInput, View } from "react-native";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ActionMenu from "../components/common/ActionMenu";
 import AppButton from "../components/common/AppButton";
+import AppDialog from "../components/common/AppDialog";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
@@ -24,16 +25,23 @@ type RoutineDetailRouteParams = {
     };
 };
 
+type DialogState =
+    | { type: "deleteExercise"; exerciseId: string }
+    | { type: "deleteRoutine" }
+    | { type: "discardChanges" }
+    | null;
+
 export default function RoutineDetailScreen() {
     const navigation = useNavigation<any>();
-
     const route = useRoute<RouteProp<RoutineDetailRouteParams, "RoutineDetail">>();
-
     const { routineId, routineName } = route.params;
-
     const insets = useSafeAreaInsets();
-
     const [isRoutineMenuOpen, setIsRoutineMenuOpen] = useState(false);
+    const [dialog, setDialog] = useState<DialogState>(null);
+    const [dialogError, setDialogError] = useState<string | null>(null);
+    const [pendingNavigationAction, setPendingNavigationAction] =
+        useState<NavigationAction | null>(null);
+    const isConfirmedNavigationRef = useRef(false);
 
     const {
         routineTitle,
@@ -61,6 +69,7 @@ export default function RoutineDetailScreen() {
         discardRoutineChanges,
 
         deleteRoutine,
+        clearRoutineEditor,
         startWorkout,
 
         activeWorkoutModalVisible,
@@ -80,31 +89,28 @@ export default function RoutineDetailScreen() {
 
     useEffect(() => {
         const unsubscribe = navigation.addListener("beforeRemove", (event: any) => {
-            if (!hasUnsavedChanges) {
+            if (!hasUnsavedChanges || isConfirmedNavigationRef.current) {
                 return;
             }
 
             event.preventDefault();
 
-            Alert.alert("Discard changes?", "You have unsaved changes in this routine.", [
-                {
-                    text: "Keep Editing",
-                    style: "cancel",
-                },
-                {
-                    text: "Discard",
-                    style: "destructive",
-                    onPress: () => {
-                        discardRoutineChanges();
-
-                        navigation.dispatch(event.data.action);
-                    },
-                },
-            ]);
+            setPendingNavigationAction(event.data.action);
+            setDialog({ type: "discardChanges" });
         });
 
         return unsubscribe;
-    }, [discardRoutineChanges, hasUnsavedChanges, navigation]);
+    }, [hasUnsavedChanges, navigation]);
+
+    function dispatchConfirmedNavigation(action: NavigationAction) {
+        isConfirmedNavigationRef.current = true;
+
+        try {
+            navigation.dispatch(action);
+        } finally {
+            isConfirmedNavigationRef.current = false;
+        }
+    }
 
     async function handlePrimaryAction() {
         setIsRoutineMenuOpen(false);
@@ -118,38 +124,61 @@ export default function RoutineDetailScreen() {
         await startWorkout();
     }
 
-    function handleDeleteRoutine() {
-        Alert.alert("Delete routine?", "This action cannot be undone.", [
-            {
-                text: "Cancel",
-                style: "cancel",
-            },
-            {
-                text: "Delete",
-                style: "destructive",
-                onPress: deleteRoutine,
-            },
-        ]);
+    function handleDeleteExercise(exerciseId: string) {
+        setOpenExerciseMenuId(null);
+        setDialog({ type: "deleteExercise", exerciseId });
     }
 
-    function handleDeleteExercise(routineExerciseId: string) {
-        Alert.alert(
-            "Delete exercise?",
-            "The exercise and its sets will be removed from this routine.",
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel",
-                },
-                {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: () => {
-                        deleteRoutineExercise(routineExerciseId);
-                    },
-                },
-            ]
-        );
+    function handleDeleteRoutine() {
+        setIsRoutineMenuOpen(false);
+        setDialogError(null);
+        setDialog({ type: "deleteRoutine" });
+    }
+
+    async function confirmDialog() {
+        if (!dialog) return;
+
+        if (dialog.type === "deleteExercise") {
+            deleteRoutineExercise(dialog.exerciseId);
+            setDialog(null);
+            return;
+        }
+
+        if (dialog.type === "deleteRoutine") {
+            setDialogError(null);
+
+            try {
+                await deleteRoutine();
+
+                clearRoutineEditor();
+
+                setDialog(null);
+
+                dispatchConfirmedNavigation({
+                    type: "GO_BACK",
+                });
+            } catch (error: unknown) {
+
+                setDialogError(
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to delete routine. Please try again."
+                );
+            }
+
+            return;
+        }
+
+        if (dialog.type === "discardChanges") {
+            if (!pendingNavigationAction) return;
+
+            discardRoutineChanges();
+
+            setDialog(null);
+            setPendingNavigationAction(null);
+
+            dispatchConfirmedNavigation(pendingNavigationAction);
+        }
     }
 
     function navigateToExercisePicker() {
@@ -215,8 +244,8 @@ export default function RoutineDetailScreen() {
             ? "Saving..."
             : "Save"
         : isStartingWorkout
-          ? "Starting..."
-          : "Start Workout";
+            ? "Starting..."
+            : "Start Workout";
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
@@ -316,6 +345,34 @@ export default function RoutineDetailScreen() {
                     setActiveWorkoutModalVisible(false);
                 }}
                 isStarting={isStartingWorkout}
+            />
+
+            <AppDialog
+                visible={dialog !== null}
+                title={
+                    dialog?.type === "deleteExercise"
+                        ? "Delete exercise?"
+                        : dialog?.type === "deleteRoutine"
+                            ? "Delete routine?"
+                            : "Discard changes?"
+                }
+                message={
+                    dialog?.type === "deleteExercise"
+                        ? "The exercise and its sets will be removed from this routine."
+                        : dialog?.type === "deleteRoutine"
+                            ? "This action cannot be undone."
+                            : "You have unsaved changes in this routine."
+                }
+                errorMessage={dialogError}
+                confirmLabel={dialog?.type === "discardChanges" ? "Discard" : "Delete"}
+                cancelLabel={dialog?.type === "discardChanges" ? "Keep Editing" : "Cancel"}
+                variant="danger"
+                onConfirm={confirmDialog}
+                onCancel={() => {
+                    setDialogError(null);
+                    setDialog(null);
+                    setPendingNavigationAction(null);
+                }}
             />
         </ScreenContainer>
     );

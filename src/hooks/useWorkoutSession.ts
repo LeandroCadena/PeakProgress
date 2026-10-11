@@ -10,12 +10,12 @@ import { loadWorkoutSessionSnapshot } from "../services/workoutService";
 import { syncCompletedWorkout } from "../services/workoutSyncService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { UserExerciseRecord } from "../types/progress";
-import { WorkoutSessionSet, WorkoutSessionExercise } from "../types/workout";
+import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 import {
-    scheduleRestFinishedNotification,
     cancelRestFinishedNotification,
+    scheduleRestFinishedNotification,
 } from "../utils/notifications";
-import { playPersonalRecordSound, playTimerFinishedSound } from "../utils/sounds";
+import { playPersonalRecordSound } from "../utils/sounds";
 
 type WorkoutFinishResult = {
     updateRoutineAfterWorkout: boolean;
@@ -443,7 +443,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
             setSessionSyncError(message);
 
-            Alert.alert("Error finishing workout", message);
+            throw new Error(message);
         } finally {
             setIsFinishingWorkout(false);
         }
