@@ -72,6 +72,7 @@ export default function RoutineExerciseSetRow({
                         onEndEditing={() => onUpdate("reps", repsValue)}
                     />
                 </View>
+
             </View>
         </SwipeableCard>
     );
@@ -79,9 +80,10 @@ export default function RoutineExerciseSetRow({
 
 const styles = StyleSheet.create({
     row: {
+        width: "100%",
         flexDirection: "row",
         alignItems: "center",
-        gap: spacing.sm,
+        gap: spacing.xs,
     },
     setNumber: {
         width: componentStyles.setNumberWidth,

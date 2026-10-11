@@ -1,4 +1,4 @@
-import { Image, View, Text, StyleSheet } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, componentStyles, sharedStyles, spacing, typography } from "../../theme";
 import { Exercise } from "../../types/exercise";
@@ -11,6 +11,9 @@ type Props = {
     showAddButton?: boolean;
     onAdd?: () => void;
     onMoreInfo: () => void;
+    selectable?: boolean;
+    selected?: boolean;
+    onSelect?: () => void;
 };
 
 export default function ExerciseListCard({
@@ -19,9 +22,12 @@ export default function ExerciseListCard({
     showAddButton = false,
     onAdd,
     onMoreInfo,
+    selectable = false,
+    selected = false,
+    onSelect,
 }: Props) {
-    return (
-        <Card style={alreadyAdded ? styles.cardAdded : null}>
+    const card = (
+        <Card style={[alreadyAdded && styles.cardAdded, selectable && selected && styles.cardSelected]}>
             <View style={styles.header}>
                 {exercise.image_url ? (
                     <Image source={{ uri: exercise.image_url }} style={styles.image} />
@@ -53,21 +59,46 @@ export default function ExerciseListCard({
                     style={styles.actionButton}
                 />
 
-                {showAddButton ? (
+                {selectable ? (
+                    <View style={styles.selectionIndicator}>
+                        <Text style={styles.selectionText}>{selected ? "✓ Selected" : "Select"}</Text>
+                    </View>
+                ) : showAddButton ? (
                     <AppButton
                         title={alreadyAdded ? "Added" : "Add"}
                         variant="success"
                         disabled={alreadyAdded}
-                        onPress={onAdd ?? (() => {})}
+                        onPress={onAdd ?? (() => { })}
                         style={styles.actionButton}
                     />
                 ) : null}
             </View>
         </Card>
     );
+
+    if (!selectable) return card;
+
+    return (
+        <Pressable onPress={onSelect} accessibilityRole="checkbox" accessibilityState={{ checked: selected }}>
+            {card}
+        </Pressable>
+    );
 }
 
 const styles = StyleSheet.create({
+    selectionIndicator: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    selectionText: {
+        color: colors.text,
+        fontWeight: typography.weightBold,
+    },
+    cardSelected: {
+        borderColor: colors.success,
+        backgroundColor: colors.successDark,
+    },
     cardAdded: {
         borderColor: colors.success,
         backgroundColor: colors.successDark,

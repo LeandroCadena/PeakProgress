@@ -1,5 +1,5 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
@@ -27,19 +27,21 @@ export default function ExercisePickerScreen({ navigation }: any) {
         search,
         setSearch,
         filteredExercises,
-        handleAddExercise,
+        selectedExerciseIds,
+        toggleExerciseSelection,
+        handleAddSelectedExercises,
+        isAdding,
         filterMode,
-        showAdded,
         changeFilterMode,
         filterOptions,
         selectedFilterIds,
         toggleFilterId,
-        toggleShowAdded,
     } = useExercisePicker({
         mode,
         routineId,
         sessionId,
         currentCount,
+        currentExerciseIds,
         onExerciseAdded: () => navigation.goBack(),
     });
 
@@ -64,9 +66,6 @@ export default function ExercisePickerScreen({ navigation }: any) {
                     </Text>
                 </Pressable>
 
-                <Pressable style={styles.filterModeButton} onPress={toggleShowAdded}>
-                    <Text style={styles.filterModeText}>{showAdded ? "All" : "Not Added"}</Text>
-                </Pressable>
             </View>
 
             <View style={styles.filtersWrapper}>
@@ -101,37 +100,20 @@ export default function ExercisePickerScreen({ navigation }: any) {
             <Text style={sharedStyles.sectionTitle}>Exercises</Text>
 
             <FlatList
+                style={styles.exerciseFlatList}
                 data={filteredExercises}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.exerciseList}
                 showsVerticalScrollIndicator={false}
-                renderItem={({ item }) =>
-                    !currentExerciseIds.includes(item.id) && !showAdded ? (
-                        <ExerciseListCard
-                            exercise={item}
-                            alreadyAdded={currentExerciseIds.includes(item.id)}
-                            showAddButton
-                            onAdd={() => handleAddExercise(item.id)}
-                            onMoreInfo={() =>
-                                navigation.navigate("ExerciseDetail", {
-                                    exerciseId: item.id,
-                                })
-                            }
-                        />
-                    ) : showAdded ? (
-                        <ExerciseListCard
-                            exercise={item}
-                            alreadyAdded={currentExerciseIds.includes(item.id)}
-                            showAddButton
-                            onAdd={() => handleAddExercise(item.id)}
-                            onMoreInfo={() =>
-                                navigation.navigate("ExerciseDetail", {
-                                    exerciseId: item.id,
-                                })
-                            }
-                        />
-                    ) : null
-                }
+                renderItem={({ item }) => (
+                    <ExerciseListCard
+                        exercise={item}
+                        selectable
+                        selected={selectedExerciseIds.includes(item.id)}
+                        onSelect={() => toggleExerciseSelection(item.id)}
+                        onMoreInfo={() => navigation.navigate("ExerciseDetail", { exerciseId: item.id })}
+                    />
+                )}
                 ListEmptyComponent={
                     <EmptyStateCard
                         title="No exercises found"
@@ -140,7 +122,15 @@ export default function ExercisePickerScreen({ navigation }: any) {
                 }
             />
 
-            <AppButton title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
+            <View style={styles.bottomActions}>
+                <AppButton
+                    title={`Add ${selectedExerciseIds.length} ${selectedExerciseIds.length === 1 ? "Exercise" : "Exercises"}`}
+                    variant="success"
+                    disabled={selectedExerciseIds.length === 0 || isAdding}
+                    onPress={handleAddSelectedExercises}
+                />
+                <AppButton title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
+            </View>
         </ScreenContainer>
     );
 }
@@ -148,6 +138,13 @@ export default function ExercisePickerScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     screenContent: {
         paddingBottom: spacing.lg,
+    },
+    exerciseFlatList: {
+        flex: 1,
+        minHeight: 0,
+    },
+    bottomActions: {
+        gap: spacing.sm,
     },
     searchRow: {
         flexDirection: "row",
