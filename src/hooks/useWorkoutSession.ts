@@ -9,6 +9,7 @@ import { getUserExerciseRecords } from "../services/progressService";
 import { getUserSettings } from "../services/settingsService";
 import { loadWorkoutSessionSnapshot } from "../services/workoutService";
 import { syncCompletedWorkout } from "../services/workoutSyncService";
+import { useSettingsStore } from "../store/settingsStore";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { UserExerciseRecord } from "../types/progress";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
@@ -82,8 +83,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const [timerRunning, setTimerRunning] = useState(false);
     const [lastTimerDuration, setLastTimerDuration] = useState(0);
     const [restEndAt, setRestEndAt] = useState<number | null>(null);
-    const [useGlobalTimers, setUseGlobalTimers] = useState(false);
     const [isRoutineMenuOpen, setIsRoutineMenuOpen] = useState(false);
+    const settingsUserId = useSettingsStore((state) => state.userId);
+    const globalTimers = useSettingsStore((state) => state.globalTimers);
+    const activeGlobalTimers = settingsUserId === user?.id ? globalTimers : null;
+    const useGlobalTimers = activeGlobalTimers?.use_global_timers ?? false;
     const timerVersionRef = useRef(0);
     const isScreenFocusedRef = useRef(false);
     const hasFinishedRef = useRef(false);
@@ -195,14 +199,28 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
     const fetchUserSettings = useCallback(async () => {
         if (!user?.id) return;
 
+        const ownerId = user.id;
+
         try {
-            const settings = await getUserSettings(user.id);
-            setUseGlobalTimers(settings.use_global_timers);
+            const settings = await getUserSettings(ownerId);
+
+            if (!isScreenFocusedRef.current) return;
+
+            const currentSettings = useSettingsStore.getState();
+
+            if (currentSettings.userId === ownerId && currentSettings.globalTimers) {
+                return;
+            }
+
+            useSettingsStore.getState().setGlobalTimers(ownerId, settings);
         } catch (error: unknown) {
-            showToast({
-                type: "error",
-                message: error instanceof Error ? error.message : "Unable to load workout settings",
-            });
+            if (isScreenFocusedRef.current) {
+                showToast({
+                    type: "error",
+                    message:
+                        error instanceof Error ? error.message : "Unable to load workout settings",
+                });
+            }
         }
     }, [user?.id, showToast]);
 
@@ -545,11 +563,15 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         const hasNextExercise = exerciseIndex < sessionExercises.length - 1;
 
         if (hasMoreSetsInExercise) {
-            return exercise.rest_seconds ?? 90;
+            return useGlobalTimers
+                ? (activeGlobalTimers?.global_set_rest_seconds ?? 90)
+                : (exercise.rest_seconds ?? 90);
         }
 
         if (hasNextExercise) {
-            return exercise.exercise_rest_seconds ?? 120;
+            return useGlobalTimers
+                ? (activeGlobalTimers?.global_exercise_rest_seconds ?? 120)
+                : (exercise.exercise_rest_seconds ?? 120);
         }
 
         return 0;
@@ -660,6 +682,8 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         lastTimerDuration,
         restartLastTimer,
         useGlobalTimers,
+        globalSetRestSeconds: activeGlobalTimers?.global_set_rest_seconds ?? 90,
+        globalExerciseRestSeconds: activeGlobalTimers?.global_exercise_rest_seconds ?? 120,
 
         isRoutineMenuOpen,
         setIsRoutineMenuOpen,

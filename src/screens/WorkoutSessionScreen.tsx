@@ -40,6 +40,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
         lastTimerDuration,
         restartLastTimer,
         useGlobalTimers,
+        globalSetRestSeconds,
+        globalExerciseRestSeconds,
         addEmptySet,
         updateSetValue,
         toggleSetCompleted,
@@ -203,6 +205,14 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 }: RenderItemParams<WorkoutSessionExercise>) => {
                     const index = getIndex() ?? 0;
 
+                    const effectiveSetRestSeconds = useGlobalTimers
+                        ? globalSetRestSeconds
+                        : (item.rest_seconds ?? 90);
+
+                    const effectiveExerciseRestSeconds = useGlobalTimers
+                        ? globalExerciseRestSeconds
+                        : (item.exercise_rest_seconds ?? 120);
+
                     return (
                         <View style={[styles.exerciseItem, isActive && styles.activeExerciseItem]}>
                             <WorkoutExerciseCard
@@ -222,6 +232,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                     setOpenExerciseMenuId(open ? item.id : null);
                                 }}
                                 useGlobalTimers={useGlobalTimers}
+                                effectiveSetRestSeconds={effectiveSetRestSeconds}
                                 updateWorkoutSetRest={updateWorkoutSetRest}
                                 currentExerciseRecord={currentExerciseRecordLabel(item.exercise_id)}
                             />
@@ -229,7 +240,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                             {index < sessionExercises.length - 1 ? (
                                 <RestTimeEditor
                                     label="Rest before next exercise"
-                                    value={item.exercise_rest_seconds ?? 120}
+                                    value={effectiveExerciseRestSeconds}
                                     editable={!useGlobalTimers}
                                     onChange={(value) => updateWorkoutExerciseRest(item.id, value)}
                                 />

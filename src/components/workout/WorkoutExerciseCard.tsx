@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, spacing, typography } from "../../theme";
-import { WorkoutSessionSet, WorkoutSessionExercise } from "../../types/workout";
+import { WorkoutSessionExercise, WorkoutSessionSet } from "../../types/workout";
 import ActionMenu from "../common/ActionMenu";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -33,6 +33,7 @@ type WorkoutExerciseCardProps = {
     useGlobalTimers?: boolean;
     updateWorkoutSetRest: (workoutSessionExerciseId: string, value: number) => void;
     currentExerciseRecord: string | null;
+    effectiveSetRestSeconds: number;
 };
 
 export default function WorkoutExerciseCard({
@@ -52,6 +53,7 @@ export default function WorkoutExerciseCard({
     useGlobalTimers = false,
     updateWorkoutSetRest,
     currentExerciseRecord,
+    effectiveSetRestSeconds,
 }: WorkoutExerciseCardProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -109,7 +111,7 @@ export default function WorkoutExerciseCard({
                 <>
                     <RestTimeEditor
                         label="Rest between sets"
-                        value={exercise.rest_seconds ?? 90}
+                        value={effectiveSetRestSeconds}
                         editable={!useGlobalTimers}
                         onChange={(value) => updateWorkoutSetRest(exercise.id, value)}
                     />

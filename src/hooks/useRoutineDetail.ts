@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -75,6 +75,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const [isLoadingRoutine, setIsLoadingRoutine] = useState(false);
     const [isSavingRoutine, setIsSavingRoutine] = useState(false);
     const [isStartingWorkout, setIsStartingWorkout] = useState(false);
+    const isStartingWorkoutRef = useRef(false);
 
     const [openExerciseMenuId, setOpenExerciseMenuId] = useState<string | null>(null);
 
@@ -349,10 +350,11 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             return;
         }
 
-        if (isStartingWorkout) {
+        if (isStartingWorkoutRef.current) {
             return;
         }
 
+        isStartingWorkoutRef.current = true;
         setIsStartingWorkout(true);
 
         try {
@@ -383,6 +385,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                         : "An error occurred while starting the workout.",
             });
         } finally {
+            isStartingWorkoutRef.current = false;
             setIsStartingWorkout(false);
         }
     }
@@ -429,10 +432,11 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     }
 
     async function discardAndStartWorkout() {
-        if (!user || !activeWorkout || isStartingWorkout) {
+        if (!user || !activeWorkout || isStartingWorkoutRef.current) {
             return;
         }
 
+        isStartingWorkoutRef.current = true;
         setIsStartingWorkout(true);
 
         try {
@@ -458,6 +462,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                         : "An error occurred while discarding the workout.",
             });
         } finally {
+            isStartingWorkoutRef.current = false;
             setIsStartingWorkout(false);
         }
     }

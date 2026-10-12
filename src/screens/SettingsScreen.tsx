@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 
 import AppInput from "../components/common/AppInput";
@@ -7,6 +7,7 @@ import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
+import { useSettingsStore } from "../store/settingsStore";
 import { colors, sharedStyles, spacing } from "../theme";
 import { setNotificationsEnabled } from "../utils/notifications";
 import { setSoundsEnabled } from "../utils/sounds";
@@ -15,13 +16,45 @@ export default function SettingsScreen() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const [settings, setSettings] = useState<UserSettings | null>(null);
+    const setGlobalTimers = useSettingsStore((state) => state.setGlobalTimers);
+
+    const [globalSetRestInput, setGlobalSetRestInput] = useState("");
+    const [globalExerciseRestInput, setGlobalExerciseRestInput] = useState("");
+
+    const updateQueueRef = useRef<Promise<void>>(Promise.resolve());
+    const settingsRef = useRef<UserSettings | null>(null);
+    const userIdRef = useRef<string | null>(null);
+    const settingsRevisionRef = useRef(0);
+
+    function applySettings(nextSettings: UserSettings, ownerId: string) {
+        if (userIdRef.current !== ownerId) return;
+
+        settingsRef.current = nextSettings;
+        setSettings(nextSettings);
+        setGlobalTimers(ownerId, nextSettings);
+    }
 
     const fetchSettings = useCallback(async () => {
         if (!user?.id) return;
 
+        const ownerId = user.id;
+        const revisionAtStart = settingsRevisionRef.current;
+
         try {
-            const data = await getUserSettings(user.id);
-            setSettings(data);
+            const data = await getUserSettings(ownerId);
+
+            if (
+                userIdRef.current !== ownerId ||
+                settingsRevisionRef.current !== revisionAtStart
+            ) {
+                return;
+            }
+
+            applySettings(data, ownerId);
+
+            setGlobalSetRestInput(String(data.global_set_rest_seconds));
+            setGlobalExerciseRestInput(String(data.global_exercise_rest_seconds));
+
             setSoundsEnabled(data.sounds_enabled);
             setNotificationsEnabled(data.notifications_enabled);
         } catch (error: any) {
@@ -33,33 +66,110 @@ export default function SettingsScreen() {
     }, [user, showToast]);
 
     useEffect(() => {
-        fetchSettings();
+        const ownerId = user?.id ?? null;
+
+        if (userIdRef.current !== ownerId) {
+            userIdRef.current = ownerId;
+            settingsRevisionRef.current += 1;
+
+            settingsRef.current = null;
+            setSettings(null);
+
+            setGlobalSetRestInput("");
+            setGlobalExerciseRestInput("");
+
+            useSettingsStore.getState().clearSettings();
+        }
+
+        if (ownerId) {
+            void fetchSettings();
+        }
     }, [user?.id, fetchSettings]);
 
-    async function updateSetting(updates: Partial<UserSettings>) {
-        if (!user?.id || !settings) return;
+    function updateSetting(updates: Partial<UserSettings>): Promise<void> {
+        const ownerId = user?.id;
 
-        try {
-            const updated = await updateUserSettings({
-                userId: user.id,
-                updates,
-            });
-
-            setSettings(updated);
-
-            if (updates.sounds_enabled !== undefined) {
-                setSoundsEnabled(updates.sounds_enabled);
-            }
-
-            if (updates.notifications_enabled !== undefined) {
-                setNotificationsEnabled(updates.notifications_enabled);
-            }
-        } catch (error: any) {
-            showToast({
-                type: "error",
-                message: error instanceof Error ? error.message : "Error updating settings",
-            });
+        if (!ownerId || !settingsRef.current) {
+            return Promise.resolve();
         }
+
+        settingsRevisionRef.current += 1;
+
+        const operation = updateQueueRef.current.then(async () => {
+            if (userIdRef.current !== ownerId) return;
+
+            try {
+                const updated = await updateUserSettings({
+                    userId: ownerId,
+                    updates,
+                });
+
+                if (userIdRef.current !== ownerId) return;
+
+                applySettings(updated, ownerId);
+
+                if (updates.global_set_rest_seconds !== undefined) {
+                    setGlobalSetRestInput(String(updated.global_set_rest_seconds));
+                }
+
+                if (updates.global_exercise_rest_seconds !== undefined) {
+                    setGlobalExerciseRestInput(String(updated.global_exercise_rest_seconds));
+                }
+
+                if (updates.sounds_enabled !== undefined) {
+                    setSoundsEnabled(updated.sounds_enabled);
+                }
+
+                if (updates.notifications_enabled !== undefined) {
+                    setNotificationsEnabled(updated.notifications_enabled);
+                }
+            } catch (error: unknown) {
+                if (userIdRef.current !== ownerId) return;
+
+                showToast({
+                    type: "error",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "Error updating settings",
+                });
+            }
+        });
+
+        updateQueueRef.current = operation.then(
+            () => undefined,
+            () => undefined
+        );
+
+        return operation;
+    }
+
+    function saveGlobalRestInput(
+        field: "global_set_rest_seconds" | "global_exercise_rest_seconds",
+        input: string
+    ) {
+        const trimmed = input.trim();
+
+        const currentValue = settingsRef.current?.[field];
+
+        if (!/^\d+$/.test(trimmed)) {
+            if (currentValue !== undefined) {
+                if (field === "global_set_rest_seconds") {
+                    setGlobalSetRestInput(String(currentValue));
+                } else {
+                    setGlobalExerciseRestInput(String(currentValue));
+                }
+            }
+            return;
+        }
+
+        const value = Number(trimmed);
+
+        if (!Number.isSafeInteger(value)) return;
+
+        if (value === currentValue) return;
+
+        void updateSetting({ [field]: value });
     }
 
     if (!settings) {
@@ -156,13 +266,12 @@ export default function SettingsScreen() {
                         <Text style={styles.label}>Global Rest Between Sets</Text>
                         <AppInput
                             style={styles.input}
-                            value={String(settings.global_set_rest_seconds)}
+                            value={globalSetRestInput}
                             keyboardType="numeric"
                             placeholder="90"
-                            onChangeText={(value) =>
-                                updateSetting({
-                                    global_set_rest_seconds: Number(value || 0),
-                                })
+                            onChangeText={setGlobalSetRestInput}
+                            onBlur={() =>
+                                saveGlobalRestInput("global_set_rest_seconds", globalSetRestInput)
                             }
                         />
                         <Text style={styles.helperText}>Seconds between sets</Text>
@@ -172,13 +281,12 @@ export default function SettingsScreen() {
                         <Text style={styles.label}>Global Rest Between Exercises</Text>
                         <AppInput
                             style={styles.input}
-                            value={String(settings.global_exercise_rest_seconds)}
+                            value={globalExerciseRestInput}
                             keyboardType="numeric"
                             placeholder="120"
-                            onChangeText={(value) =>
-                                updateSetting({
-                                    global_exercise_rest_seconds: Number(value || 0),
-                                })
+                            onChangeText={setGlobalExerciseRestInput}
+                            onBlur={() =>
+                                saveGlobalRestInput("global_exercise_rest_seconds", globalExerciseRestInput)
                             }
                         />
                         <Text style={styles.helperText}>Seconds before the next exercise</Text>
