@@ -5,23 +5,23 @@ export type RoutineSyncOperationType = "upsert" | "delete";
 export interface RoutineSyncPayload {
     routineId: string;
     name: string;
-    exercises: Array<{
+    exercises: {
         id: string;
         exercise_id: string;
         position: number;
         rest_seconds: number;
         exercise_rest_seconds: number | null;
         notes: string | null;
-    }>;
+    }[];
     setsByExerciseId: Record<
         string,
-        Array<{
+        {
             id: string;
             routine_exercise_id: string;
             reps: number;
             weight: number | null;
             is_pr: boolean;
-        }>
+        }[]
     >;
 }
 

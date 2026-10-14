@@ -7,6 +7,7 @@ import {
     type ReactNode,
 } from "react";
 import { StyleSheet, View } from "react-native";
+
 import AppToast, { type AppToastType } from "../components/common/AppToast";
 
 type ToastOptions = {

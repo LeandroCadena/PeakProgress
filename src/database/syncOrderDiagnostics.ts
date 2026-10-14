@@ -1,5 +1,4 @@
 import { getDatabase } from "./database";
-
 import {
     claimPendingSyncOperation,
     completeSyncOperation,
