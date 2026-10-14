@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { getLocalRoutines } from "../database/repositories/routineRepository";
 import { createRoutine as createRoutineService } from "../services/routineService";
+import { hydrateMissingRemoteRoutines } from "../services/sync/routineInitialHydrationService";
 import {
     createWorkoutSession,
     getActiveWorkoutSession,
@@ -44,8 +45,6 @@ export default function RoutinesScreen({ navigation }: any) {
         return () => clearInterval(intervalId);
     }, []);
 
-
-
     const fetchRoutines = useCallback(async () => {
         if (!userId) {
             setRoutines([]);
@@ -67,7 +66,16 @@ export default function RoutinesScreen({ navigation }: any) {
         }
     }, [userId, showToast]);
 
+    const hydrateRoutines = useCallback(async () => {
+        if (!userId) return;
 
+        try {
+            await hydrateMissingRemoteRoutines(userId);
+            await fetchRoutines();
+        } catch (error) {
+            console.warn("Routine hydration unavailable:", error);
+        }
+    }, [userId, fetchRoutines]);
 
     const fetchActiveSession = useCallback(async () => {
         if (!user) return;
@@ -82,12 +90,11 @@ export default function RoutinesScreen({ navigation }: any) {
 
     useFocusEffect(
         useCallback(() => {
-            fetchRoutines();
-            fetchActiveSession();
-        }, [fetchRoutines, fetchActiveSession])
+            void fetchRoutines();
+            void fetchActiveSession();
+            void hydrateRoutines();
+        }, [fetchRoutines, fetchActiveSession, hydrateRoutines])
     );
-
-
 
     async function createRoutine() {
         if (!user?.id) {
