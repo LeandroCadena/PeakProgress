@@ -10,7 +10,8 @@ import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { createRoutine as createRoutineService, getRoutines } from "../services/routineService";
+import { getLocalRoutines } from "../database/repositories/routineRepository";
+import { createRoutine as createRoutineService } from "../services/routineService";
 import {
     createWorkoutSession,
     getActiveWorkoutSession,
@@ -21,6 +22,7 @@ import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
     const { user } = useAuth();
+    const userId = user?.id;
     const { showToast } = useToast();
     const [activeSession, setActiveSession] = useState<any>(null);
     const [now, setNow] = useState(() => Date.now());
@@ -41,17 +43,30 @@ export default function RoutinesScreen({ navigation }: any) {
         return () => clearInterval(intervalId);
     }, []);
 
+
+
     const fetchRoutines = useCallback(async () => {
+        if (!userId) {
+            setRoutines([]);
+            return;
+        }
+
         try {
-            const data = await getRoutines();
-            setRoutines(data);
-        } catch (error: any) {
+            const localRoutines = await getLocalRoutines(userId);
+
+            setRoutines(localRoutines);
+        } catch (error: unknown) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching routines",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Error fetching local routines",
             });
         }
-    }, [showToast]);
+    }, [userId, showToast]);
+
+
 
     const fetchActiveSession = useCallback(async () => {
         if (!user) return;

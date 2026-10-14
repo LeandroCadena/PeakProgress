@@ -112,8 +112,8 @@ export function useExercisePicker({
                 throw new Error("Routine ID is required.");
             }
 
-            const routineExerciseId = `temp-${Crypto.randomUUID()}`;
-            const routineSetId = `temp-${Crypto.randomUUID()}`;
+            const routineExerciseId = Crypto.randomUUID();
+            const routineSetId = Crypto.randomUUID();
             const createdAt = new Date().toISOString();
 
             const routineExercise: RoutineExercise = {

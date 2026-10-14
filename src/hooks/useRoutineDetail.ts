@@ -1,8 +1,10 @@
 import { useFocusEffect } from "@react-navigation/native";
+import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { getLocalRoutine } from "../database/repositories/routineRepository";
 import {
     addExerciseToRoutine,
     createRoutineExerciseSets,
@@ -20,6 +22,7 @@ import {
     getActiveWorkoutSession,
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
+import type { RoutineEditorSnapshot } from "../store/routineEditorStore";
 import { useRoutineEditorStore } from "../store/routineEditorStore";
 import type { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 
@@ -96,15 +99,28 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const fetchRoutine = useCallback(
         async (options?: { force?: boolean }) => {
             const force = options?.force ?? false;
-            const editorAlreadyInitialized = editorRoutineId === routineId;
 
-            if (editorAlreadyInitialized && hasUnsavedChanges && !force) {
+            if (editorRoutineId === routineId && hasUnsavedChanges && !force) {
                 return;
             }
 
             setIsLoadingRoutine(true);
 
             try {
+                if (user?.id) {
+                    const localSnapshot = await getLocalRoutine({
+                        userId: user.id,
+                        routineId,
+                    });
+
+                    if (localSnapshot) {
+                        initializeEditor(localSnapshot);
+                        return;
+                    }
+                }
+
+                // Fallback temporal para rutinas que todavía
+                // no fueron hidratadas desde Supabase.
                 const [routineExercises, routineExerciseSets] = await Promise.all([
                     getRoutineExercises(routineId),
                     getRoutineExerciseSetsByRoutineId(routineId),
@@ -116,16 +132,27 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                     exercises: routineExercises,
                     setsByExerciseId: routineExerciseSets,
                 });
-            } catch (error: any) {
+            } catch (error) {
                 showToast({
                     type: "error",
-                    message: error instanceof Error ? error.message : "Unable to load routine.",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "An error occurred while loading the routine.",
                 });
             } finally {
                 setIsLoadingRoutine(false);
             }
         },
-        [editorRoutineId, hasUnsavedChanges, initializeEditor, routineId, routineName, showToast]
+        [
+            editorRoutineId,
+            hasUnsavedChanges,
+            initializeEditor,
+            routineId,
+            routineName,
+            showToast,
+            user?.id,
+        ]
     );
 
     useFocusEffect(
@@ -183,7 +210,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         const lastReps = lastSet ? getSetDraftValue(lastSet, "reps") : 0;
 
         const temporarySet: RoutineExerciseSet = {
-            id: createTemporaryId(),
+            id: Crypto.randomUUID(),
             routine_exercise_id: routineExerciseId,
             reps: lastReps,
             weight: lastWeight,
@@ -236,7 +263,9 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         await persistDeletedExercises();
 
         for (const [index, routineExercise] of exercises.entries()) {
-            const isTemporaryExercise = routineExercise.id.startsWith("temp-");
+            const isTemporaryExercise = !originalSnapshot?.exercises.some(
+                (originalExercise) => originalExercise.id === routineExercise.id
+            );
 
             const persistedRoutineExerciseId = isTemporaryExercise
                 ? (
@@ -275,6 +304,39 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
             await createRoutineExerciseSets(setsToInsert);
         }
+    }
+
+    function buildRoutineSnapshot(): RoutineEditorSnapshot {
+        const normalizedName = name.trim();
+
+        if (!normalizedName) {
+            throw new Error("Routine name is required.");
+        }
+
+        const normalizedExercises = exercises.map((exercise, index) => ({
+            ...exercise,
+            position: index,
+        }));
+
+        const normalizedSetsByExerciseId: Record<string, RoutineExerciseSet[]> = {};
+
+        for (const exercise of normalizedExercises) {
+            normalizedSetsByExerciseId[exercise.id] = (setsByExerciseId[exercise.id] ?? []).map(
+                (setItem) => ({
+                    ...setItem,
+                    routine_exercise_id: exercise.id,
+                    reps: getSetDraftValue(setItem, "reps"),
+                    weight: getSetDraftValue(setItem, "weight"),
+                })
+            );
+        }
+
+        return {
+            routineId,
+            name: normalizedName,
+            exercises: normalizedExercises,
+            setsByExerciseId: normalizedSetsByExerciseId,
+        };
     }
 
     async function saveRoutineChanges(): Promise<boolean> {
@@ -511,8 +573,4 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         openExerciseMenuId,
         setOpenExerciseMenuId,
     };
-}
-
-function createTemporaryId() {
-    return `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }

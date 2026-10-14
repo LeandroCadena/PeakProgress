@@ -1,3 +1,7 @@
+import * as Crypto from "expo-crypto";
+
+import { saveLocalRoutine } from "../database/repositories/routineRepository";
+import type { RoutineEditorSnapshot } from "../store/routineEditorStore";
 import { Routine, RoutineExercise, RoutineExerciseSet } from "../types/routine";
 
 import { supabase } from "./supabase";
@@ -13,13 +17,35 @@ export async function getRoutines(): Promise<Routine[]> {
     return data ?? [];
 }
 
-export async function createRoutine(params: { userId: string; name: string }) {
-    const { error } = await supabase.from("routines").insert({
-        user_id: params.userId,
-        name: params.name.trim(),
+export async function createRoutine(params: { userId: string; name: string }): Promise<string> {
+    const name = params.name.trim();
+
+    if (!params.userId.trim()) {
+        throw new Error("User ID is required.");
+    }
+
+    if (!name) {
+        throw new Error("Routine name is required.");
+    }
+
+    const routineId = Crypto.randomUUID();
+    const operationId = Crypto.randomUUID();
+
+    const snapshot: RoutineEditorSnapshot = {
+        routineId,
+        name,
+        exercises: [],
+        setsByExerciseId: {},
+    };
+
+    await saveLocalRoutine({
+        userId: params.userId,
+        snapshot,
+        syncOperationId: operationId,
+        createdLocally: true,
     });
 
-    if (error) throw error;
+    return routineId;
 }
 
 export async function updateRoutine(params: { routineId: string; name: string }) {
@@ -45,6 +71,7 @@ export async function getRoutineExercises(routineId: string): Promise<RoutineExe
         .select(
             `
         id,
+        routine_id,
         exercise_id,
         rest_seconds,
         exercise_rest_seconds,
