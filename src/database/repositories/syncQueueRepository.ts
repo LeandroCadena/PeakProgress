@@ -167,6 +167,7 @@ export async function getPendingSyncOperations(
         FROM sync_operations AS current
          WHERE current.user_id = ?
            AND current.status = 'pending'
+           AND current.updated_at <= ?
            AND NOT EXISTS (
                SELECT 1
                FROM sync_operations AS earlier
@@ -183,7 +184,7 @@ export async function getPendingSyncOperations(
            )
          ORDER BY current.created_at ASC, current.rowid ASC
          LIMIT ?`,
-        [userId, limit]
+        [userId, new Date().toISOString(), limit]
     );
 }
 
@@ -271,6 +272,34 @@ export async function markSyncOperationFailed(
         [new Date().toISOString(), operationId, userId, leaseToken]
     );
 
+    return result.changes === 1;
+}
+
+/** Schedule an already-claimed operation for retry without changing its ID or payload. */
+export async function scheduleTransientSyncRetry(
+    userId: string,
+    operationId: string,
+    leaseToken: string,
+    delayMs: number
+): Promise<boolean> {
+    if (!userId.trim() || !operationId.trim() || !leaseToken.trim()) {
+        throw new Error("User ID, operation ID and lease token are required.");
+    }
+    if (!Number.isSafeInteger(delayMs) || delayMs < 0) {
+        throw new Error("Invalid retry delay.");
+    }
+
+    const db = await getDatabase();
+    const nextAttemptAt = new Date(Date.now() + delayMs).toISOString();
+    const result = await db.runAsync(
+        `UPDATE sync_operations
+         SET status = 'pending',
+             lease_token = NULL,
+             updated_at = ?
+         WHERE id = ? AND user_id = ?
+           AND status = 'processing' AND lease_token = ?`,
+        [nextAttemptAt, operationId, userId, leaseToken]
+    );
     return result.changes === 1;
 }
 

@@ -4,13 +4,18 @@ import {
     getPendingSyncOperations,
     markSyncOperationConflict,
     markSyncOperationFailed,
+    scheduleTransientSyncRetry,
     type SyncOperation,
 } from "../../database/repositories/syncQueueRepository";
 
 import { recoverRoutineConflictSnapshot } from "./routineConflictSnapshotService";
-import { applyRoutineSyncOperation, type RoutineSyncPayload } from "./routineSyncRpcService";
+import { applyRoutineSyncOperation, RoutineSyncNetworkError, type RoutineSyncPayload } from "./routineSyncRpcService";
 
-type WorkerResult = "idle" | "applied" | "conflict" | "failed" | "stale_claim";
+type WorkerResult = "idle" | "applied" | "conflict" | "failed" | "stale_claim" | "retry_scheduled";
+
+const MAX_TRANSIENT_ATTEMPTS = 5;
+const RETRY_BASE_MS = 30_000;
+
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -163,6 +168,16 @@ export async function processOneRoutineSyncOperation(
         // Do not acknowledge, alter expected_version or generate a new operation ID.
         throw new Error(`Sync requires reconciliation: ${response.status}`);
     } catch (error) {
+        // The claim increments attempts in SQLite; the fetched operation predates that claim.
+        const attemptNumber = operation.attempts + 1;
+        if (error instanceof RoutineSyncNetworkError && attemptNumber < MAX_TRANSIENT_ATTEMPTS) {
+            const delayMs = RETRY_BASE_MS * 2 ** (attemptNumber - 1);
+            const scheduled = await scheduleTransientSyncRetry(
+                userId, operation.id, leaseToken, delayMs
+            );
+            if (!scheduled) throw new Error("Transient retry lost its lease.");
+            return "retry_scheduled";
+        }
         const marked = await markSyncOperationFailed(userId, operation.id, leaseToken);
         if (!marked) throw new Error(`Failed to preserve claimed operation: ${String(error)}`);
         return "failed";

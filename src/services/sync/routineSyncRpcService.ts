@@ -2,6 +2,18 @@ import { supabase } from "../supabase";
 
 export type RoutineSyncOperationType = "upsert" | "delete";
 
+export class RoutineSyncNetworkError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "RoutineSyncNetworkError";
+    }
+}
+
+/** Only classify unmistakable transport failures as automatically retryable. */
+function isNetworkFailure(message: string): boolean {
+    return /(?:failed to fetch|network request failed|network error|fetch failed|network connection lost|internet connection appears to be offline)/i.test(message);
+}
+
 export interface RoutineSyncPayload {
     routineId: string;
     name: string;
@@ -57,6 +69,9 @@ export async function applyRoutineSyncOperation(
     });
 
     if (error) {
+        if (isNetworkFailure(error.message)) {
+            throw new RoutineSyncNetworkError(error.message);
+        }
         throw new Error(`Routine sync RPC failed: ${error.message}`);
     }
 
