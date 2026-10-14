@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text } from "react-native";
 
 import AppButton from "../components/common/AppButton";
+import AppInput from "../components/common/AppInput";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import RoutineCard from "../components/routine/RoutineCard";
@@ -262,6 +263,15 @@ export default function RoutinesScreen({ navigation }: any) {
                             />
                         ) : null}
 
+                        <AppInput
+                            value={name}
+                            onChangeText={setName}
+                            placeholder="Routine name"
+                            autoCapitalize="sentences"
+                            returnKeyType="done"
+                            style={styles.nameInput}
+                        />
+
                         <AppButton
                             style={styles.startButton}
                             title="+ Create Routine"
@@ -310,6 +320,9 @@ export default function RoutinesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     listContent: {
         gap: spacing.md,
+    },
+    nameInput: {
+        marginBottom: spacing.sm,
     },
     startButton: {
         marginBottom: spacing.sm,

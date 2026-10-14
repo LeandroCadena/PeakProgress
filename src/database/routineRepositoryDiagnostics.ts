@@ -1,7 +1,7 @@
+import type { RoutineEditorSnapshot } from "../store/routineEditorStore";
+
 import { getDatabase } from "./database";
 import { getLocalRoutine, saveLocalRoutine } from "./repositories/routineRepository";
-
-import type { RoutineEditorSnapshot } from "../store/routineEditorStore";
 
 function assert(condition: boolean, message: string): void {
     if (!condition) {

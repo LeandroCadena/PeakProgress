@@ -66,7 +66,7 @@ export default function HomeScreen({ navigation }: any) {
                 message: error instanceof Error ? error.message : "Unable to load dashboard stats.",
             });
         }
-    }, [user]);
+    }, [user, showToast]);
 
     const fetchActiveSession = useCallback(async () => {
         if (!user) return;

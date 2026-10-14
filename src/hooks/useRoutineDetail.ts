@@ -4,21 +4,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { getLocalRoutine } from "../database/repositories/routineRepository";
 import {
-    addExerciseToRoutine,
-    createRoutineExerciseSets,
-    deleteRoutineById,
-    deleteRoutineExercise as deleteRoutineExerciseService,
-    getRoutineExercises,
-    getRoutineExerciseSetsByRoutineId,
-    updateRoutine,
-    updateRoutineExerciseConfig,
-    updateRoutineExercisePosition,
-} from "../services/routineService";
+    getLocalRoutine,
+    getLocalRoutineSyncMetadata,
+    hydrateLocalRoutine,
+    saveLocalRoutine,
+} from "../database/repositories/routineRepository";
+import { deleteRoutineById } from "../services/routineService";
+import { getVersionedRemoteRoutineSnapshot } from "../services/sync/remoteRoutineSnapshotService";
 import {
     createWorkoutSession,
-    deleteRoutineExerciseSetsByRoutineExerciseId,
     getActiveWorkoutSession,
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
@@ -56,7 +51,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const exercises = useRoutineEditorStore((state) => state.exercises);
     const setsByExerciseId = useRoutineEditorStore((state) => state.setsByExerciseId);
     const editingValues = useRoutineEditorStore((state) => state.editingValues);
-    const originalSnapshot = useRoutineEditorStore((state) => state.originalSnapshot);
     const hasUnsavedChanges = useRoutineEditorStore((state) => state.hasUnsavedChanges);
 
     const initializeEditor = useRoutineEditorStore((state) => state.initializeEditor);
@@ -107,31 +101,47 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             setIsLoadingRoutine(true);
 
             try {
-                if (user?.id) {
-                    const localSnapshot = await getLocalRoutine({
-                        userId: user.id,
-                        routineId,
-                    });
-
-                    if (localSnapshot) {
-                        initializeEditor(localSnapshot);
-                        return;
-                    }
+                if (!user?.id) {
+                    throw new Error("You must be signed in to load a routine.");
                 }
 
-                // Fallback temporal para rutinas que todavía
-                // no fueron hidratadas desde Supabase.
-                const [routineExercises, routineExerciseSets] = await Promise.all([
-                    getRoutineExercises(routineId),
-                    getRoutineExerciseSetsByRoutineId(routineId),
-                ]);
-
-                initializeEditor({
+                const localSnapshot = await getLocalRoutine({
+                    userId: user.id,
                     routineId,
-                    name: routineName,
-                    exercises: routineExercises,
-                    setsByExerciseId: routineExerciseSets,
                 });
+                if (localSnapshot) {
+                    initializeEditor(localSnapshot);
+                    return;
+                }
+
+                // A local tombstone must not be resurrected by a remote fallback.
+                const localMetadata = await getLocalRoutineSyncMetadata({
+                    userId: user.id,
+                    routineId,
+                });
+                if (localMetadata) {
+                    throw new Error("This routine is unavailable locally or was deleted.");
+                }
+
+                // First access to a legacy remote-only routine: hydrate its
+                // versioned snapshot before allowing any local modifications.
+                const remote = await getVersionedRemoteRoutineSnapshot({
+                    userId: user.id,
+                    routineId,
+                });
+                const hydrated = await hydrateLocalRoutine({
+                    userId: user.id,
+                    snapshot: remote.snapshot,
+                    remoteVersion: remote.remoteVersion,
+                });
+                if (!hydrated) {
+                    // A concurrent local edit or delete may have won the race.
+                    const latest = await getLocalRoutine({ userId: user.id, routineId });
+                    if (!latest) throw new Error("Routine changed during hydration.");
+                    initializeEditor(latest);
+                    return;
+                }
+                initializeEditor(remote.snapshot);
             } catch (error) {
                 showToast({
                     type: "error",
@@ -144,15 +154,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 setIsLoadingRoutine(false);
             }
         },
-        [
-            editorRoutineId,
-            hasUnsavedChanges,
-            initializeEditor,
-            routineId,
-            routineName,
-            showToast,
-            user?.id,
-        ]
+        [editorRoutineId, hasUnsavedChanges, initializeEditor, routineId, showToast, user?.id]
     );
 
     useFocusEffect(
@@ -245,92 +247,36 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         return Number.isFinite(numericValue) ? numericValue : Number(routineSet[field] ?? 0);
     }
 
-    async function persistDeletedExercises() {
-        const originalExercises = originalSnapshot?.exercises ?? [];
-        const currentExerciseIds = new Set(exercises.map((exercise) => exercise.id));
-
-        const deletedExercises = originalExercises.filter(
-            (exercise) => !currentExerciseIds.has(exercise.id)
-        );
-
-        for (const deletedExercise of deletedExercises) {
-            await deleteRoutineExerciseSetsByRoutineExerciseId(deletedExercise.id);
-            await deleteRoutineExerciseService(deletedExercise.id);
-        }
-    }
-
-    async function persistRoutineExercises() {
-        await persistDeletedExercises();
-
-        for (const [index, routineExercise] of exercises.entries()) {
-            const isTemporaryExercise = !originalSnapshot?.exercises.some(
-                (originalExercise) => originalExercise.id === routineExercise.id
-            );
-
-            const persistedRoutineExerciseId = isTemporaryExercise
-                ? (
-                      await addExerciseToRoutine({
-                          routineId,
-                          exerciseId: routineExercise.exercise_id,
-                          position: index,
-                          restSeconds: routineExercise.rest_seconds ?? 90,
-                          exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
-                      })
-                  ).id
-                : routineExercise.id;
-
-            if (!isTemporaryExercise) {
-                await updateRoutineExercisePosition({
-                    routineExerciseId: persistedRoutineExerciseId,
-                    position: index,
-                });
-
-                await updateRoutineExerciseConfig({
-                    routineExerciseId: persistedRoutineExerciseId,
-                    restSeconds: routineExercise.rest_seconds ?? 90,
-                    exerciseRestSeconds: routineExercise.exercise_rest_seconds ?? 120,
-                });
-
-                await deleteRoutineExerciseSetsByRoutineExerciseId(persistedRoutineExerciseId);
-            }
-
-            const currentSets = setsByExerciseId[routineExercise.id] ?? [];
-
-            const setsToInsert = currentSets.map((routineSet) => ({
-                routine_exercise_id: persistedRoutineExerciseId,
-                reps: getSetDraftValue(routineSet, "reps"),
-                weight: getSetDraftValue(routineSet, "weight"),
-            }));
-
-            await createRoutineExerciseSets(setsToInsert);
-        }
-    }
-
     function buildRoutineSnapshot(): RoutineEditorSnapshot {
         const normalizedName = name.trim();
+        if (!normalizedName) throw new Error("Routine name is required.");
 
-        if (!normalizedName) {
-            throw new Error("Routine name is required.");
-        }
-
-        const normalizedExercises = exercises.map((exercise, index) => ({
-            ...exercise,
-            position: index,
-        }));
+        // UUIDs must be stable before persisting the snapshot into the sync queue.
+        const isUuid = (value: string) =>
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+        const exerciseIdMap = new Map<string, string>();
+        const normalizedExercises = exercises.map((exercise, index) => {
+            const id = isUuid(exercise.id) ? exercise.id : Crypto.randomUUID();
+            if (exerciseIdMap.has(exercise.id)) {
+                throw new Error("Duplicate routine exercise ID.");
+            }
+            exerciseIdMap.set(exercise.id, id);
+            return { ...exercise, id, routine_id: routineId, position: index };
+        });
 
         const normalizedSetsByExerciseId: Record<string, RoutineExerciseSet[]> = {};
-
-        for (const exercise of normalizedExercises) {
-            normalizedSetsByExerciseId[exercise.id] = (setsByExerciseId[exercise.id] ?? []).map(
+        for (const exercise of exercises) {
+            const normalizedId = exerciseIdMap.get(exercise.id)!;
+            normalizedSetsByExerciseId[normalizedId] = (setsByExerciseId[exercise.id] ?? []).map(
                 (setItem) => ({
                     ...setItem,
-                    routine_exercise_id: exercise.id,
+                    id: isUuid(setItem.id) ? setItem.id : Crypto.randomUUID(),
+                    routine_exercise_id: normalizedId,
                     reps: getSetDraftValue(setItem, "reps"),
                     weight: getSetDraftValue(setItem, "weight"),
                 })
             );
         }
-
         return {
             routineId,
             name: normalizedName,
@@ -357,25 +303,19 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         setIsSavingRoutine(true);
 
         try {
-            await updateRoutine({
-                routineId,
-                name: normalizedName,
+            if (!user?.id) throw new Error("You must be signed in to save a routine.");
+            // Do not overwrite a remote-only routine before it has been hydrated locally.
+            const local = await getLocalRoutine({ userId: user.id, routineId });
+            if (!local)
+                throw new Error("Routine is not available locally. Sync it before editing.");
+
+            const snapshot = buildRoutineSnapshot();
+            await saveLocalRoutine({
+                userId: user.id,
+                snapshot,
+                syncOperationId: Crypto.randomUUID(),
             });
-
-            await persistRoutineExercises();
-
-            const [persistedExercises, persistedSetsByExerciseId] = await Promise.all([
-                getRoutineExercises(routineId),
-                getRoutineExerciseSetsByRoutineId(routineId),
-            ]);
-
-            initializeEditor({
-                routineId,
-                name: normalizedName,
-                exercises: persistedExercises,
-                setsByExerciseId: persistedSetsByExerciseId,
-            });
-
+            initializeEditor(snapshot);
             return true;
         } catch (error: any) {
             showToast({
@@ -392,7 +332,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     }
 
     async function deleteRoutine() {
-        await deleteRoutineById(routineId);
+        if (!user?.id) throw new Error("You must be signed in to delete a routine.");
+        await deleteRoutineById({ userId: user.id, routineId });
     }
 
     async function startWorkout() {

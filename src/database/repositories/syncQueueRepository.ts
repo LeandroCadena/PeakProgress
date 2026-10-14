@@ -457,3 +457,125 @@ export async function markSyncOperationConflict({
 
     return registered;
 }
+
+/** Atomically acknowledges a successful RPC response and stores its version. */
+export async function acknowledgeRoutineSyncOperation(params: {
+    userId: string;
+    operationId: string;
+    leaseToken: string;
+    remoteVersion: number;
+}): Promise<boolean> {
+    const { userId, operationId, leaseToken, remoteVersion } = params;
+    if (!userId.trim() || !operationId.trim() || !leaseToken.trim()) {
+        throw new Error("User ID, operation ID and lease token are required.");
+    }
+    if (!Number.isSafeInteger(remoteVersion) || remoteVersion < 0) {
+        throw new Error("Invalid remote routine version.");
+    }
+
+    const db = await getDatabase();
+    let acknowledged = false;
+    await db.withExclusiveTransactionAsync(async (tx) => {
+        const operation = await tx.getFirstAsync<{
+            entity_type: string;
+            entity_id: string;
+            operation_type: string;
+        }>(
+            `SELECT entity_type, entity_id, operation_type
+             FROM sync_operations
+             WHERE id = ? AND user_id = ?
+               AND status = 'processing' AND lease_token = ?`,
+            [operationId, userId, leaseToken]
+        );
+        if (!operation) return;
+        if (
+            operation.entity_type !== "routine" ||
+            !["upsert", "delete"].includes(operation.operation_type)
+        ) {
+            throw new Error("Unsupported synchronization operation.");
+        }
+
+        const removed = await tx.runAsync(
+            `DELETE FROM sync_operations
+             WHERE id = ? AND user_id = ?
+               AND status = 'processing' AND lease_token = ?`,
+            [operationId, userId, leaseToken]
+        );
+        if (removed.changes !== 1) {
+            throw new Error("Could not acknowledge claimed sync operation.");
+        }
+
+        const remaining = await tx.getFirstAsync<{ total: number }>(
+            `SELECT COUNT(*) AS total FROM sync_operations
+             WHERE user_id = ? AND entity_type = 'routine' AND entity_id = ?`,
+            [userId, operation.entity_id]
+        );
+        const updated = await tx.runAsync(
+            `UPDATE local_routines
+             SET remote_version = ?,
+                 remote_state = ?,
+                 sync_status = CASE WHEN ? = 0 THEN 'synced' ELSE sync_status END,
+                 updated_at = ?
+             WHERE id = ? AND user_id = ?
+               AND (remote_version IS NULL OR remote_version <= ?)`,
+            [
+                remoteVersion,
+                operation.operation_type === "delete" ? "deleted" : "exists",
+                remaining?.total ?? 0,
+                new Date().toISOString(),
+                operation.entity_id,
+                userId,
+                remoteVersion,
+            ]
+        );
+        if (updated.changes !== 1) {
+            throw new Error("Could not update local routine synchronization metadata.");
+        }
+        acknowledged = true;
+    });
+    return acknowledged;
+}
+
+export async function attachRemoteSnapshotToConflict(params: {
+    userId: string;
+    operationId: string;
+    remoteVersion: number;
+    snapshot: unknown;
+}): Promise<boolean> {
+    const { userId, operationId, remoteVersion, snapshot } = params;
+
+    if (!userId.trim() || !operationId.trim()) {
+        throw new Error("User ID and operation ID are required.");
+    }
+
+    if (!Number.isSafeInteger(remoteVersion) || remoteVersion < 0) {
+        throw new Error("Invalid remote version.");
+    }
+
+    const serialized = JSON.stringify(snapshot);
+
+    if (serialized === undefined) {
+        throw new Error("Remote snapshot is not serializable.");
+    }
+
+    const db = await getDatabase();
+
+    const result = await db.runAsync(
+        `UPDATE routine_sync_conflicts
+     SET remote_snapshot = ?
+     WHERE operation_id = ?
+       AND user_id = ?
+       AND remote_version = ?
+       AND remote_snapshot IS NULL
+       AND EXISTS (
+         SELECT 1
+         FROM sync_operations
+         WHERE id = ?
+           AND user_id = ?
+           AND status = 'conflict'
+       )`,
+        [serialized, operationId, userId, remoteVersion, operationId, userId]
+    );
+
+    return result.changes === 1;
+}

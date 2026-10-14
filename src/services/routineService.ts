@@ -1,6 +1,10 @@
 import * as Crypto from "expo-crypto";
 
-import { saveLocalRoutine } from "../database/repositories/routineRepository";
+import {
+    deleteLocalRoutine,
+    getLocalRoutine,
+    saveLocalRoutine,
+} from "../database/repositories/routineRepository";
 import type { RoutineEditorSnapshot } from "../store/routineEditorStore";
 import { Routine, RoutineExercise, RoutineExerciseSet } from "../types/routine";
 
@@ -48,21 +52,45 @@ export async function createRoutine(params: { userId: string; name: string }): P
     return routineId;
 }
 
-export async function updateRoutine(params: { routineId: string; name: string }) {
-    const { error } = await supabase
-        .from("routines")
-        .update({
-            name: params.name.trim(),
-        })
-        .eq("id", params.routineId);
+/** Rename a routine locally and enqueue its complete current snapshot. */
+export async function updateRoutine(params: {
+    userId: string;
+    routineId: string;
+    name: string;
+}): Promise<void> {
+    const { userId, routineId } = params;
+    const name = params.name.trim();
+    if (!userId.trim() || !routineId.trim() || !name) {
+        throw new Error("User ID, routine ID and routine name are required.");
+    }
 
-    if (error) throw error;
+    const snapshot = await getLocalRoutine({ userId, routineId });
+    if (!snapshot) {
+        throw new Error("Local routine not found; hydrate it before editing.");
+    }
+
+    await saveLocalRoutine({
+        userId,
+        snapshot: { ...snapshot, name },
+        syncOperationId: Crypto.randomUUID(),
+    });
 }
 
-export async function deleteRoutineById(routineId: string) {
-    const { error } = await supabase.from("routines").delete().eq("id", routineId);
+/** Soft-delete locally and enqueue a remote tombstone operation. */
+export async function deleteRoutineById(params: {
+    userId: string;
+    routineId: string;
+}): Promise<void> {
+    const { userId, routineId } = params;
+    if (!userId.trim() || !routineId.trim()) {
+        throw new Error("User ID and routine ID are required.");
+    }
 
-    if (error) throw error;
+    await deleteLocalRoutine({
+        userId,
+        routineId,
+        syncOperationId: Crypto.randomUUID(),
+    });
 }
 
 export async function getRoutineExercises(routineId: string): Promise<RoutineExercise[]> {
