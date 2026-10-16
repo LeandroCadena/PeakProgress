@@ -496,5 +496,357 @@ describe("Catalog synchronization", () => {
             expect(mockApplyChanges).toHaveBeenCalledTimes(1);
             expect(mockNotify).not.toHaveBeenCalled();
         });
+
+        it("preserves changes published during a paginated sync for the next run", async () => {
+            let localVersion = 0;
+            let remoteVersion = 201;
+
+            const changes = Array.from({ length: 201 }, (_, index) => ({
+                version: index + 1,
+                entity_type: "muscle_regions" as const,
+                entity_id: `region-${index + 1}`,
+                operation: "upsert" as const,
+                payload: {
+                    id: `region-${index + 1}`,
+                    name: `Region ${index + 1}`,
+                },
+            }));
+
+            mockGetVersion.mockImplementation(async () => localVersion);
+
+            mockRpc.mockImplementation((functionName, args) => {
+                if (functionName === "get_catalog_version") {
+                    return Promise.resolve({
+                        data: remoteVersion,
+                        error: null,
+                    }) as any;
+                }
+
+                if (functionName === "get_catalog_changes") {
+                    const afterVersion = args.p_after_version as number;
+                    const limit = args.p_limit as number;
+
+                    const page = changes
+                        .filter((change) => change.version > afterVersion)
+                        .slice(0, limit);
+
+                    return Promise.resolve({
+                        data: page,
+                        error: null,
+                    }) as any;
+                }
+
+                throw new Error(`Unexpected RPC: ${functionName}`);
+            });
+
+            mockApplyChanges.mockImplementation(async (page) => {
+                localVersion = page[page.length - 1].version;
+
+                // A new change is published after the first page is applied.
+                if (localVersion === 200 && remoteVersion === 201) {
+                    remoteVersion = 202;
+
+                    changes.push({
+                        version: 202,
+                        entity_type: "muscle_regions",
+                        entity_id: "region-202",
+                        operation: "upsert",
+                        payload: {
+                            id: "region-202",
+                            name: "Region 202",
+                        },
+                    });
+                }
+            });
+
+            // First sync captures target version 201.
+            const firstResult = await syncCatalog();
+
+            expect(firstResult).toEqual({
+                fromVersion: 0,
+                toVersion: 201,
+                changesApplied: 201,
+                pagesDownloaded: 2,
+            });
+
+            expect(localVersion).toBe(201);
+
+            // The second page may contain version 202, but it must
+            // not be applied beyond the captured target version.
+            const firstRunVersions = mockApplyChanges.mock.calls.flatMap(([page]) =>
+                page.map((change) => change.version)
+            );
+
+            expect(firstRunVersions).toHaveLength(201);
+            expect(firstRunVersions).not.toContain(202);
+
+            // Next sync discovers the newly published version.
+            const secondResult = await syncCatalog();
+
+            expect(secondResult).toEqual({
+                fromVersion: 201,
+                toVersion: 202,
+                changesApplied: 1,
+                pagesDownloaded: 1,
+            });
+
+            expect(mockRpc).toHaveBeenCalledWith("get_catalog_changes", {
+                p_after_version: 201,
+                p_limit: 200,
+            });
+
+            const allAppliedVersions = mockApplyChanges.mock.calls.flatMap(([page]) =>
+                page.map((change) => change.version)
+            );
+
+            expect(allAppliedVersions).toHaveLength(202);
+            expect(new Set(allAppliedVersions).size).toBe(202);
+
+            expect(localVersion).toBe(202);
+            expect(mockNotify).toHaveBeenCalledTimes(3);
+        });
+
+        it("shares one synchronization when called concurrently", async () => {
+            let localVersion = 0;
+
+            let releaseVersionRequest!: () => void;
+
+            const versionRequestGate = new Promise<void>((resolve) => {
+                releaseVersionRequest = resolve;
+            });
+
+            mockGetVersion.mockImplementation(async () => localVersion);
+
+            mockRpc.mockImplementation((functionName) => {
+                if (functionName === "get_catalog_version") {
+                    // Keep the first sync pending so a second caller
+                    // can attempt to start another synchronization.
+                    return versionRequestGate.then(() => ({
+                        data: 1,
+                        error: null,
+                    })) as any;
+                }
+
+                if (functionName === "get_catalog_changes") {
+                    return Promise.resolve({
+                        data: [
+                            {
+                                version: 1,
+                                entity_type: "muscle_regions",
+                                entity_id: "region-1",
+                                operation: "upsert",
+                                payload: {
+                                    id: "region-1",
+                                    name: "Upper Body",
+                                },
+                            },
+                        ],
+                        error: null,
+                    }) as any;
+                }
+
+                throw new Error(`Unexpected RPC: ${functionName}`);
+            });
+
+            mockApplyChanges.mockImplementation(async (page) => {
+                localVersion = page[page.length - 1].version;
+            });
+
+            // Two callers start synchronization at the same time.
+            const firstSync = syncCatalog();
+            const secondSync = syncCatalog();
+
+            // Both callers must receive the same in-flight promise.
+            expect(secondSync).toBe(firstSync);
+
+            // Allow the shared synchronization to continue.
+            releaseVersionRequest();
+
+            const [firstResult, secondResult] = await Promise.all([firstSync, secondSync]);
+
+            expect(firstResult).toEqual({
+                fromVersion: 0,
+                toVersion: 1,
+                changesApplied: 1,
+                pagesDownloaded: 1,
+            });
+
+            expect(secondResult).toEqual(firstResult);
+
+            // Only one actual synchronization should have run.
+            expect(mockGetUser).toHaveBeenCalledTimes(1);
+            expect(mockGetVersion).toHaveBeenCalledTimes(2);
+
+            expect(mockRpc).toHaveBeenCalledWith("get_catalog_version");
+            expect(mockRpc).toHaveBeenCalledWith("get_catalog_changes", {
+                p_after_version: 0,
+                p_limit: 200,
+            });
+
+            expect(mockRpc).toHaveBeenCalledTimes(2);
+            expect(mockApplyChanges).toHaveBeenCalledTimes(1);
+            expect(mockNotify).toHaveBeenCalledTimes(1);
+
+            expect(localVersion).toBe(1);
+        });
+
+        it("allows a new synchronization after a shared sync fails", async () => {
+            let localVersion = 0;
+            let shouldFail = true;
+
+            let releaseVersionRequest!: () => void;
+
+            const versionRequestGate = new Promise<void>((resolve) => {
+                releaseVersionRequest = resolve;
+            });
+
+            mockGetVersion.mockImplementation(async () => localVersion);
+
+            mockRpc.mockImplementation((functionName) => {
+                if (functionName === "get_catalog_version") {
+                    if (shouldFail) {
+                        return versionRequestGate.then(() => ({
+                            data: null,
+                            error: new Error("Simulated network failure"),
+                        })) as any;
+                    }
+
+                    return Promise.resolve({
+                        data: 1,
+                        error: null,
+                    }) as any;
+                }
+
+                if (functionName === "get_catalog_changes") {
+                    return Promise.resolve({
+                        data: [
+                            {
+                                version: 1,
+                                entity_type: "muscle_regions",
+                                entity_id: "region-1",
+                                operation: "upsert",
+                                payload: {
+                                    id: "region-1",
+                                    name: "Upper Body",
+                                },
+                            },
+                        ],
+                        error: null,
+                    }) as any;
+                }
+
+                throw new Error(`Unexpected RPC: ${functionName}`);
+            });
+
+            mockApplyChanges.mockImplementation(async (page) => {
+                localVersion = page[page.length - 1].version;
+            });
+
+            // Two callers share the same failing synchronization.
+            const firstSync = syncCatalog();
+            const secondSync = syncCatalog();
+
+            expect(secondSync).toBe(firstSync);
+
+            releaseVersionRequest();
+
+            const firstAttempt = await Promise.allSettled([firstSync, secondSync]);
+
+            expect(firstAttempt).toHaveLength(2);
+
+            for (const result of firstAttempt) {
+                expect(result.status).toBe("rejected");
+
+                if (result.status === "rejected") {
+                    expect(result.reason.message).toBe("Simulated network failure");
+                }
+            }
+
+            // The failed synchronization must not modify local data.
+            expect(localVersion).toBe(0);
+            expect(mockApplyChanges).not.toHaveBeenCalled();
+            expect(mockNotify).not.toHaveBeenCalled();
+
+            // Restore connectivity.
+            shouldFail = false;
+
+            // A new call must create a fresh synchronization.
+            const retrySync = syncCatalog();
+
+            expect(retrySync).not.toBe(firstSync);
+
+            const retryResult = await retrySync;
+
+            expect(retryResult).toEqual({
+                fromVersion: 0,
+                toVersion: 1,
+                changesApplied: 1,
+                pagesDownloaded: 1,
+            });
+
+            expect(localVersion).toBe(1);
+
+            // One failed attempt + one successful retry.
+            expect(mockGetUser).toHaveBeenCalledTimes(2);
+            expect(mockApplyChanges).toHaveBeenCalledTimes(1);
+            expect(mockNotify).toHaveBeenCalledTimes(1);
+        });
+
+        it("rejects a change with an invalid version without modifying local data", async () => {
+            let localVersion = 0;
+
+            mockGetVersion.mockImplementation(async () => localVersion);
+
+            mockRpc.mockImplementation((functionName) => {
+                if (functionName === "get_catalog_version") {
+                    return Promise.resolve({
+                        data: 2,
+                        error: null,
+                    }) as any;
+                }
+
+                if (functionName === "get_catalog_changes") {
+                    return Promise.resolve({
+                        data: [
+                            {
+                                version: 1,
+                                entity_type: "muscle_regions",
+                                entity_id: "region-1",
+                                operation: "upsert",
+                                payload: {
+                                    id: "region-1",
+                                    name: "Upper Body",
+                                },
+                            },
+                            {
+                                version: Number.NaN,
+                                entity_type: "muscle_regions",
+                                entity_id: "region-2",
+                                operation: "upsert",
+                                payload: {
+                                    id: "region-2",
+                                    name: "Lower Body",
+                                },
+                            },
+                        ],
+                        error: null,
+                    }) as any;
+                }
+
+                throw new Error(`Unexpected RPC: ${functionName}`);
+            });
+
+            mockApplyChanges.mockImplementation(async (page) => {
+                localVersion = page[page.length - 1].version;
+            });
+
+            await expect(syncCatalog()).rejects.toThrow(
+                "Catalog change versions are not contiguous"
+            );
+
+            expect(localVersion).toBe(0);
+            expect(mockApplyChanges).not.toHaveBeenCalled();
+            expect(mockNotify).not.toHaveBeenCalled();
+        });
     });
 });

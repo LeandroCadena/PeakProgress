@@ -85,6 +85,13 @@ async function performCatalogSync(): Promise<CatalogSyncResult> {
         }
 
         // Never advance past the version captured at sync start.
+
+        for (const change of changes) {
+            if (!change || !Number.isSafeInteger(change.version) || change.version <= 0) {
+                throw new Error("Catalog change versions are not contiguous");
+            }
+        }
+
         const page = changes.filter((change) => change.version <= targetVersion);
 
         if (!page.length) {

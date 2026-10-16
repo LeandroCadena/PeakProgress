@@ -1,12 +1,17 @@
+import {
+    applyCatalogChanges,
+    getCatalogSyncVersion,
+    getLocalExercisesByFilter,
+    getLocalMuscleRegions,
+} from "../../src/database/catalogRepository";
+import { getDatabase } from "../../src/database/database";
+import { runMigrations } from "../../src/database/migrations";
+
 import { createTestDatabase } from "./helpers/nodeSqliteAdapter";
 
 jest.mock("../../src/database/database", () => ({
     getDatabase: jest.fn(),
 }));
-
-import { applyCatalogChanges, getCatalogSyncVersion } from "../../src/database/catalogRepository";
-import { getDatabase } from "../../src/database/database";
-import { runMigrations } from "../../src/database/migrations";
 
 const mockGetDatabase = jest.mocked(getDatabase);
 
@@ -700,5 +705,220 @@ describe("Catalog repository SQLite integration", () => {
 
         expect(remainingExercises).toHaveLength(0);
         expect(remainingMuscles).toHaveLength(1);
+    });
+
+    it("rolls back the entire page when an entity type is invalid", async () => {
+        const changes = [
+            {
+                version: 1,
+                entity_type: "muscle_regions",
+                entity_id: "region-valid",
+                operation: "upsert",
+                payload: {
+                    id: "region-valid",
+                    name: "Upper Body",
+                },
+            },
+            {
+                version: 2,
+                entity_type: "unknown_entity",
+                entity_id: "invalid-entity",
+                operation: "upsert",
+                payload: {
+                    id: "invalid-entity",
+                    name: "Invalid",
+                },
+            },
+        ];
+
+        await expect(applyCatalogChanges(changes as any)).rejects.toThrow();
+
+        // Neither event should have been committed.
+        expect(await getCatalogSyncVersion()).toBe(0);
+
+        const regions = await getLocalMuscleRegions();
+
+        expect(regions.some((region) => region.id === "region-valid")).toBe(false);
+    });
+
+    it("rolls back the entire page when an operation is invalid", async () => {
+        const changes = [
+            {
+                version: 1,
+                entity_type: "muscle_regions",
+                entity_id: "region-valid",
+                operation: "upsert",
+                payload: {
+                    id: "region-valid",
+                    name: "Upper Body",
+                },
+            },
+            {
+                version: 2,
+                entity_type: "muscle_regions",
+                entity_id: "region-invalid",
+                operation: "truncate",
+                payload: null,
+            },
+        ];
+
+        await expect(applyCatalogChanges(changes as any)).rejects.toThrow();
+
+        // The complete page must be rolled back.
+        expect(await getCatalogSyncVersion()).toBe(0);
+
+        const regions = await getLocalMuscleRegions();
+
+        expect(regions.some((region) => region.id === "region-valid")).toBe(false);
+
+        expect(regions.some((region) => region.id === "region-invalid")).toBe(false);
+    });
+
+    it("rolls back the entire page when payload ID does not match entity ID", async () => {
+        const changes = [
+            {
+                version: 1,
+                entity_type: "muscle_regions",
+                entity_id: "region-valid",
+                operation: "upsert",
+                payload: {
+                    id: "region-valid",
+                    name: "Upper Body",
+                },
+            },
+            {
+                version: 2,
+                entity_type: "muscle_regions",
+                entity_id: "region-expected",
+                operation: "upsert",
+                payload: {
+                    id: "region-different",
+                    name: "Lower Body",
+                },
+            },
+        ];
+
+        await expect(applyCatalogChanges(changes as any)).rejects.toThrow();
+
+        // Neither the valid nor the invalid event may be committed.
+        expect(await getCatalogSyncVersion()).toBe(0);
+
+        const regions = await getLocalMuscleRegions();
+
+        expect(regions.some((region) => region.id === "region-valid")).toBe(false);
+        expect(regions.some((region) => region.id === "region-expected")).toBe(false);
+        expect(regions.some((region) => region.id === "region-different")).toBe(false);
+    });
+
+    it("rolls back the entire page when is_active is not a boolean", async () => {
+        const changes = [
+            {
+                version: 1,
+                entity_type: "muscle_regions",
+                entity_id: "region-valid",
+                operation: "upsert",
+                payload: {
+                    id: "region-valid",
+                    name: "Upper Body",
+                },
+            },
+            {
+                version: 2,
+                entity_type: "exercises",
+                entity_id: "exercise-invalid",
+                operation: "upsert",
+                payload: {
+                    id: "exercise-invalid",
+                    name: "Bench Press",
+                    is_active: "false",
+                },
+            },
+        ];
+
+        await expect(applyCatalogChanges(changes as any)).rejects.toThrow();
+
+        // No changes should be committed.
+        expect(await getCatalogSyncVersion()).toBe(0);
+
+        const regions = await getLocalMuscleRegions();
+
+        expect(regions.some((region) => region.id === "region-valid")).toBe(false);
+
+        const exercises = await getLocalExercisesByFilter({
+            filterMode: "muscle",
+            selectedIds: [],
+        });
+
+        expect(exercises.some((exercise) => exercise.id === "exercise-invalid")).toBe(false);
+    });
+
+    it("rolls back the entire page when an upsert has a null payload", async () => {
+        const changes = [
+            {
+                version: 1,
+                entity_type: "muscle_regions",
+                entity_id: "region-valid",
+                operation: "upsert",
+                payload: {
+                    id: "region-valid",
+                    name: "Upper Body",
+                },
+            },
+            {
+                version: 2,
+                entity_type: "muscle_regions",
+                entity_id: "region-invalid",
+                operation: "upsert",
+                payload: null,
+            },
+        ];
+
+        await expect(applyCatalogChanges(changes as any)).rejects.toThrow();
+
+        // The cursor must remain unchanged.
+        expect(await getCatalogSyncVersion()).toBe(0);
+
+        // The first valid event must also be rolled back.
+        const regions = await getLocalMuscleRegions();
+
+        expect(regions.some((region) => region.id === "region-valid")).toBe(false);
+
+        expect(regions.some((region) => region.id === "region-invalid")).toBe(false);
+    });
+
+    it("rolls back the entire page when a required payload field is missing", async () => {
+        const changes = [
+            {
+                version: 1,
+                entity_type: "muscle_regions",
+                entity_id: "region-valid",
+                operation: "upsert",
+                payload: {
+                    id: "region-valid",
+                    name: "Upper Body",
+                },
+            },
+            {
+                version: 2,
+                entity_type: "muscle_regions",
+                entity_id: "region-missing-name",
+                operation: "upsert",
+                payload: {
+                    id: "region-missing-name",
+                    // Required field "name" is missing.
+                },
+            },
+        ];
+
+        await expect(applyCatalogChanges(changes as any)).rejects.toThrow();
+
+        // The entire transaction must be rolled back.
+        expect(await getCatalogSyncVersion()).toBe(0);
+
+        const regions = await getLocalMuscleRegions();
+
+        expect(regions.some((region) => region.id === "region-valid")).toBe(false);
+
+        expect(regions.some((region) => region.id === "region-missing-name")).toBe(false);
     });
 });
