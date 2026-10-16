@@ -119,6 +119,11 @@ DECLARE v_record record;
 DECLARE v_version bigint;
 BEGIN
   PERFORM 1 FROM public.catalog_sync_clock WHERE singleton = true FOR UPDATE;
+  -- Seed only on the first installation. Re-running must not replay old rows
+  -- over newer changes or inflate the cursor.
+  IF EXISTS (SELECT 1 FROM public.catalog_change_log) THEN
+    RETURN;
+  END IF;
   FOREACH v_table IN ARRAY ARRAY['muscle_regions','muscles','exercises','exercise_muscles'] LOOP
     FOR v_record IN EXECUTE format('SELECT id, to_jsonb(t) AS payload FROM public.%I t ORDER BY id', v_table) LOOP
       UPDATE public.catalog_sync_clock SET version = version + 1 WHERE singleton = true
