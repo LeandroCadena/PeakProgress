@@ -1,7 +1,6 @@
 import { getLocalRoutineSyncMetadata } from "../../database/repositories/routineRepository";
 import { getRoutines } from "../routineService";
 
-
 export type RoutineHydrationCandidate = {
     routineId: string;
     name: string;

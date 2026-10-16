@@ -1,8 +1,14 @@
 import * as Crypto from "expo-crypto";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useToast } from "../context/ToastContext";
-import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
+import {
+    CatalogNotDownloadedError,
+    getCatalogAvailability,
+    getExercisesByFilter,
+    getMuscleRegions,
+    getMuscles,
+} from "../services/exerciseService";
 import { useRoutineEditorStore } from "../store/routineEditorStore";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
@@ -41,59 +47,115 @@ export function useExercisePicker({
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const filterOptions = filterMode === "muscle" ? muscles : regions;
     const catalogRevision = useCatalogRevision();
+    const [catalogPending, setCatalogPending] = useState(true);
+    const [exercisesLoading, setExercisesLoading] = useState(true);
+    const [catalogError, setCatalogError] = useState<string | null>(null);
 
     const addRoutineExercise = useRoutineEditorStore((state) => state.addExercise);
     const addSessionExercise = useWorkoutSessionStore((state) => state.addExercise);
 
-    async function fetchMuscles() {
-        try {
-            const data = await getMuscles();
-            setMuscles(data);
-        } catch (error: any) {
-            showToast({
-                type: "error",
-                message: error instanceof Error ? error.message : "Unable to load exercises.",
-            });
-        }
-    }
+    useEffect(() => {
+        let cancelled = false;
 
-    async function fetchRegions() {
-        try {
-            const data = await getMuscleRegions();
-            setRegions(data);
-        } catch (error: any) {
-            showToast({
-                type: "error",
-                message: error instanceof Error ? error.message : "Unable to load exercises.",
-            });
+        async function loadFilters() {
+            try {
+                const availability = await getCatalogAvailability();
+
+                if (cancelled) return;
+
+                if (availability === "pending") {
+                    setCatalogPending(true);
+                    setMuscles([]);
+                    setRegions([]);
+                    return;
+                }
+
+                const [musclesData, regionsData] = await Promise.all([
+                    getMuscles(),
+                    getMuscleRegions(),
+                ]);
+
+                if (cancelled) return;
+
+                setMuscles(musclesData);
+                setRegions(regionsData);
+                setCatalogPending(false);
+            } catch (error: unknown) {
+                if (cancelled) return;
+
+                if (error instanceof CatalogNotDownloadedError) {
+                    setCatalogPending(true);
+                    return;
+                }
+
+                const message =
+                    error instanceof Error ? error.message : "Unable to load exercise filters.";
+
+                setCatalogError(message);
+                showToast({
+                    type: "error",
+                    message,
+                });
+            }
         }
-    }
+
+        void loadFilters();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [catalogRevision, showToast]);
 
     useEffect(() => {
-        fetchMuscles();
-        fetchRegions();
-    }, [catalogRevision]);
+        let cancelled = false;
 
-    const fetchExercises = useCallback(async () => {
-        try {
-            const data = await getExercisesByFilter({
-                filterMode,
-                selectedIds: selectedFilterIds,
-            });
+        setExercisesLoading(true);
+        setCatalogError(null);
 
-            data.forEach((exercise) => exerciseCache.current.set(exercise.id, exercise));
-            setExercises(data);
-        } catch (error: any) {
-            showToast({
-                type: "error",
-                message: error instanceof Error ? error.message : "Unable to load exercises.",
-            });
+        async function loadExercises() {
+            try {
+                const data = await getExercisesByFilter({
+                    filterMode,
+                    selectedIds: selectedFilterIds,
+                });
+
+                if (cancelled) return;
+
+                exerciseCache.current = new Map(data.map((exercise) => [exercise.id, exercise]));
+
+                setExercises(data);
+                setCatalogPending(false);
+            } catch (error: unknown) {
+                if (cancelled) return;
+
+                if (error instanceof CatalogNotDownloadedError) {
+                    setCatalogPending(true);
+                    setExercises([]);
+                    exerciseCache.current.clear();
+                    return;
+                }
+
+                const message =
+                    error instanceof Error ? error.message : "Unable to load exercises.";
+
+                setCatalogError(message);
+                showToast({
+                    type: "error",
+                    message,
+                });
+            } finally {
+                if (!cancelled) {
+                    setExercisesLoading(false);
+                }
+            }
         }
-    }, [filterMode, selectedFilterIds, showToast]);
 
-    useEffect(() => {
-        fetchExercises();
-    }, [fetchExercises, catalogRevision]);
+        void loadExercises();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [filterMode, selectedFilterIds, catalogRevision, showToast]);
 
     const addedIds = new Set(currentExerciseIds);
     const filteredExercises = exercises.filter(
@@ -238,5 +300,10 @@ export function useExercisePicker({
         toggleExerciseSelection,
         handleAddSelectedExercises,
         isAdding,
+
+        // Catalog state
+        catalogPending,
+        exercisesLoading,
+        catalogError,
     };
 }
