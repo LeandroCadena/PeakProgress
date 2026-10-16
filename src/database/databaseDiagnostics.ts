@@ -30,7 +30,7 @@ export async function verifyDatabase(): Promise<void> {
         syncOperationsColumns.map((column) => column.name)
     );
 
-    if (version?.user_version !== 5) {
+    if (version?.user_version !== 9) {
         throw new Error("Unexpected SQLite database version.");
     }
 
