@@ -2,7 +2,7 @@ import * as SQLite from "expo-sqlite";
 
 import { runMigrations } from "./migrations";
 
-const DATABASE_NAME = "peakprogress.db";
+const DATABASE_NAME = process.env.NODE_ENV === "test" ? ":memory:" : "peakprogress.db";
 
 let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
