@@ -1,93 +1,49 @@
-import { Exercise, Muscle, FilterMode, MuscleRegion } from "../types/exercise";
+import {
+    getCatalogSyncVersion,
+    getLocalExerciseDetail,
+    getLocalExercisesByFilter,
+    getLocalMuscleRegions,
+    getLocalMuscles,
+} from "../database/catalogRepository";
+import type { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
-import { supabase } from "./supabase";
+export class CatalogNotDownloadedError extends Error {
+    constructor() {
+        super("Exercise catalog has not been downloaded yet.");
+        this.name = "CatalogNotDownloadedError";
+    }
+}
+
+export async function getCatalogAvailability(): Promise<"pending" | "available"> {
+    const version = await getCatalogSyncVersion();
+    return version > 0 ? "available" : "pending";
+}
+
+async function ensureCatalogAvailable(): Promise<void> {
+    if ((await getCatalogAvailability()) === "pending") {
+        throw new CatalogNotDownloadedError();
+    }
+}
 
 export async function getMuscles(): Promise<Muscle[]> {
-    const { data, error } = await supabase.from("muscles").select("id, name").order("name");
+    await ensureCatalogAvailable();
+    return getLocalMuscles();
+}
 
-    if (error) throw error;
-
-    return data ?? [];
+export async function getMuscleRegions(): Promise<MuscleRegion[]> {
+    await ensureCatalogAvailable();
+    return getLocalMuscleRegions();
 }
 
 export async function getExercisesByFilter(params: {
     filterMode: FilterMode;
     selectedIds: string[];
 }): Promise<Exercise[]> {
-    const { data, error } = await supabase
-        .from("exercises")
-        .select(
-            `
-        id,
-        name,
-        equipment,
-        difficulty,
-        image_url,
-        exercise_muscles (
-            muscle_id,
-            muscles (
-            region_id
-            )
-        )
-        `
-        )
-        .order("name");
-
-    if (error) throw error;
-
-    if (!params.selectedIds.length) return data ?? [];
-
-    return (data ?? []).filter((exercise: any) => {
-        const relations = exercise.exercise_muscles ?? [];
-
-        if (params.filterMode === "muscle") {
-            return relations.some((relation: any) =>
-                params.selectedIds.includes(relation.muscle_id)
-            );
-        }
-
-        return relations.some(
-            (relation: any) =>
-                relation.muscles?.region_id &&
-                params.selectedIds.includes(relation.muscles.region_id)
-        );
-    });
+    await ensureCatalogAvailable();
+    return getLocalExercisesByFilter(params);
 }
 
 export async function getExerciseDetail(exerciseId: string) {
-    const { data, error } = await supabase
-        .from("exercises")
-        .select(
-            `
-        id,
-        name,
-        description,
-        instructions,
-        tips,
-        equipment,
-        difficulty,
-        image_url,
-        animation_url,
-        exercise_muscles (
-            role,
-            muscles (
-            name
-            )
-        )
-        `
-        )
-        .eq("id", exerciseId)
-        .single();
-
-    if (error) throw error;
-
-    return data;
-}
-
-export async function getMuscleRegions(): Promise<MuscleRegion[]> {
-    const { data, error } = await supabase.from("muscle_regions").select("id, name").order("name");
-
-    if (error) throw error;
-
-    return data ?? [];
+    await ensureCatalogAvailable();
+    return getLocalExerciseDetail(exerciseId);
 }

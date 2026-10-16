@@ -1,5 +1,5 @@
 -- PeakProgress Step 103A: transactionally ordered catalog change feed.
--- Review and apply in staging before production.
+-- Development deployment: back up schema/data before applying.
 BEGIN;
 
 ALTER TABLE public.exercises
@@ -123,6 +123,9 @@ BEGIN
   -- over newer changes or inflate the cursor.
   IF EXISTS (SELECT 1 FROM public.catalog_change_log) THEN
     RETURN;
+  END IF;
+  IF (SELECT version FROM public.catalog_sync_clock WHERE singleton = true) <> 0 THEN
+    RAISE EXCEPTION 'Nonzero catalog clock with empty change log: refusing inconsistent seed';
   END IF;
   FOREACH v_table IN ARRAY ARRAY['muscle_regions','muscles','exercises','exercise_muscles'] LOOP
     FOR v_record IN EXECUTE format('SELECT id, to_jsonb(t) AS payload FROM public.%I t ORDER BY id', v_table) LOOP

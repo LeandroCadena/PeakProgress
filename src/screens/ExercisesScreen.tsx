@@ -6,7 +6,8 @@ import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { useToast } from "../context/ToastContext";
-import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
+import { useCatalogRevision } from "../hooks/useCatalogRevision";
+import { CatalogNotDownloadedError, getCatalogAvailability, getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
 import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
@@ -18,6 +19,8 @@ export default function ExercisesScreen({ navigation }: any) {
     const [muscles, setMuscles] = useState<Muscle[]>([]);
     const [regions, setRegions] = useState<MuscleRegion[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>([]);
+    const catalogRevision = useCatalogRevision();
+    const [catalogPending, setCatalogPending] = useState(false);
 
     async function fetchFilters() {
         try {
@@ -29,6 +32,10 @@ export default function ExercisesScreen({ navigation }: any) {
             setMuscles(musclesData);
             setRegions(regionsData);
         } catch (error: any) {
+            if (error instanceof CatalogNotDownloadedError) {
+                setCatalogPending(true);
+                return;
+            }
             showToast({
                 type: "error",
                 message: error instanceof Error ? error.message : "Unable to load filters.",
@@ -37,8 +44,24 @@ export default function ExercisesScreen({ navigation }: any) {
     }
 
     useEffect(() => {
-        fetchFilters();
-    }, []);
+        let cancelled = false;
+
+        void getCatalogAvailability()
+            .then((availability) => {
+                if (!cancelled) {
+                    setCatalogPending(availability === "pending");
+                }
+            })
+            .catch((error) => {
+                console.warn("[Catalog] Availability check failed:", error);
+            });
+
+        void fetchFilters();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [catalogRevision]);
 
     const fetchExercises = useCallback(async () => {
         try {
@@ -48,17 +71,25 @@ export default function ExercisesScreen({ navigation }: any) {
             });
 
             setExercises(data);
-        } catch (error: any) {
+        } catch (error: unknown) {
+            if (error instanceof CatalogNotDownloadedError) {
+                setCatalogPending(true);
+                return;
+            }
+
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to load exercises.",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to load exercises.",
             });
         }
     }, [filterMode, selectedFilterIds, showToast]);
 
     useEffect(() => {
         fetchExercises();
-    }, [fetchExercises, filterMode, selectedFilterIds]);
+    }, [fetchExercises, catalogRevision]);
 
     const filterOptions = filterMode === "muscle" ? muscles : regions;
 
@@ -135,8 +166,16 @@ export default function ExercisesScreen({ navigation }: any) {
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                     <EmptyStateCard
-                        title="No exercises found"
-                        message="Try changing your search or filters."
+                        title={
+                            catalogPending
+                                ? "Preparing exercise catalog"
+                                : "No exercises found"
+                        }
+                        message={
+                            catalogPending
+                                ? "Exercises will appear after the first catalog download."
+                                : "Try changing your search or filters."
+                        }
                     />
                 }
                 renderItem={({ item }) => (

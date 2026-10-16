@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 
 import Card from "../components/common/Card";
+import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
-import { useToast } from "../context/ToastContext";
 import { getExerciseDetail } from "../services/exerciseService";
 import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
 
@@ -17,32 +17,56 @@ type RouteParams = {
 };
 
 export default function ExerciseDetailScreen() {
-    const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "ExerciseDetail">>();
     const { exerciseId } = route.params;
 
     const [exercise, setExercise] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     const fetchExerciseDetail = useCallback(async () => {
+        setLoading(true);
+        setLoadError(null);
+
         try {
             const data = await getExerciseDetail(exerciseId);
             setExercise(data);
-        } catch (error: any) {
-            showToast({
-                type: "error",
-                message: error instanceof Error ? error.message : "Unable to load exercise details.",
-            });
+        } catch (error: unknown) {
+            setExercise(null);
+
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Unable to load exercise details.";
+
+            setLoadError(message);
+        } finally {
+            setLoading(false);
         }
-    }, [exerciseId, showToast]);
+    }, [exerciseId]);
 
     useEffect(() => {
         fetchExerciseDetail();
     }, [exerciseId, fetchExerciseDetail]);
 
-    if (!exercise) {
+    if (loading) {
         return (
             <ScreenContainer>
                 <LoadingCard />
+            </ScreenContainer>
+        );
+    }
+
+    if (!exercise) {
+        return (
+            <ScreenContainer>
+                <EmptyStateCard
+                    title="Exercise unavailable"
+                    message={
+                        loadError ??
+                        "This exercise could not be found in the local catalog."
+                    }
+                />
             </ScreenContainer>
         );
     }

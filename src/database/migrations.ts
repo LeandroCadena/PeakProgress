@@ -1,6 +1,6 @@
 import type * as SQLite from "expo-sqlite";
 
-const DATABASE_VERSION = 9;
+const DATABASE_VERSION = 10;
 
 export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
     await db.execAsync("PRAGMA foreign_keys = ON;");
@@ -285,6 +285,77 @@ export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
         UPDATE local_routines
         SET remote_state = 'exists'
         WHERE remote_version IS NOT NULL;
+    `);
+        }
+
+        if (currentVersion < 10) {
+            await tx.execAsync(`
+        CREATE TABLE IF NOT EXISTS catalog_muscle_regions (
+            id TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            created_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS catalog_muscles (
+            id TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            region_id TEXT,
+            created_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_catalog_muscles_region
+            ON catalog_muscles(region_id);
+
+        CREATE TABLE IF NOT EXISTS catalog_exercises (
+            id TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT,
+            instructions TEXT,
+            tips TEXT,
+            equipment TEXT,
+            difficulty TEXT,
+            image_url TEXT,
+            animation_url TEXT,
+            is_active INTEGER NOT NULL DEFAULT 1
+                CHECK (is_active IN (0, 1)),
+            created_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_catalog_exercises_name
+            ON catalog_exercises(name);
+        CREATE INDEX IF NOT EXISTS idx_catalog_exercises_active
+            ON catalog_exercises(is_active, name);
+
+        CREATE TABLE IF NOT EXISTS catalog_exercise_muscles (
+            id TEXT PRIMARY KEY NOT NULL,
+            exercise_id TEXT NOT NULL,
+            muscle_id TEXT NOT NULL,
+            role TEXT,
+            created_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_catalog_exercise_muscles_exercise
+            ON catalog_exercise_muscles(exercise_id);
+        CREATE INDEX IF NOT EXISTS idx_catalog_exercise_muscles_muscle
+            ON catalog_exercise_muscles(muscle_id);
+
+        CREATE TABLE IF NOT EXISTS catalog_sync_state (
+            id INTEGER PRIMARY KEY NOT NULL
+                CHECK (id = 1),
+            last_version INTEGER NOT NULL DEFAULT 0
+                CHECK (last_version >= 0),
+            last_synced_at TEXT
+        );
+        INSERT OR IGNORE INTO catalog_sync_state (
+            id, last_version
+        ) VALUES (1, 0);
+
+        CREATE TABLE IF NOT EXISTS catalog_preferences (
+            id INTEGER PRIMARY KEY NOT NULL
+                CHECK (id = 1),
+            auto_update_on_cellular INTEGER NOT NULL DEFAULT 0
+                CHECK (auto_update_on_cellular IN (0, 1))
+        );
+        INSERT OR IGNORE INTO catalog_preferences (
+            id, auto_update_on_cellular
+        ) VALUES (1, 0);
     `);
         }
 

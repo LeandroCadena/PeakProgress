@@ -2,11 +2,11 @@ import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import RoutineSyncCoordinator from "./src/components/RoutineSyncCoordinator";
 import { AuthProvider } from "./src/context/AuthContext";
 import { ToastProvider } from "./src/context/ToastContext";
 import { DatabaseProvider } from "./src/database/DatabaseProvider";
 import AppNavigator from "./src/navigation/AppNavigator";
+import SyncCoordinator from "./src/sync/SyncCoordinator";
 import { initializeSounds } from "./src/utils/sounds";
 
 export default function App() {
@@ -28,7 +28,7 @@ export default function App() {
             <DatabaseProvider>
                 <AuthProvider>
                     <ToastProvider>
-                        <RoutineSyncCoordinator />
+                        <SyncCoordinator />
                         <AppNavigator />
                     </ToastProvider>
                 </AuthProvider>

@@ -9,6 +9,8 @@ import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 import { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 
+import { useCatalogRevision } from "./useCatalogRevision";
+
 type Params = {
     mode: "routine" | "session";
     routineId?: string;
@@ -38,6 +40,7 @@ export function useExercisePicker({
     const [regions, setRegions] = useState<MuscleRegion[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const filterOptions = filterMode === "muscle" ? muscles : regions;
+    const catalogRevision = useCatalogRevision();
 
     const addRoutineExercise = useRoutineEditorStore((state) => state.addExercise);
     const addSessionExercise = useWorkoutSessionStore((state) => state.addExercise);
@@ -69,7 +72,7 @@ export function useExercisePicker({
     useEffect(() => {
         fetchMuscles();
         fetchRegions();
-    }, []);
+    }, [catalogRevision]);
 
     const fetchExercises = useCallback(async () => {
         try {
@@ -90,7 +93,7 @@ export function useExercisePicker({
 
     useEffect(() => {
         fetchExercises();
-    }, [fetchExercises]);
+    }, [fetchExercises, catalogRevision]);
 
     const addedIds = new Set(currentExerciseIds);
     const filteredExercises = exercises.filter(

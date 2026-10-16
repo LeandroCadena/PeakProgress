@@ -23,7 +23,13 @@ export async function drainRoutineSyncQueue(userId: string): Promise<void> {
         for (let index = 0; index < MAX_OPERATIONS_PER_PASS; index += 1) {
             const leaseToken = Crypto.randomUUID();
             const outcome = await processOneRoutineSyncOperation(userId, leaseToken);
-            if (outcome === "idle" || outcome === "failed" || outcome === "stale_claim" || outcome === "retry_scheduled") break;
+            if (
+                outcome === "idle" ||
+                outcome === "failed" ||
+                outcome === "stale_claim" ||
+                outcome === "retry_scheduled"
+            )
+                break;
             // Conflicts are persisted by the worker; other independent routines can proceed.
         }
     } finally {
