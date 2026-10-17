@@ -14,11 +14,13 @@ import { useToast } from "../context/ToastContext";
 import { getLocalRoutines } from "../database/repositories/routineRepository";
 import { createRoutine as createRoutineService } from "../services/routineService";
 import { hydrateMissingRemoteRoutines } from "../services/sync/routineInitialHydrationService";
+import { syncRemoteRoutineDeletions } from "../services/sync/routineRemoteDeletionService";
 import {
     createWorkoutSession,
     getActiveWorkoutSession,
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
+import { subscribeToRoutineChanges } from "../sync/routineEvents";
 import { sharedStyles, spacing } from "../theme";
 import { Routine } from "../types/routine";
 
@@ -66,10 +68,21 @@ export default function RoutinesScreen({ navigation }: any) {
         }
     }, [userId, showToast]);
 
+    useEffect(() => {
+        if (!userId) return;
+
+        return subscribeToRoutineChanges((changedUserId) => {
+            if (changedUserId === userId) {
+                void fetchRoutines();
+            }
+        });
+    }, [userId, fetchRoutines]);
+
     const hydrateRoutines = useCallback(async () => {
         if (!userId) return;
 
         try {
+            await syncRemoteRoutineDeletions(userId);
             await hydrateMissingRemoteRoutines(userId);
             await fetchRoutines();
         } catch (error) {

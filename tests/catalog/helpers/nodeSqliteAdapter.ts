@@ -1,21 +1,26 @@
 import { DatabaseSync } from "node:sqlite";
 
 type BindValue = string | number | null | Uint8Array;
+type BindParams = (BindValue | BindValue[])[];
+
+function normalizeParams(params: BindParams): BindValue[] {
+    return params.flat();
+}
 
 export type TestDatabase = {
     execAsync(sql: string): Promise<void>;
 
     runAsync(
         sql: string,
-        ...params: BindValue[]
+        ...params: BindParams
     ): Promise<{
         changes: number;
         lastInsertRowId: number;
     }>;
 
-    getFirstAsync<T>(sql: string, ...params: BindValue[]): Promise<T | null>;
+    getFirstAsync<T>(sql: string, ...params: BindParams): Promise<T | null>;
 
-    getAllAsync<T>(sql: string, ...params: BindValue[]): Promise<T[]>;
+    getAllAsync<T>(sql: string, ...params: BindParams): Promise<T[]>;
 
     withExclusiveTransactionAsync<T>(task: (tx: TestDatabase) => Promise<T>): Promise<T>;
 
@@ -31,7 +36,7 @@ export function createTestDatabase(): TestDatabase {
         },
 
         async runAsync(sql, ...params) {
-            const result = sqlite.prepare(sql).run(...params);
+            const result = sqlite.prepare(sql).run(...normalizeParams(params));
 
             return {
                 changes: Number(result.changes),
@@ -39,13 +44,13 @@ export function createTestDatabase(): TestDatabase {
             };
         },
 
-        async getFirstAsync<T>(sql: string, ...params: BindValue[]): Promise<T | null> {
-            const row = sqlite.prepare(sql).get(...params);
+        async getFirstAsync<T>(sql: string, ...params: BindParams): Promise<T | null> {
+            const row = sqlite.prepare(sql).get(...normalizeParams(params));
             return (row ?? null) as T | null;
         },
 
-        async getAllAsync<T>(sql: string, ...params: BindValue[]): Promise<T[]> {
-            return sqlite.prepare(sql).all(...params) as T[];
+        async getAllAsync<T>(sql: string, ...params: BindParams): Promise<T[]> {
+            return sqlite.prepare(sql).all(...normalizeParams(params)) as T[];
         },
 
         async withExclusiveTransactionAsync<T>(task: (tx: TestDatabase) => Promise<T>): Promise<T> {

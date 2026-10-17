@@ -1,4 +1,5 @@
 import type { RoutineEditorSnapshot } from "../../store/routineEditorStore";
+import { notifyRoutineChanges } from "../../sync/routineEvents";
 import { getDatabase } from "../database";
 
 import { enqueueSyncOperation, replacePendingRoutineUpsert } from "./syncQueueRepository";
@@ -8,6 +9,7 @@ export type SaveLocalRoutineParams = {
     snapshot: RoutineEditorSnapshot;
     syncOperationId?: string;
     createdLocally?: boolean;
+    expectedLocalRemoteVersion?: number | null;
 };
 
 export async function saveLocalRoutine({
@@ -15,6 +17,7 @@ export async function saveLocalRoutine({
     snapshot,
     syncOperationId,
     createdLocally = false,
+    expectedLocalRemoteVersion,
 }: SaveLocalRoutineParams): Promise<void> {
     if (!userId.trim()) {
         throw new Error("A user ID is required to save a local routine.");
@@ -54,6 +57,13 @@ export async function saveLocalRoutine({
 
         if (existingRoutine && existingRoutine.user_id !== userId) {
             throw new Error("This routine belongs to another local user.");
+        }
+
+        if (
+            expectedLocalRemoteVersion !== undefined &&
+            (!existingRoutine || existingRoutine.remote_version !== expectedLocalRemoteVersion)
+        ) {
+            throw new Error("Routine changed since it was loaded. Reload it before saving.");
         }
 
         if (existingRoutine?.deleted_at !== null && existingRoutine?.deleted_at !== undefined) {
@@ -317,10 +327,11 @@ export async function hydrateLocalRoutine(params: {
             user_id: string;
             sync_status: string;
             deleted_at: string | null;
+            remote_version: number | null;
         }>(
-            `SELECT user_id, sync_status, deleted_at
-             FROM local_routines
-             WHERE id = ?`,
+            `SELECT user_id, sync_status, deleted_at, remote_version
+     FROM local_routines
+     WHERE id = ?`,
             [snapshot.routineId]
         );
 
@@ -330,6 +341,11 @@ export async function hydrateLocalRoutine(params: {
 
         // No sobrescribir rutinas eliminadas ni cambios locales.
         if (existing?.deleted_at != null || (existing && existing.sync_status !== "synced")) {
+            return;
+        }
+
+        // Una respuesta remota atrasada no puede retroceder la versión local.
+        if (existing?.remote_version != null && remoteVersion < existing.remote_version) {
             return;
         }
 
@@ -424,6 +440,10 @@ export async function hydrateLocalRoutine(params: {
 
         hydrated = true;
     });
+
+    if (hydrated) {
+        notifyRoutineChanges(userId);
+    }
 
     return hydrated;
 }
@@ -707,4 +727,82 @@ export async function getLocalRoutineSyncMetadata(params: {
         syncStatus: row.sync_status,
         isDeleted: row.deleted_at !== null,
     };
+}
+
+export async function applyRemoteRoutineDeletion(params: {
+    userId: string;
+    routineId: string;
+    remoteVersion: number;
+}): Promise<boolean> {
+    const { userId, routineId, remoteVersion } = params;
+
+    if (!userId.trim() || !routineId.trim()) {
+        throw new Error("User ID and routine ID are required.");
+    }
+
+    if (!Number.isSafeInteger(remoteVersion) || remoteVersion < 0) {
+        throw new Error("Invalid remote routine version.");
+    }
+
+    const db = await getDatabase();
+    let applied = false;
+
+    await db.withExclusiveTransactionAsync(async (tx) => {
+        const existing = await tx.getFirstAsync<{
+            user_id: string;
+            sync_status: string;
+            remote_version: number | null;
+            deleted_at: string | null;
+        }>(
+            `SELECT user_id, sync_status, remote_version, deleted_at
+             FROM local_routines WHERE id = ?`,
+            [routineId]
+        );
+
+        if (!existing) return;
+
+        if (existing.user_id !== userId) {
+            throw new Error("Routine belongs to another local user.");
+        }
+
+        if (
+            existing.sync_status !== "synced" ||
+            existing.deleted_at !== null ||
+            (existing.remote_version !== null && remoteVersion <= existing.remote_version)
+        ) {
+            return;
+        }
+
+        const queued = await tx.getFirstAsync<{ id: string }>(
+            `SELECT id FROM sync_operations
+             WHERE user_id = ?
+               AND entity_type = 'routine'
+               AND entity_id = ?
+             LIMIT 1`,
+            [userId, routineId]
+        );
+
+        if (queued) return;
+
+        const now = new Date().toISOString();
+
+        await tx.runAsync(
+            `UPDATE local_routines
+             SET deleted_at = ?,
+                 updated_at = ?,
+                 remote_version = ?,
+                 remote_state = 'deleted',
+                 sync_status = 'synced'
+             WHERE id = ? AND user_id = ?`,
+            [now, now, remoteVersion, routineId, userId]
+        );
+
+        applied = true;
+    });
+
+    if (applied) {
+        notifyRoutineChanges(userId);
+    }
+
+    return applied;
 }

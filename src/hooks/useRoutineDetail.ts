@@ -19,6 +19,7 @@ import {
 } from "../services/workoutService";
 import type { RoutineEditorSnapshot } from "../store/routineEditorStore";
 import { useRoutineEditorStore } from "../store/routineEditorStore";
+import { subscribeToRoutineChanges } from "../sync/routineEvents";
 import type { RoutineExercise, RoutineExerciseSet } from "../types/routine";
 
 type Params = {
@@ -161,6 +162,73 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         useCallback(() => {
             void fetchRoutine();
         }, [fetchRoutine])
+    );
+
+    useFocusEffect(
+        useCallback(() => {
+            if (!user?.id) return;
+
+            const ownerId = user.id;
+            let active = true;
+            let requestId = 0;
+
+            const unsubscribe = subscribeToRoutineChanges((changedUserId) => {
+                if (changedUserId !== ownerId) return;
+
+                const editorBefore = useRoutineEditorStore.getState();
+
+                if (editorBefore.routineId !== routineId) return;
+
+                // Conservar cualquier edición que todavía no se guardó.
+                if (editorBefore.hasUnsavedChanges) return;
+
+                const currentRequest = ++requestId;
+
+                void getLocalRoutine({
+                    userId: ownerId,
+                    routineId,
+                })
+                    .then((snapshot) => {
+                        if (!active || currentRequest !== requestId) return;
+
+                        const editorNow = useRoutineEditorStore.getState();
+
+                        // También proteger cambios iniciados durante la lectura.
+                        if (
+                            editorNow !== editorBefore ||
+                            editorNow.routineId !== routineId ||
+                            editorNow.hasUnsavedChanges
+                        ) {
+                            return;
+                        }
+
+                        if (snapshot) {
+                            initializeEditor(snapshot);
+                            return;
+                        }
+
+                        clearEditor();
+
+                        showToast({
+                            type: "warning",
+                            message: "This routine is no longer available.",
+                        });
+
+                        navigation.goBack();
+                    })
+                    .catch((error: unknown) => {
+                        if (!active || currentRequest !== requestId) return;
+
+                        console.warn("Could not refresh routine detail:", error);
+                    });
+            });
+
+            return () => {
+                active = false;
+                requestId += 1;
+                unsubscribe();
+            };
+        }, [user?.id, routineId, initializeEditor, clearEditor, showToast, navigation])
     );
 
     function reorderRoutineExercises(reorderedExercises: RoutineExercise[]) {

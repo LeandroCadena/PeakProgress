@@ -7,6 +7,8 @@ import { AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import { syncCatalog } from "../services/catalogSyncService";
+import { hydrateMissingRemoteRoutines } from "../services/sync/routineInitialHydrationService";
+import { syncRemoteRoutineDeletions } from "../services/sync/routineRemoteDeletionService";
 import { drainRoutineSyncQueue } from "../services/sync/routineSyncQueueProcessor";
 
 import {
@@ -58,7 +60,17 @@ export default function SyncCoordinator() {
             lastRoutineAttempt = now;
             routineRunning = true;
 
-            void drainRoutineSyncQueue(userId)
+            void (async () => {
+                await drainRoutineSyncQueue(userId);
+
+                if (disposed || !foreground) return;
+
+                await syncRemoteRoutineDeletions(userId);
+
+                if (disposed || !foreground) return;
+
+                await hydrateMissingRemoteRoutines(userId);
+            })()
                 .catch((error: unknown) => {
                     console.warn(
                         "[Sync] Routine synchronization failed:",
