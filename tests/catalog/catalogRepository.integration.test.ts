@@ -921,4 +921,155 @@ describe("Catalog repository SQLite integration", () => {
 
         expect(regions.some((region) => region.id === "region-missing-name")).toBe(false);
     });
+
+    it("exposes active exercises even before their muscle relations arrive", async () => {
+        await applyCatalogChanges([
+            {
+                version: 1,
+                entity_type: "exercises",
+                entity_id: "exercise-1",
+                operation: "upsert",
+                payload: {
+                    id: "exercise-1",
+                    name: "Bench Press",
+                    is_active: true,
+                },
+            },
+        ]);
+
+        const allExercises = await getLocalExercisesByFilter({
+            filterMode: "muscle",
+            selectedIds: [],
+        });
+
+        expect(allExercises.map((exercise) => exercise.id)).toEqual(["exercise-1"]);
+
+        const chestExercises = await getLocalExercisesByFilter({
+            filterMode: "muscle",
+            selectedIds: ["muscle-1"],
+        });
+
+        expect(chestExercises).toEqual([]);
+        expect(await getCatalogSyncVersion()).toBe(1);
+    });
+
+    it("hides inactive exercises from catalog filters", async () => {
+        await applyCatalogChanges([
+            {
+                version: 1,
+                entity_type: "exercises",
+                entity_id: "exercise-1",
+                operation: "upsert",
+                payload: {
+                    id: "exercise-1",
+                    name: "Bench Press",
+                    is_active: true,
+                },
+            },
+            {
+                version: 2,
+                entity_type: "exercises",
+                entity_id: "exercise-1",
+                operation: "upsert",
+                payload: {
+                    id: "exercise-1",
+                    name: "Bench Press",
+                    is_active: false,
+                },
+            },
+        ]);
+
+        const exercises = await getLocalExercisesByFilter({
+            filterMode: "muscle",
+            selectedIds: [],
+        });
+
+        expect(exercises).toEqual([]);
+        expect(await getCatalogSyncVersion()).toBe(2);
+
+        const storedExercise = await db.getFirstAsync<{
+            id: string;
+            is_active: number;
+        }>("SELECT id, is_active FROM catalog_exercises WHERE id = ?", "exercise-1");
+
+        expect(storedExercise).toEqual({
+            id: "exercise-1",
+            is_active: 0,
+        });
+    });
+
+    it("updates exercise filtering when its muscle relation arrives later", async () => {
+        await applyCatalogChanges([
+            {
+                version: 1,
+                entity_type: "muscle_regions",
+                entity_id: "region-1",
+                operation: "upsert",
+                payload: {
+                    id: "region-1",
+                    name: "Upper Body",
+                },
+            },
+            {
+                version: 2,
+                entity_type: "muscles",
+                entity_id: "muscle-1",
+                operation: "upsert",
+                payload: {
+                    id: "muscle-1",
+                    name: "Chest",
+                    region_id: "region-1",
+                },
+            },
+            {
+                version: 3,
+                entity_type: "exercises",
+                entity_id: "exercise-1",
+                operation: "upsert",
+                payload: {
+                    id: "exercise-1",
+                    name: "Bench Press",
+                    is_active: true,
+                },
+            },
+        ]);
+
+        const beforeRelation = await getLocalExercisesByFilter({
+            filterMode: "muscle",
+            selectedIds: ["muscle-1"],
+        });
+
+        expect(beforeRelation).toEqual([]);
+
+        await applyCatalogChanges([
+            {
+                version: 4,
+                entity_type: "exercise_muscles",
+                entity_id: "relation-1",
+                operation: "upsert",
+                payload: {
+                    id: "relation-1",
+                    exercise_id: "exercise-1",
+                    muscle_id: "muscle-1",
+                    role: "primary",
+                },
+            },
+        ]);
+
+        const byMuscle = await getLocalExercisesByFilter({
+            filterMode: "muscle",
+            selectedIds: ["muscle-1"],
+        });
+
+        const byRegion = await getLocalExercisesByFilter({
+            filterMode: "region",
+            selectedIds: ["region-1"],
+        });
+
+        expect(byMuscle.map((exercise) => exercise.id)).toEqual(["exercise-1"]);
+
+        expect(byRegion.map((exercise) => exercise.id)).toEqual(["exercise-1"]);
+
+        expect(await getCatalogSyncVersion()).toBe(4);
+    });
 });

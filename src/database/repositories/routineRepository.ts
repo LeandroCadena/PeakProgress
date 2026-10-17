@@ -178,8 +178,19 @@ export async function saveLocalRoutine({
             [snapshot.routineId, userId, snapshot.name, now, now, syncStatus, remoteState]
         );
 
-        // Reemplazamos los ejercicios y las series dentro
-        // de la misma transacción.
+        // Remove existing sets explicitly before replacing the
+        // routine exercises. This also works if foreign-key
+        // enforcement is unavailable in an existing database.
+        await tx.runAsync(
+            `DELETE FROM local_routine_exercise_sets
+             WHERE routine_exercise_id IN (
+                 SELECT id
+                 FROM local_routine_exercises
+                 WHERE routine_id = ?
+             )`,
+            [snapshot.routineId]
+        );
+
         await tx.runAsync(
             `DELETE FROM local_routine_exercises
              WHERE routine_id = ?`,
