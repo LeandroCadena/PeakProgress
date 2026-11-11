@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { FlatList, Pressable, Text } from "react-native";
@@ -12,6 +13,7 @@ import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { ExerciseProgress } from "../types/progress";
 
 export default function ProgressScreen({ navigation }: any) {
+    const { locale, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const { user } = useAuth();
@@ -28,10 +30,10 @@ export default function ProgressScreen({ navigation }: any) {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching progress",
+                message: error instanceof Error ? error.message : t("progressLoadError"),
             });
         }
-    }, [user, showToast]);
+    }, [user, showToast, t]);
 
     useFocusEffect(
         useCallback(() => {
@@ -41,20 +43,17 @@ export default function ProgressScreen({ navigation }: any) {
 
     return (
         <ScreenContainer style={styles.container}>
-            <Text style={sharedStyles.screenTitle}>Progress</Text>
-            <Text style={sharedStyles.screenSubtitle}>Track your personal records.</Text>
+            <Text style={sharedStyles.screenTitle}>{t("progress")}</Text>
+            <Text style={sharedStyles.screenSubtitle}>{t("recordsDescription")}</Text>
 
-            <Text style={sharedStyles.sectionTitle}>Personal Records</Text>
+            <Text style={sharedStyles.sectionTitle}>{t("personalRecords")}</Text>
 
             <FlatList
                 data={records}
                 keyExtractor={(item, index) => `${item.exerciseId}-${index}`}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
-                    <EmptyStateCard
-                        title="No records yet"
-                        message="Complete a workout to start tracking personal records."
-                    />
+                    <EmptyStateCard title={t("noRecords")} message={t("firstRecord")} />
                 }
                 renderItem={({ item }) => (
                     <Pressable
@@ -69,10 +68,13 @@ export default function ProgressScreen({ navigation }: any) {
                             <Text style={sharedStyles.screenTitle}>{item.exerciseName}</Text>
 
                             <Text style={styles.prValue}>
-                                {item.bestWeight} kg × {item.bestReps} reps
+                                {item.bestWeight.toLocaleString(locale)} kg ×{" "}
+                                {item.bestReps.toLocaleString(locale)} {t("reps").toLowerCase()}
                             </Text>
 
-                            <Text style={styles.cardText}>Best Volume: {item.bestVolume} kg</Text>
+                            <Text style={styles.cardText}>
+                                {t("bestVolume")}: {item.bestVolume.toLocaleString(locale)} kg
+                            </Text>
                         </Card>
                     </Pressable>
                 )}

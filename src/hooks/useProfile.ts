@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +13,7 @@ import {
 import { WeightLog } from "../types/profile";
 
 export function useProfile() {
+    const { t } = useLanguage();
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -39,10 +41,10 @@ export function useProfile() {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to load profile.",
+                message: error instanceof Error ? error.message : t("profileLoadError"),
             });
         }
-    }, [user?.id, showToast]);
+    }, [user?.id, showToast, t]);
 
     useEffect(() => {
         fetchProfile();
@@ -64,12 +66,12 @@ export function useProfile() {
 
             showToast({
                 type: "success",
-                message: "Profile updated",
+                message: t("profileUpdated"),
             });
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to save profile.",
+                message: error instanceof Error ? error.message : t("profileSaveError"),
             });
         }
     }
@@ -81,7 +83,7 @@ export function useProfile() {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to load weight logs.",
+                message: error instanceof Error ? error.message : t("weightLogsLoadError"),
             });
         }
     }
@@ -101,7 +103,7 @@ export function useProfile() {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to add weight log.",
+                message: error instanceof Error ? error.message : t("weightLogAddError"),
             });
         }
     }
@@ -114,7 +116,7 @@ export function useProfile() {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to delete weight log.",
+                message: error instanceof Error ? error.message : t("weightLogDeleteError"),
             });
         }
     }
