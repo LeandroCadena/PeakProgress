@@ -14,6 +14,7 @@ import { messages, type Language, type MessageKey } from "./messages";
 const storageKey = "peakprogress.language";
 
 type LanguageContextValue = {
+    locale: "en-US" | "es-AR";
     language: Language;
     setLanguage: (language: Language) => Promise<void>;
     t: (key: MessageKey) => string;
@@ -57,7 +58,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (!ready) return null;
 
     return (
-        <LanguageContext.Provider value={{ language, setLanguage: persistLanguage, t }}>
+        <LanguageContext.Provider
+            value={{
+                language,
+                locale: language === "es" ? "es-AR" : "en-US",
+                setLanguage: persistLanguage,
+                t,
+            }}
+        >
             {children}
         </LanguageContext.Provider>
     );

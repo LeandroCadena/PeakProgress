@@ -27,8 +27,8 @@ export type WorkoutSet = {
 };
 
 export default function WorkoutDetailScreen() {
-    const { language, t } = useLanguage();
-    const formatNumber = new Intl.NumberFormat(language === "es" ? "es-AR" : "en-US");
+    const { locale, t } = useLanguage();
+    const formatNumber = new Intl.NumberFormat(locale);
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "WorkoutDetail">>();

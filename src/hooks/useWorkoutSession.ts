@@ -32,7 +32,7 @@ type Params = {
 };
 
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
-    const { t } = useLanguage();
+    const { language, locale, t } = useLanguage();
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -415,7 +415,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         if (currentVersion !== timerVersionRef.current) return;
 
-        await scheduleRestFinishedNotification(endAt);
+        await scheduleRestFinishedNotification(endAt, language);
     }
 
     function restartLastTimer() {
@@ -626,9 +626,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 return null;
             }
 
-            return `${t("currentRecord")}: ${currentRecord.bestWeight} kg × ${currentRecord.bestReps}`;
+            return `${t("currentRecord")}: ${currentRecord.bestWeight.toLocaleString(locale)} kg × ${currentRecord.bestReps.toLocaleString(locale)}`;
         },
-        [getCurrentExerciseRecord, t]
+        [getCurrentExerciseRecord, locale, t]
     );
 
     function getCurrentSetValues(set: WorkoutSessionSet) {
