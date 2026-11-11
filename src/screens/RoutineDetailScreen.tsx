@@ -29,6 +29,7 @@ type DialogState =
     | { type: "deleteExercise"; exerciseId: string }
     | { type: "deleteRoutine" }
     | { type: "discardChanges" }
+    | { type: "routineVersionConflict" }
     | null;
 
 export default function RoutineDetailScreen() {
@@ -39,8 +40,9 @@ export default function RoutineDetailScreen() {
     const [isRoutineMenuOpen, setIsRoutineMenuOpen] = useState(false);
     const [dialog, setDialog] = useState<DialogState>(null);
     const [dialogError, setDialogError] = useState<string | null>(null);
-    const [pendingNavigationAction, setPendingNavigationAction] =
-        useState<NavigationAction | null>(null);
+    const [pendingNavigationAction, setPendingNavigationAction] = useState<NavigationAction | null>(
+        null
+    );
     const isConfirmedNavigationRef = useRef(false);
 
     const {
@@ -67,6 +69,7 @@ export default function RoutineDetailScreen() {
 
         saveRoutineChanges,
         discardRoutineChanges,
+        reloadRoutine,
 
         deleteRoutine,
         clearRoutineEditor,
@@ -117,7 +120,10 @@ export default function RoutineDetailScreen() {
         setOpenExerciseMenuId(null);
 
         if (hasUnsavedChanges) {
-            await saveRoutineChanges();
+            if ((await saveRoutineChanges()) === "versionConflict") {
+                setDialogError(null);
+                setDialog({ type: "routineVersionConflict" });
+            }
             return;
         }
 
@@ -137,6 +143,19 @@ export default function RoutineDetailScreen() {
 
     async function confirmDialog() {
         if (!dialog) return;
+
+        if (dialog.type === "routineVersionConflict") {
+            setDialogError(null);
+            try {
+                await reloadRoutine();
+                setDialog(null);
+            } catch (error: unknown) {
+                setDialogError(
+                    error instanceof Error ? error.message : "Unable to load the latest routine."
+                );
+            }
+            return;
+        }
 
         if (dialog.type === "deleteExercise") {
             deleteRoutineExercise(dialog.exerciseId);
@@ -158,7 +177,6 @@ export default function RoutineDetailScreen() {
                     type: "GO_BACK",
                 });
             } catch (error: unknown) {
-
                 setDialogError(
                     error instanceof Error
                         ? error.message
@@ -244,8 +262,8 @@ export default function RoutineDetailScreen() {
             ? "Saving..."
             : "Save"
         : isStartingWorkout
-            ? "Starting..."
-            : "Start Workout";
+          ? "Starting..."
+          : "Start Workout";
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
@@ -348,20 +366,20 @@ export default function RoutineDetailScreen() {
             />
 
             <AppDialog
-                visible={dialog !== null}
+                visible={dialog !== null && dialog.type !== "routineVersionConflict"}
                 title={
                     dialog?.type === "deleteExercise"
                         ? "Delete exercise?"
                         : dialog?.type === "deleteRoutine"
-                            ? "Delete routine?"
-                            : "Discard changes?"
+                          ? "Delete routine?"
+                          : "Discard changes?"
                 }
                 message={
                     dialog?.type === "deleteExercise"
                         ? "The exercise and its sets will be removed from this routine."
                         : dialog?.type === "deleteRoutine"
-                            ? "This action cannot be undone."
-                            : "You have unsaved changes in this routine."
+                          ? "This action cannot be undone."
+                          : "You have unsaved changes in this routine."
                 }
                 errorMessage={dialogError}
                 confirmLabel={dialog?.type === "discardChanges" ? "Discard" : "Delete"}
@@ -372,6 +390,20 @@ export default function RoutineDetailScreen() {
                     setDialogError(null);
                     setDialog(null);
                     setPendingNavigationAction(null);
+                }}
+            />
+
+            <AppDialog
+                visible={dialog?.type === "routineVersionConflict"}
+                title="Routine changed"
+                message="A newer version arrived while you were editing. Loading it will discard your unsaved changes."
+                errorMessage={dialogError}
+                confirmLabel="Load Latest"
+                cancelLabel="Keep Draft"
+                onConfirm={confirmDialog}
+                onCancel={() => {
+                    setDialogError(null);
+                    setDialog(null);
                 }}
             />
         </ScreenContainer>

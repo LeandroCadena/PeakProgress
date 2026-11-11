@@ -12,6 +12,13 @@ export type SaveLocalRoutineParams = {
     expectedLocalRemoteVersion?: number | null;
 };
 
+export class RoutineVersionConflictError extends Error {
+    constructor() {
+        super("Routine changed since it was loaded. Reload it before saving.");
+        this.name = "RoutineVersionConflictError";
+    }
+}
+
 export async function saveLocalRoutine({
     userId,
     snapshot,
@@ -63,7 +70,7 @@ export async function saveLocalRoutine({
             expectedLocalRemoteVersion !== undefined &&
             (!existingRoutine || existingRoutine.remote_version !== expectedLocalRemoteVersion)
         ) {
-            throw new Error("Routine changed since it was loaded. Reload it before saving.");
+            throw new RoutineVersionConflictError();
         }
 
         if (existingRoutine?.deleted_at !== null && existingRoutine?.deleted_at !== undefined) {

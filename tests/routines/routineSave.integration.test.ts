@@ -7,6 +7,7 @@ import {
     getVersionedLocalRoutine,
     hydrateLocalRoutine,
     saveLocalRoutine,
+    RoutineVersionConflictError,
 } from "../../src/database/repositories/routineRepository";
 import type { RoutineEditorSnapshot } from "../../src/store/routineEditorStore";
 import { createTestDatabase } from "../catalog/helpers/nodeSqliteAdapter";
@@ -971,7 +972,7 @@ describe("Routine save regression", () => {
                     syncOperationId: "stale-editor-save",
                     expectedLocalRemoteVersion: editorBase.remoteVersion,
                 })
-            ).rejects.toThrow("Routine changed since it was loaded. Reload it before saving.");
+            ).rejects.toThrow(RoutineVersionConflictError);
 
             // Debe conservarse la versión 2 descargada.
             expect(
