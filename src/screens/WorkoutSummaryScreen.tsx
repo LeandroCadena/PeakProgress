@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,6 +29,8 @@ type Summary = {
 };
 
 export default function WorkoutSummaryScreen({ navigation }: any) {
+    const { language, t } = useLanguage();
+    const formatNumber = new Intl.NumberFormat(language === "es" ? "es-AR" : "en-US");
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const { showToast } = useToast();
@@ -48,7 +51,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching workout summary",
+                message: error instanceof Error ? error.message : t("workoutSummaryError"),
             });
         }
     }, [sessionId, showToast]);
@@ -86,38 +89,38 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
 
     return (
         <ScreenContainer>
-            <Text style={styles.title}>Workout Complete 🎉</Text>
+            <Text style={styles.title}>{t("workoutComplete")}</Text>
 
             <Text style={sharedStyles.screenTitle}>{routineName}</Text>
 
             <Card style={styles.heroCard}>
-                <Text style={styles.heroValue}>{summary?.totalVolume ?? 0} kg</Text>
+                <Text style={styles.heroValue}>
+                    {formatNumber.format(summary?.totalVolume ?? 0)} kg
+                </Text>
 
-                <Text style={styles.heroLabel}>Total Volume</Text>
+                <Text style={styles.heroLabel}>{t("totalVolume")}</Text>
             </Card>
 
             <View style={styles.statsRow}>
-                <StatCard label="Duration" value={`${summary?.durationMinutes ?? 0} min`} />
+                <StatCard label={t("duration")} value={`${summary?.durationMinutes ?? 0} min`} />
 
-                <StatCard label="Sets" value={summary?.totalSets ?? 0} />
+                <StatCard label={t("sets")} value={summary?.totalSets ?? 0} />
             </View>
 
             {routineUpdateStatus === "updating" ? (
-                <Text style={styles.syncText}>Updating routine...</Text>
+                <Text style={styles.syncText}>{t("updatingRoutine")}</Text>
             ) : null}
 
             {routineUpdateStatus === "success" ? (
-                <Text style={styles.syncText}>Routine updated</Text>
+                <Text style={styles.syncText}>{t("routineUpdated")}</Text>
             ) : null}
 
             {routineUpdateStatus === "error" ? (
-                <Text style={styles.syncErrorText}>
-                    Workout saved, but the routine could not be updated.
-                </Text>
+                <Text style={styles.syncErrorText}>{t("routineUpdateError")}</Text>
             ) : null}
 
             <AppButton
-                title="Back to Home"
+                title={t("backToHome")}
                 variant="primary"
                 onPress={() => navigation.navigate("Main")}
                 iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}

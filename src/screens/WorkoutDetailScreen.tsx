@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Text } from "react-native";
@@ -26,6 +27,8 @@ export type WorkoutSet = {
 };
 
 export default function WorkoutDetailScreen() {
+    const { language, t } = useLanguage();
+    const formatNumber = new Intl.NumberFormat(language === "es" ? "es-AR" : "en-US");
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "WorkoutDetail">>();
@@ -40,7 +43,7 @@ export default function WorkoutDetailScreen() {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching workout sets",
+                message: error instanceof Error ? error.message : t("workoutSetsError"),
             });
         }
     }, [sessionId, showToast]);
@@ -52,26 +55,24 @@ export default function WorkoutDetailScreen() {
     return (
         <ScreenContainer style={styles.container}>
             <Text style={sharedStyles.screenTitle}>{routineName}</Text>
-            <Text style={sharedStyles.screenSubtitle}>Workout Details</Text>
+            <Text style={sharedStyles.screenSubtitle}>{t("workoutDetails")}</Text>
 
             <FlatList
                 data={sets}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
-                    <EmptyStateCard
-                        title="No sets saved"
-                        message="This workout does not have saved sets."
-                    />
+                    <EmptyStateCard title={t("noSavedSets")} message={t("workoutHasNoSets")} />
                 }
                 renderItem={({ item, index }) => (
                     <Card style={styles.card}>
                         <Text style={sharedStyles.cardTitle}>
-                            {item.exercise_name_snapshot ?? "Exercise"}
+                            {item.exercise_name_snapshot ?? t("exercise")}
                         </Text>
 
                         <Text style={sharedStyles.mutedText}>
-                            Set {index + 1}: {item.weight ?? 0} kg × {item.reps ?? 0} reps
+                            {t("set")} {index + 1}: {formatNumber.format(item.weight ?? 0)} kg ×{" "}
+                            {item.reps ?? 0} {t("reps").toLowerCase()}
                         </Text>
 
                         <Text
@@ -80,7 +81,7 @@ export default function WorkoutDetailScreen() {
                                 item.is_completed ? styles.completedText : styles.skippedText,
                             ]}
                         >
-                            {item.is_completed ? "Completed" : "Skipped"}
+                            {item.is_completed ? t("completed") : t("skipped")}
                         </Text>
                     </Card>
                 )}

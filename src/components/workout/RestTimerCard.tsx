@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: Props) {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     return (
@@ -18,7 +20,12 @@ export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: P
                 <Text style={styles.timer}>{timer}s</Text>
             </View>
 
-            <Pressable style={styles.restartButton} onPress={onRestart}>
+            <Pressable
+                style={styles.restartButton}
+                onPress={onRestart}
+                accessibilityRole="button"
+                accessibilityLabel={t("restartRestTimer")}
+            >
                 <Ionicons name="reload-outline" size={28} color={colors.text} />
             </Pressable>
         </View>
