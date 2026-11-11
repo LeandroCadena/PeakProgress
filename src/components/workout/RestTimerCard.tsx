@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 
 type Props = {
     timer: number;
@@ -10,6 +10,8 @@ type Props = {
 };
 
 export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <View style={styles.header}>
             <View>
@@ -23,7 +25,7 @@ export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: P
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     header: {
         flexDirection: "row",
         alignItems: "center",
@@ -54,4 +56,4 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         marginRight: 20,
     },
-});
+}));

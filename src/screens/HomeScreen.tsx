@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import ScreenContainer from "../components/common/ScreenContainer";
@@ -14,10 +14,12 @@ import { useProfile } from "../hooks/useProfile";
 import { getDashboardStats, getRecentWorkouts } from "../services/dashboardService";
 import { getActiveWorkoutSession } from "../services/workoutService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { DashboardStats, RecentWorkout } from "../types/dashboard";
 
 export default function HomeScreen({ navigation }: any) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { user } = useAuth();
     const { showToast } = useToast();
     const { fullName } = useProfile();
@@ -183,10 +185,10 @@ export default function HomeScreen({ navigation }: any) {
                         stats.streakStatus === "empty"
                             ? "Start today"
                             : stats.streakStatus === "warning"
-                                ? "Keep it up"
-                                : stats.streakStatus === "expired"
-                                    ? "Start again"
-                                    : `${stats.streakWeeks} active weeks`
+                              ? "Keep it up"
+                              : stats.streakStatus === "expired"
+                                ? "Start again"
+                                : `${stats.streakWeeks} active weeks`
                     }
                 />
             </View>
@@ -220,7 +222,7 @@ export default function HomeScreen({ navigation }: any) {
                                 workout.completed_at,
                                 workout.workout_session_exercises?.length ?? 0
                             )}
-                            onPress={() => { }}
+                            onPress={() => {}}
                         />
                     ))}
                 </View>
@@ -229,7 +231,7 @@ export default function HomeScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     heroText: {
         color: colors.text,
         fontSize: 30,
@@ -278,4 +280,4 @@ const styles = StyleSheet.create({
         position: "absolute",
         right: spacing.md,
     },
-});
+}));

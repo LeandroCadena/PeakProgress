@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../../types/workout";
 import ActionMenu from "../common/ActionMenu";
 import AppButton from "../common/AppButton";
@@ -55,6 +55,8 @@ export default function WorkoutExerciseCard({
     currentExerciseRecord,
     effectiveSetRestSeconds,
 }: WorkoutExerciseCardProps) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
@@ -163,7 +165,7 @@ export default function WorkoutExerciseCard({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     card: {
         gap: spacing.md,
     },
@@ -210,4 +212,4 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         gap: spacing.sm,
     },
-});
+}));

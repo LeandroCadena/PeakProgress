@@ -3,13 +3,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-} from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
-import { colors, componentStyles } from "../../theme";
+import { componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 
 const CARD_DELETE_THRESHOLD = 64;
 const COMPACT_DELETE_THRESHOLD = 52;
@@ -34,6 +30,8 @@ export default function SwipeableCard({
     fullSwipeThreshold,
     onActionPress,
 }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const translateX = useSharedValue(0);
     const gestureStartX = useSharedValue(0);
 
@@ -51,15 +49,20 @@ export default function SwipeableCard({
         })
         .onUpdate((event) => {
             // Keep the action partially or fully revealed; never delete on swipe.
-            translateX.set(Math.max(-actionWidth, Math.min(0, gestureStartX.get() + event.translationX)));
+            translateX.set(
+                Math.max(-actionWidth, Math.min(0, gestureStartX.get() + event.translationX))
+            );
         })
         .onEnd(() => {
-            const shouldOpen = Math.abs(translateX.get()) >= Math.min(deleteThreshold, actionWidth) / 2;
-            translateX.set(withSpring(shouldOpen ? -actionWidth : 0, {
-                damping: 20,
-                stiffness: 220,
-                mass: 0.7,
-            }));
+            const shouldOpen =
+                Math.abs(translateX.get()) >= Math.min(deleteThreshold, actionWidth) / 2;
+            translateX.set(
+                withSpring(shouldOpen ? -actionWidth : 0, {
+                    damping: 20,
+                    stiffness: 220,
+                    mass: 0.7,
+                })
+            );
         });
 
     const animatedCardStyle = useAnimatedStyle(() => ({
@@ -77,10 +80,7 @@ export default function SwipeableCard({
     return (
         <View style={[styles.container, compact && styles.compactContainer]}>
             <Animated.View
-                style={[
-                    styles.deleteBackground,
-                    compact && styles.compactDeleteBackground,
-                ]}
+                style={[styles.deleteBackground, compact && styles.compactDeleteBackground]}
             >
                 <Pressable
                     accessibilityRole="button"
@@ -115,7 +115,6 @@ export default function SwipeableCard({
                         ) : null}
 
                         {children}
-
                     </View>
                 </Animated.View>
             </GestureDetector>
@@ -123,7 +122,7 @@ export default function SwipeableCard({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         position: "relative",
         overflow: "hidden",
@@ -172,4 +171,4 @@ const styles = StyleSheet.create({
         width: 24,
         zIndex: 2,
     },
-});
+}));

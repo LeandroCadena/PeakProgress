@@ -7,6 +7,7 @@ import { ToastProvider } from "./src/context/ToastContext";
 import { DatabaseProvider } from "./src/database/DatabaseProvider";
 import AppNavigator from "./src/navigation/AppNavigator";
 import SyncCoordinator from "./src/sync/SyncCoordinator";
+import { ThemeProvider } from "./src/theme";
 import { initializeSounds } from "./src/utils/sounds";
 
 export default function App() {
@@ -25,14 +26,16 @@ export default function App() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <DatabaseProvider>
-                <AuthProvider>
-                    <ToastProvider>
-                        <SyncCoordinator />
-                        <AppNavigator />
-                    </ToastProvider>
-                </AuthProvider>
-            </DatabaseProvider>
+            <ThemeProvider>
+                <DatabaseProvider>
+                    <AuthProvider>
+                        <ToastProvider>
+                            <SyncCoordinator />
+                            <AppNavigator />
+                        </ToastProvider>
+                    </AuthProvider>
+                </DatabaseProvider>
+            </ThemeProvider>
         </GestureHandlerRootView>
     );
 }

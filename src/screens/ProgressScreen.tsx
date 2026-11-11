@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text } from "react-native";
+import { FlatList, Pressable, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
@@ -8,10 +8,12 @@ import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { getExerciseProgress } from "../services/progressService";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { ExerciseProgress } from "../types/progress";
 
 export default function ProgressScreen({ navigation }: any) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -79,7 +81,7 @@ export default function ProgressScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         paddingBottom: 0,
     },
@@ -96,4 +98,4 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         marginTop: spacing.xs,
     },
-});
+}));

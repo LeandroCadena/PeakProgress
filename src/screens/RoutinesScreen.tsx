@@ -21,10 +21,11 @@ import {
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
 import { subscribeToRoutineChanges } from "../sync/routineEvents";
-import { sharedStyles, spacing } from "../theme";
+import { spacing, useAppTheme } from "../theme";
 import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
+    const { sharedStyles } = useAppTheme();
     const { user } = useAuth();
     const userId = user?.id;
     const { showToast } = useToast();
@@ -60,10 +61,7 @@ export default function RoutinesScreen({ navigation }: any) {
         } catch (error: unknown) {
             showToast({
                 type: "error",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : "Error fetching local routines",
+                message: error instanceof Error ? error.message : "Error fetching local routines",
             });
         }
     }, [userId, showToast]);

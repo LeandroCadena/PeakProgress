@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
@@ -7,9 +7,11 @@ import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function LoginScreen({ navigation }: any) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const { signIn } = useAuth();
     const { showToast } = useToast();
 
@@ -60,7 +62,7 @@ export default function LoginScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     content: {
         flex: 1,
         justifyContent: "center",
@@ -86,4 +88,4 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginTop: spacing.sm,
     },
-});
+}));

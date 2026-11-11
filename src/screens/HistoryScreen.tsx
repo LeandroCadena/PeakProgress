@@ -1,13 +1,13 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text } from "react-native";
+import { FlatList, Pressable, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useToast } from "../context/ToastContext";
 import { getCompletedWorkoutSessions } from "../services/historyService";
-import { colors, sharedStyles, spacing } from "../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../theme";
 
 type WorkoutSession = {
     routine_name_snapshot: string;
@@ -22,6 +22,8 @@ type WorkoutSession = {
 };
 
 export default function HistoryScreen({ navigation }: any) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { showToast } = useToast();
     const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
@@ -103,7 +105,7 @@ export default function HistoryScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     list: {
         gap: spacing.md,
         paddingBottom: spacing.xxl,
@@ -114,4 +116,4 @@ const styles = StyleSheet.create({
     cardText: {
         color: colors.textSecondary,
     },
-});
+}));

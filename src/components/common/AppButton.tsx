@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Pressable, Text, View, ViewStyle } from "react-native";
 
-import { colors, componentStyles, spacing, typography } from "../../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 
 type Variant = "primary" | "success" | "danger" | "secondary";
 
@@ -26,6 +26,8 @@ export default function AppButton({
     iconLeft,
     showChevron,
 }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Pressable
             style={[styles.button, styles[variant], disabled && styles.disabled, style]}
@@ -35,7 +37,13 @@ export default function AppButton({
             <View style={styles.content}>
                 {iconLeft ? <View style={styles.sideSlot}>{iconLeft}</View> : null}
 
-                <Text style={[styles.text, variant === "secondary" && styles.secondaryText]}>
+                <Text
+                    style={[
+                        styles.text,
+                        variant === "secondary" && styles.secondaryText,
+                        (variant === "primary" || variant === "danger") && styles.accentText,
+                    ]}
+                >
                     {title}
                 </Text>
 
@@ -49,7 +57,7 @@ export default function AppButton({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     button: {
         paddingVertical: spacing.sm,
         borderRadius: componentStyles.buttonRadius,
@@ -75,6 +83,7 @@ const styles = StyleSheet.create({
     disabled: {
         opacity: 0.5,
     },
+    accentText: { color: colors.onAccent },
     secondaryText: {
         color: colors.textSecondary,
     },
@@ -95,4 +104,4 @@ const styles = StyleSheet.create({
         fontSize: typography.subtitle,
         textAlign: "center",
     },
-});
+}));

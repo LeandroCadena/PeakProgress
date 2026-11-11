@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { colors, spacing } from "../../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 export type AppToastType = "success" | "error" | "warning" | "info";
 
@@ -17,19 +17,19 @@ type Props = {
 const toastConfig = {
     success: {
         icon: "checkmark-circle-outline",
-        color: "#22C55E",
+        color: "success",
     },
     error: {
         icon: "alert-circle-outline",
-        color: "#EF4444",
+        color: "danger",
     },
     warning: {
         icon: "warning-outline",
-        color: "#F59E0B",
+        color: "warning",
     },
     info: {
         icon: "information-circle-outline",
-        color: colors.primary,
+        color: "primary",
     },
 } as const;
 
@@ -40,6 +40,8 @@ export default function AppToast({
     duration = 4000,
     onDismiss,
 }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     useEffect(() => {
         if (!visible || duration <= 0) return;
 
@@ -53,26 +55,14 @@ export default function AppToast({
     const config = toastConfig[type];
 
     return (
-        <View
-            style={styles.container}
-            pointerEvents="box-none"
-        >
+        <View style={styles.container} pointerEvents="box-none">
             <View
-                style={[
-                    styles.toast,
-                    { borderLeftColor: config.color },
-                ]}
+                style={[styles.toast, { borderLeftColor: colors[config.color] }]}
                 accessibilityRole="alert"
             >
-                <Ionicons
-                    name={config.icon}
-                    size={22}
-                    color={config.color}
-                />
+                <Ionicons name={config.icon} size={22} color={colors[config.color]} />
 
-                <Text style={styles.message}>
-                    {message}
-                </Text>
+                <Text style={styles.message}>{message}</Text>
 
                 <Pressable
                     onPress={onDismiss}
@@ -80,18 +70,14 @@ export default function AppToast({
                     accessibilityLabel="Dismiss notification"
                     hitSlop={10}
                 >
-                    <Ionicons
-                        name="close"
-                        size={20}
-                        color={colors.textSecondary}
-                    />
+                    <Ionicons name="close" size={20} color={colors.textSecondary} />
                 </Pressable>
             </View>
         </View>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         position: "absolute",
         top: 16,
@@ -117,4 +103,4 @@ const styles = StyleSheet.create({
         fontSize: 14,
         lineHeight: 20,
     },
-});
+}));

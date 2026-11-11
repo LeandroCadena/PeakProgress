@@ -1,6 +1,6 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text } from "react-native";
+import { Dimensions, Text } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 
 import Card from "../components/common/Card";
@@ -8,7 +8,7 @@ import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useToast } from "../context/ToastContext";
 import { getExerciseProgressPoints } from "../services/progressService";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     ExerciseProgress: {
@@ -24,6 +24,8 @@ type ProgressPoint = {
 };
 
 export default function ExerciseProgressScreen() {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "ExerciseProgress">>();
     const { exerciseId, exerciseName } = route.params;
@@ -37,7 +39,8 @@ export default function ExerciseProgressScreen() {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to load exercise progress.",
+                message:
+                    error instanceof Error ? error.message : "Unable to load exercise progress.",
             });
         }
     }, [exerciseId, showToast]);
@@ -48,17 +51,17 @@ export default function ExerciseProgressScreen() {
 
     const chartData = points.length
         ? {
-            labels: points.map((_, index) => `${index + 1}`),
-            datasets: [
-                {
-                    data: points.map((point) => Number(point.weight ?? 0)),
-                },
-            ],
-        }
+              labels: points.map((_, index) => `${index + 1}`),
+              datasets: [
+                  {
+                      data: points.map((point) => Number(point.weight ?? 0)),
+                  },
+              ],
+          }
         : {
-            labels: ["0"],
-            datasets: [{ data: [0] }],
-        };
+              labels: ["0"],
+              datasets: [{ data: [0] }],
+          };
 
     return (
         <ScreenContainer>
@@ -81,12 +84,12 @@ export default function ExerciseProgressScreen() {
                         height={240}
                         yAxisSuffix="kg"
                         chartConfig={{
-                            backgroundColor: "#161B22",
-                            backgroundGradientFrom: "#161B22",
-                            backgroundGradientTo: "#161B22",
+                            backgroundColor: colors.card,
+                            backgroundGradientFrom: colors.card,
+                            backgroundGradientTo: colors.card,
                             decimalPlaces: 0,
-                            color: () => "#4CAF50",
-                            labelColor: () => "#9CA3AF",
+                            color: () => colors.success,
+                            labelColor: () => colors.textSecondary,
                         }}
                         bezier
                         style={styles.chart}
@@ -99,7 +102,7 @@ export default function ExerciseProgressScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: typography.title,
@@ -112,4 +115,4 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         marginTop: spacing.md,
     },
-});
+}));

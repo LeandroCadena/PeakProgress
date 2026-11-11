@@ -1,6 +1,6 @@
-import { NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View } from "react-native";
+import { StatusBar, View } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import ExerciseDetailScreen from "../screens/ExerciseDetailScreen";
@@ -16,6 +16,8 @@ import SettingsScreen from "../screens/SettingsScreen";
 import WorkoutDetailScreen from "../screens/WorkoutDetailScreen";
 import WorkoutSessionScreen from "../screens/WorkoutSessionScreen";
 import WorkoutSummaryScreen from "../screens/WorkoutSummaryScreen";
+
+import { useAppTheme } from "../theme";
 
 import MainTabs from "./MainTabs";
 
@@ -73,13 +75,27 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
     const { session, loading } = useAuth();
+    const { colors, isDark } = useAppTheme();
+    const baseTheme = isDark ? DarkTheme : DefaultTheme;
+    const navigationTheme = {
+        ...baseTheme,
+        colors: {
+            ...baseTheme.colors,
+            primary: colors.primary,
+            background: colors.background,
+            card: colors.card,
+            text: colors.text,
+            border: colors.cardBorder,
+            notification: colors.danger,
+        },
+    };
 
     if (loading) {
         return (
             <View
                 style={{
                     flex: 1,
-                    backgroundColor: "#0B0F14",
+                    backgroundColor: colors.background,
                     justifyContent: "center",
                     alignItems: "center",
                 }}
@@ -88,7 +104,8 @@ export default function AppNavigator() {
     }
 
     return (
-        <NavigationContainer>
+        <NavigationContainer theme={navigationTheme}>
+            <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {session ? (
                     <>

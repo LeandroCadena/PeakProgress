@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
@@ -12,9 +12,11 @@ import { useToast } from "../context/ToastContext";
 import { useProfile } from "../hooks/useProfile";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { supabase } from "../services/supabase";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function PersonalInformationScreen() {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -264,7 +266,7 @@ export default function PersonalInformationScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: typography.title,
@@ -287,4 +289,4 @@ const styles = StyleSheet.create({
         marginTop: spacing.md,
         marginBottom: spacing.md,
     },
-});
+}));

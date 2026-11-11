@@ -1,6 +1,6 @@
-import { View, Pressable, Text, StyleSheet } from "react-native";
+import { View, Pressable, Text } from "react-native";
 
-import { colors, spacing, componentStyles } from "../../theme";
+import { spacing, componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
@@ -35,6 +35,8 @@ export default function WorkoutSetRow({
     displaySetNumber,
     isTemporarySet,
 }: WorkoutSetRowProps) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <SwipeableCard compact enabled={!isTemporarySet} onActionPress={onDelete}>
             <View style={styles.rowContainer}>
@@ -76,7 +78,7 @@ export default function WorkoutSetRow({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     row: {
         width: "100%",
         flexDirection: "row",
@@ -119,4 +121,4 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontWeight: "800",
     },
-});
+}));

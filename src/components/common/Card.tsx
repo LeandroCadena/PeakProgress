@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
-import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { StyleProp, View, ViewStyle } from "react-native";
 
-import { colors, componentStyles } from "../../theme";
+import { componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 
 type Props = {
     children: ReactNode;
@@ -9,10 +9,12 @@ type Props = {
 };
 
 export default function Card({ children, style }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     return <View style={[styles.card, style]}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     card: {
         backgroundColor: colors.card,
         borderRadius: componentStyles.cardRadius,
@@ -20,4 +22,4 @@ const styles = StyleSheet.create({
         borderColor: colors.cardBorder,
         padding: componentStyles.cardPadding,
     },
-});
+}));

@@ -1,14 +1,13 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { getExerciseDetail } from "../services/exerciseService";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
-
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     ExerciseDetail: {
@@ -17,6 +16,8 @@ type RouteParams = {
 };
 
 export default function ExerciseDetailScreen() {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "ExerciseDetail">>();
     const { exerciseId } = route.params;
 
@@ -35,9 +36,7 @@ export default function ExerciseDetailScreen() {
             setExercise(null);
 
             const message =
-                error instanceof Error
-                    ? error.message
-                    : "Unable to load exercise details.";
+                error instanceof Error ? error.message : "Unable to load exercise details.";
 
             setLoadError(message);
         } finally {
@@ -62,10 +61,7 @@ export default function ExerciseDetailScreen() {
             <ScreenContainer>
                 <EmptyStateCard
                     title="Exercise unavailable"
-                    message={
-                        loadError ??
-                        "This exercise could not be found in the local catalog."
-                    }
+                    message={loadError ?? "This exercise could not be found in the local catalog."}
                 />
             </ScreenContainer>
         );
@@ -129,7 +125,7 @@ export default function ExerciseDetailScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     image: {
         width: "100%",
         height: 220,
@@ -174,4 +170,4 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
         backgroundColor: colors.card,
     },
-});
+}));

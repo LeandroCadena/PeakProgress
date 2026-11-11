@@ -1,12 +1,14 @@
-import { TextInput, StyleSheet, TextInputProps } from "react-native";
+import { TextInput, TextInputProps } from "react-native";
 
-import { colors, componentStyles, spacing } from "../../theme";
+import { componentStyles, spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 type Props = TextInputProps & {
     disabled?: boolean;
 };
 
 export default function AppInput({ style, disabled, editable, ...props }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const isEditable = editable ?? !disabled;
 
     return (
@@ -19,7 +21,7 @@ export default function AppInput({ style, disabled, editable, ...props }: Props)
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     input: {
         // backgroundColor: colors.inputBackground,
         color: colors.text,
@@ -32,4 +34,4 @@ const styles = StyleSheet.create({
     disabled: {
         opacity: 0.6,
     },
-});
+}));

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
@@ -8,11 +8,13 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
 import { useSettingsStore } from "../store/settingsStore";
-import { colors, sharedStyles, spacing } from "../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../theme";
 import { setNotificationsEnabled } from "../utils/notifications";
 import { setSoundsEnabled } from "../utils/sounds";
 
 export default function SettingsScreen() {
+    const { colors, sharedStyles, preference, setPreference } = useAppTheme();
+    const styles = getStyles(colors);
     const { user } = useAuth();
     const { showToast } = useToast();
     const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -43,10 +45,7 @@ export default function SettingsScreen() {
         try {
             const data = await getUserSettings(ownerId);
 
-            if (
-                userIdRef.current !== ownerId ||
-                settingsRevisionRef.current !== revisionAtStart
-            ) {
+            if (userIdRef.current !== ownerId || settingsRevisionRef.current !== revisionAtStart) {
                 return;
             }
 
@@ -128,10 +127,7 @@ export default function SettingsScreen() {
 
                 showToast({
                     type: "error",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Error updating settings",
+                    message: error instanceof Error ? error.message : "Error updating settings",
                 });
             }
         });
@@ -172,10 +168,40 @@ export default function SettingsScreen() {
         void updateSetting({ [field]: value });
     }
 
+    const appearance = (
+        <Card style={styles.card}>
+            <Text style={sharedStyles.screenTitle}>Appearance</Text>
+            <Text style={styles.label}>Theme</Text>
+            <View style={styles.row}>
+                {(["dark", "light", "system"] as const).map((option) => (
+                    <Pressable
+                        key={option}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: preference === option }}
+                        style={[
+                            styles.optionButton,
+                            preference === option && styles.optionButtonActive,
+                        ]}
+                        onPress={() => {
+                            void setPreference(option).catch(() => {
+                                showToast({ type: "error", message: "Could not save the theme." });
+                            });
+                        }}
+                    >
+                        <Text style={styles.optionText}>
+                            {option[0].toUpperCase() + option.slice(1)}
+                        </Text>
+                    </Pressable>
+                ))}
+            </View>
+        </Card>
+    );
+
     if (!settings) {
         return (
             <ScreenContainer>
                 <Text style={sharedStyles.screenTitle}>Settings</Text>
+                {appearance}
                 <Text style={styles.text}>Loading...</Text>
             </ScreenContainer>
         );
@@ -184,6 +210,7 @@ export default function SettingsScreen() {
     return (
         <ScreenContainer scroll>
             <Text style={sharedStyles.screenTitle}>Settings</Text>
+            {appearance}
 
             <Card style={styles.settingCard}>
                 <View style={styles.settingRow}>
@@ -286,40 +313,16 @@ export default function SettingsScreen() {
                             placeholder="120"
                             onChangeText={setGlobalExerciseRestInput}
                             onBlur={() =>
-                                saveGlobalRestInput("global_exercise_rest_seconds", globalExerciseRestInput)
+                                saveGlobalRestInput(
+                                    "global_exercise_rest_seconds",
+                                    globalExerciseRestInput
+                                )
                             }
                         />
                         <Text style={styles.helperText}>Seconds before the next exercise</Text>
                     </Card>
                 </>
             ) : null}
-
-            <Card style={styles.card}>
-                <Text style={sharedStyles.screenTitle}>Appearance</Text>
-                <Text style={styles.label}>Theme</Text>
-
-                <View style={styles.row}>
-                    <Pressable
-                        style={[
-                            styles.optionButton,
-                            settings.theme === "dark" && styles.optionButtonActive,
-                        ]}
-                        onPress={() => updateSetting({ theme: "dark" })}
-                    >
-                        <Text style={styles.optionText}>Dark</Text>
-                    </Pressable>
-
-                    <Pressable
-                        style={[
-                            styles.optionButton,
-                            settings.theme === "light" && styles.optionButtonActive,
-                        ]}
-                        onPress={() => updateSetting({ theme: "light" })}
-                    >
-                        <Text style={styles.optionText}>Light</Text>
-                    </Pressable>
-                </View>
-            </Card>
 
             <Card style={styles.card}>
                 <Text style={sharedStyles.screenTitle}>Language</Text>
@@ -351,7 +354,7 @@ export default function SettingsScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     text: {
         color: colors.textSecondary,
     },
@@ -410,4 +413,4 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: spacing.md,
     },
-});
+}));

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Text, View, StyleSheet, Image, Pressable } from "react-native";
+import { Text, View, Image, Pressable } from "react-native";
 
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import Card from "../common/Card";
 
 type Props = {
@@ -25,6 +25,8 @@ export default function RoutineCard({
     onPressButton,
     imageUrl,
 }: Props) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Pressable onPress={onPress}>
             <Card>
@@ -61,7 +63,7 @@ export default function RoutineCard({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: typography.body,
@@ -98,4 +100,4 @@ const styles = StyleSheet.create({
         fontSize: typography.subtitle,
         textAlign: "center",
     },
-});
+}));

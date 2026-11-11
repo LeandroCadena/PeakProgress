@@ -1,13 +1,13 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text } from "react-native";
+import { FlatList, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useToast } from "../context/ToastContext";
 import { getWorkoutSets } from "../services/historyService";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     WorkoutDetail: {
@@ -26,6 +26,8 @@ export type WorkoutSet = {
 };
 
 export default function WorkoutDetailScreen() {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "WorkoutDetail">>();
     const { sessionId, routineName } = route.params;
     const { showToast } = useToast();
@@ -87,7 +89,7 @@ export default function WorkoutDetailScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         paddingBottom: 0,
     },
@@ -108,4 +110,4 @@ const styles = StyleSheet.create({
     skippedText: {
         color: colors.warning,
     },
-});
+}));

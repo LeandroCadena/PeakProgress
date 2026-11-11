@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { colors, componentStyles, spacing, typography } from "../../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import ActionMenu from "../common/ActionMenu";
 import AppButton from "../common/AppButton";
@@ -46,6 +46,8 @@ export default function RoutineExerciseCard({
     isActionsMenuOpen,
     onActionsMenuOpenChange,
 }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
@@ -147,7 +149,7 @@ export default function RoutineExerciseCard({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     card: {
         borderWidth: componentStyles.borderWidth,
         borderColor: colors.cardBorder,
@@ -187,4 +189,4 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         gap: spacing.sm,
     },
-});
+}));

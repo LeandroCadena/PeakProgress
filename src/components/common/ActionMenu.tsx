@@ -10,7 +10,7 @@ import {
     View,
 } from "react-native";
 
-import { colors, componentStyles, spacing, typography } from "../../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 
 type ActionMenuItem = {
     key: string;
@@ -39,6 +39,8 @@ export default function ActionMenu({
     trigger,
     disabled = false,
 }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const triggerRef = useRef<View>(null);
 
     const [triggerLayout, setTriggerLayout] = useState<LayoutRectangle | null>(null);
@@ -155,7 +157,7 @@ export default function ActionMenu({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     trigger: {
         alignItems: "center",
         justifyContent: "center",
@@ -209,4 +211,4 @@ const styles = StyleSheet.create({
     destructiveText: {
         color: colors.danger,
     },
-});
+}));

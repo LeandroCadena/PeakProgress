@@ -6,6 +6,7 @@ export const darkTheme = {
         cardBorder: "#374151",
 
         primary: "#f95e16",
+        onAccent: "#111827",
         primaryPressed: "#EA580C",
 
         success: "#22C55E",

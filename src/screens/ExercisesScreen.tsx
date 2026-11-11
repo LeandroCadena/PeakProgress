@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 
 import AppDialog from "../components/common/AppDialog";
 import AppInput from "../components/common/AppInput";
@@ -10,11 +10,19 @@ import { useToast } from "../context/ToastContext";
 import { useCatalogNetworkStatus } from "../hooks/useCatalogNetworkStatus";
 import { useCatalogRevision } from "../hooks/useCatalogRevision";
 import { syncCatalog } from "../services/catalogSyncService";
-import { CatalogNotDownloadedError, getCatalogAvailability, getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
+import {
+    CatalogNotDownloadedError,
+    getCatalogAvailability,
+    getExercisesByFilter,
+    getMuscleRegions,
+    getMuscles,
+} from "../services/exerciseService";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [filterMode, setFilterMode] = useState<FilterMode>("muscle");
@@ -27,7 +35,6 @@ export default function ExercisesScreen({ navigation }: any) {
     const networkStatus = useCatalogNetworkStatus();
     const [manualSyncing, setManualSyncing] = useState(false);
     const [showCellularDialog, setShowCellularDialog] = useState(false);
-
 
     async function downloadCatalog() {
         if (manualSyncing) return;
@@ -60,10 +67,7 @@ export default function ExercisesScreen({ navigation }: any) {
     function requestCatalogDownload() {
         if (manualSyncing) return;
 
-        if (
-            networkStatus === "offline" ||
-            networkStatus === "checking"
-        ) {
+        if (networkStatus === "offline" || networkStatus === "checking") {
             showToast({
                 type: "error",
                 message: "An internet connection is required.",
@@ -78,7 +82,6 @@ export default function ExercisesScreen({ navigation }: any) {
 
         void downloadCatalog();
     }
-
 
     useEffect(() => {
         let cancelled = false;
@@ -116,10 +119,7 @@ export default function ExercisesScreen({ navigation }: any) {
 
                 showToast({
                     type: "error",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Unable to load filters.",
+                    message: error instanceof Error ? error.message : "Unable to load filters.",
                 });
             }
         }
@@ -130,8 +130,6 @@ export default function ExercisesScreen({ navigation }: any) {
             cancelled = true;
         };
     }, [catalogRevision, showToast]);
-
-
 
     useEffect(() => {
         let cancelled = false;
@@ -158,10 +156,7 @@ export default function ExercisesScreen({ navigation }: any) {
 
                 showToast({
                     type: "error",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Unable to load exercises.",
+                    message: error instanceof Error ? error.message : "Unable to load exercises.",
                 });
             }
         }
@@ -172,7 +167,6 @@ export default function ExercisesScreen({ navigation }: any) {
             cancelled = true;
         };
     }, [filterMode, selectedFilterIds, catalogRevision, showToast]);
-
 
     const filterOptions = filterMode === "muscle" ? muscles : regions;
 
@@ -191,18 +185,16 @@ export default function ExercisesScreen({ navigation }: any) {
         setSelectedFilterIds([]);
     }
 
-
     const catalogPendingMessage =
         networkStatus === "offline"
             ? "Connect to Wi-Fi to download the exercise catalog for the first time."
             : networkStatus === "cellular"
-                ? "The first catalog download is waiting for Wi-Fi. Your mobile data won't be used automatically."
-                : networkStatus === "checking"
-                    ? "Checking your connection before downloading the exercise catalog."
-                    : networkStatus === "other"
-                        ? "The exercise catalog will download when a Wi-Fi connection is available."
-                        : "Waiting for the first catalog download. Keep the app open and connected to Wi-Fi.";
-
+              ? "The first catalog download is waiting for Wi-Fi. Your mobile data won't be used automatically."
+              : networkStatus === "checking"
+                ? "Checking your connection before downloading the exercise catalog."
+                : networkStatus === "other"
+                  ? "The exercise catalog will download when a Wi-Fi connection is available."
+                  : "Waiting for the first catalog download. Keep the app open and connected to Wi-Fi.";
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
@@ -215,9 +207,7 @@ export default function ExercisesScreen({ navigation }: any) {
                     disabled={manualSyncing}
                 >
                     <Text style={styles.downloadButtonText}>
-                        {manualSyncing
-                            ? "Downloading catalog..."
-                            : "Download exercise catalog"}
+                        {manualSyncing ? "Downloading catalog..." : "Download exercise catalog"}
                     </Text>
                 </Pressable>
             )}
@@ -276,11 +266,7 @@ export default function ExercisesScreen({ navigation }: any) {
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                     <EmptyStateCard
-                        title={
-                            catalogPending
-                                ? "Preparing exercise catalog"
-                                : "No exercises found"
-                        }
+                        title={catalogPending ? "Preparing exercise catalog" : "No exercises found"}
                         message={
                             catalogPending
                                 ? catalogPendingMessage
@@ -313,12 +299,11 @@ export default function ExercisesScreen({ navigation }: any) {
                     await downloadCatalog();
                 }}
             />
-
         </ScreenContainer>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     screenContent: {
         paddingBottom: spacing.lg,
     },
@@ -384,4 +369,4 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontWeight: typography.weightBold,
     },
-});
+}));

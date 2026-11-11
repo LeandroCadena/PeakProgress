@@ -7,7 +7,7 @@ import {
     useRoute,
 } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -21,7 +21,7 @@ import RoutineExerciseCard from "../components/routine/RoutineExerciseCard";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import RestTimeEditor from "../components/workout/RestTimeEditor";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
-import { colors, sharedStyles, spacing } from "../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../theme";
 import type { RoutineExercise } from "../types/routine";
 
 type RoutineDetailRouteParams = {
@@ -39,6 +39,8 @@ type DialogState =
     | null;
 
 export default function RoutineDetailScreen() {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const navigation = useNavigation<any>();
     const route = useRoute<RouteProp<RoutineDetailRouteParams, "RoutineDetail">>();
     const { routineId, routineName } = route.params;
@@ -448,7 +450,7 @@ export default function RoutineDetailScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     screenContent: {
         flex: 1,
         paddingBottom: 0,
@@ -505,4 +507,4 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xs,
     },
-});
+}));

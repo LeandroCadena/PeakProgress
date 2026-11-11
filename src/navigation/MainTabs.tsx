@@ -6,7 +6,7 @@ import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import ProgressScreen from "../screens/ProgressScreen";
 import RoutinesScreen from "../screens/RoutinesScreen";
-import { colors } from "../theme";
+import { useAppTheme } from "../theme";
 
 type MainTabsParamList = {
     Home: undefined;
@@ -19,13 +19,14 @@ type MainTabsParamList = {
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 export default function MainTabs() {
+    const { colors } = useAppTheme();
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarStyle: {
                     backgroundColor: colors.background,
-                    borderTopColor: "#30363D",
+                    borderTopColor: colors.cardBorder,
                 },
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textSecondary,

@@ -1,12 +1,14 @@
-import { Text, StyleSheet, Pressable } from "react-native";
+import { Text, Pressable } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function ProfileScreen({ navigation }: any) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { signOut } = useAuth();
 
     return (
@@ -66,7 +68,7 @@ export default function ProfileScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: typography.title,
@@ -105,4 +107,4 @@ const styles = StyleSheet.create({
     logoutButton: {
         marginTop: spacing.lg,
     },
-});
+}));

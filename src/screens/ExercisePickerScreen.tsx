@@ -1,5 +1,5 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
@@ -7,7 +7,7 @@ import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { useExercisePicker } from "../hooks/useExercisePicker";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     ExercisePicker: {
@@ -20,6 +20,8 @@ type RouteParams = {
 };
 
 export default function ExercisePickerScreen({ navigation }: any) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "ExercisePicker">>();
     const { mode, routineId, sessionId, currentCount, currentExerciseIds } = route.params;
 
@@ -65,7 +67,6 @@ export default function ExercisePickerScreen({ navigation }: any) {
                         {filterMode === "muscle" ? "Muscle" : "Region"}
                     </Text>
                 </Pressable>
-
             </View>
 
             <View style={styles.filtersWrapper}>
@@ -111,7 +112,9 @@ export default function ExercisePickerScreen({ navigation }: any) {
                         selectable
                         selected={selectedExerciseIds.includes(item.id)}
                         onSelect={() => toggleExerciseSelection(item.id)}
-                        onMoreInfo={() => navigation.navigate("ExerciseDetail", { exerciseId: item.id })}
+                        onMoreInfo={() =>
+                            navigation.navigate("ExerciseDetail", { exerciseId: item.id })
+                        }
                     />
                 )}
                 ListEmptyComponent={
@@ -135,7 +138,7 @@ export default function ExercisePickerScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     screenContent: {
         paddingBottom: spacing.lg,
     },
@@ -200,4 +203,4 @@ const styles = StyleSheet.create({
         gap: spacing.md,
         paddingBottom: spacing.xxl,
     },
-});
+}));

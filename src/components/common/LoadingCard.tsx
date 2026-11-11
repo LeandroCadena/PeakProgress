@@ -1,6 +1,6 @@
-import { Text, StyleSheet } from "react-native";
+import { Text } from "react-native";
 
-import { colors, sharedStyles, spacing } from "../../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 import Card from "./Card";
 
@@ -13,6 +13,8 @@ export default function LoadingCard({
     title = "Preparing workout...",
     message = "Setting up your exercises and sets.",
 }: Props) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Card style={styles.card}>
             <Text style={sharedStyles.screenTitle}>{title}</Text>
@@ -21,7 +23,7 @@ export default function LoadingCard({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     card: {
         marginVertical: spacing.lg,
     },
@@ -30,4 +32,4 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
         lineHeight: 20,
     },
-});
+}));

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
@@ -10,7 +10,7 @@ import StatCard from "../components/common/StatCard";
 import { useToast } from "../context/ToastContext";
 import { getWorkoutSummary } from "../services/historyService";
 import { updateRoutineFromCompletedWorkout } from "../services/workoutSyncService";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     WorkoutSummary: {
@@ -28,6 +28,8 @@ type Summary = {
 };
 
 export default function WorkoutSummaryScreen({ navigation }: any) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "WorkoutSummary">>();
     const { sessionId, routineId, routineName, updateRoutineAfterWorkout } = route.params;
@@ -125,7 +127,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: 30,
@@ -159,4 +161,4 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginTop: 8,
     },
-});
+}));

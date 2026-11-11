@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, componentStyles, sharedStyles, spacing } from "../../theme";
+import { componentStyles, spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 import AppButton from "./AppButton";
 
@@ -30,6 +30,8 @@ export default function AppDialog({
     secondaryAction,
     onCancel,
 }: Props) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const [isProcessing, setIsProcessing] = useState(false);
     const processingRef = useRef(false);
 
@@ -103,7 +105,7 @@ export default function AppDialog({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     overlay: {
         flex: 1,
         backgroundColor: "rgba(0,0,0,0.65)",
@@ -135,4 +137,4 @@ const styles = StyleSheet.create({
     actionButton: {
         flex: 1,
     },
-});
+}));
