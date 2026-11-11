@@ -1041,6 +1041,15 @@ describe("Routine save regression", () => {
                 sync_status: "synced",
             });
 
+            await expect(
+                saveLocalRoutine({
+                    userId,
+                    snapshot: staleDraft,
+                    syncOperationId: "deleted-editor-save",
+                    expectedLocalRemoteVersion: editorBase.remoteVersion,
+                })
+            ).rejects.toMatchObject({ name: "RoutineVersionConflictError", reason: "deleted" });
+
             // No debe generar otra operación de subida.
             expect(await db.getAllAsync("SELECT * FROM sync_operations ORDER BY id")).toEqual(
                 ownerQueueBefore

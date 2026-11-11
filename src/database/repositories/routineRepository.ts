@@ -13,8 +13,8 @@ export type SaveLocalRoutineParams = {
 };
 
 export class RoutineVersionConflictError extends Error {
-    constructor() {
-        super("Routine changed since it was loaded. Reload it before saving.");
+    constructor(readonly reason: "changed" | "deleted" | "syncConflict") {
+        super("The routine could not be saved because it changed while you were editing.");
         this.name = "RoutineVersionConflictError";
     }
 }
@@ -66,11 +66,16 @@ export async function saveLocalRoutine({
             throw new Error("This routine belongs to another local user.");
         }
 
-        if (
-            expectedLocalRemoteVersion !== undefined &&
-            (!existingRoutine || existingRoutine.remote_version !== expectedLocalRemoteVersion)
-        ) {
-            throw new RoutineVersionConflictError();
+        if (expectedLocalRemoteVersion !== undefined) {
+            if (!existingRoutine || existingRoutine.deleted_at !== null) {
+                throw new RoutineVersionConflictError("deleted");
+            }
+            if (existingRoutine.sync_status === "conflict") {
+                throw new RoutineVersionConflictError("syncConflict");
+            }
+            if (existingRoutine.remote_version !== expectedLocalRemoteVersion) {
+                throw new RoutineVersionConflictError("changed");
+            }
         }
 
         if (existingRoutine?.deleted_at !== null && existingRoutine?.deleted_at !== undefined) {

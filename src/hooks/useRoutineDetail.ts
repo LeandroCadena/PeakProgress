@@ -328,7 +328,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         return Number.isFinite(numericValue) ? numericValue : Number(routineSet[field] ?? 0);
     }
 
-    function buildRoutineSnapshot(): RoutineEditorSnapshot {
+    function buildRoutineSnapshot(copyId?: string): RoutineEditorSnapshot {
         const normalizedName = name.trim();
         if (!normalizedName) throw new Error("Routine name is required.");
 
@@ -337,12 +337,12 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
         const exerciseIdMap = new Map<string, string>();
         const normalizedExercises = exercises.map((exercise, index) => {
-            const id = isUuid(exercise.id) ? exercise.id : Crypto.randomUUID();
+            const id = !copyId && isUuid(exercise.id) ? exercise.id : Crypto.randomUUID();
             if (exerciseIdMap.has(exercise.id)) {
                 throw new Error("Duplicate routine exercise ID.");
             }
             exerciseIdMap.set(exercise.id, id);
-            return { ...exercise, id, routine_id: routineId, position: index };
+            return { ...exercise, id, routine_id: copyId ?? routineId, position: index };
         });
 
         const normalizedSetsByExerciseId: Record<string, RoutineExerciseSet[]> = {};
@@ -351,7 +351,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             normalizedSetsByExerciseId[normalizedId] = (setsByExerciseId[exercise.id] ?? []).map(
                 (setItem) => ({
                     ...setItem,
-                    id: isUuid(setItem.id) ? setItem.id : Crypto.randomUUID(),
+                    id: !copyId && isUuid(setItem.id) ? setItem.id : Crypto.randomUUID(),
                     routine_exercise_id: normalizedId,
                     reps: getSetDraftValue(setItem, "reps"),
                     weight: getSetDraftValue(setItem, "weight"),
@@ -359,8 +359,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             );
         }
         return {
-            routineId,
-            name: normalizedName,
+            routineId: copyId ?? routineId,
+            name: copyId ? `${normalizedName} (Copy)` : normalizedName,
             exercises: normalizedExercises,
             setsByExerciseId: normalizedSetsByExerciseId,
         };
@@ -386,7 +386,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         initializeEditor(latest.snapshot, latest.remoteVersion);
     }
 
-    async function saveRoutineChanges(): Promise<"versionConflict" | void> {
+    async function saveRoutineChanges(): Promise<RoutineVersionConflictError["reason"] | void> {
         const normalizedName = name.trim();
 
         if (!normalizedName) {
@@ -427,7 +427,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 editorNow.updateSavedSnapshot(snapshot);
             }
         } catch (error: unknown) {
-            if (error instanceof RoutineVersionConflictError) return "versionConflict";
+            if (error instanceof RoutineVersionConflictError) return error.reason;
 
             showToast({
                 type: "error",
@@ -441,6 +441,25 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             isSavingRoutineRef.current = false;
             setIsSavingRoutine(false);
         }
+    }
+
+    async function saveDraftAsCopy() {
+        if (!user?.id) throw new Error("You must be signed in to save a routine.");
+
+        const editor = useRoutineEditorStore.getState();
+        if (editor.routineId !== routineId || !editor.hasUnsavedChanges) {
+            throw new Error("This routine draft is no longer open.");
+        }
+
+        const snapshot = buildRoutineSnapshot(Crypto.randomUUID());
+        await saveLocalRoutine({
+            userId: user.id,
+            snapshot,
+            syncOperationId: Crypto.randomUUID(),
+            createdLocally: true,
+        });
+
+        return { routineId: snapshot.routineId, routineName: snapshot.name };
     }
 
     async function deleteRoutine() {
@@ -607,6 +626,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         saveRoutineChanges,
         discardRoutineChanges: discardChanges,
         reloadRoutine,
+        saveDraftAsCopy,
 
         deleteRoutine,
         clearRoutineEditor: clearEditor,

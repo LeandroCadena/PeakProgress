@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { NavigationAction, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import {
+    NavigationAction,
+    RouteProp,
+    StackActions,
+    useNavigation,
+    useRoute,
+} from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
@@ -29,7 +35,7 @@ type DialogState =
     | { type: "deleteExercise"; exerciseId: string }
     | { type: "deleteRoutine" }
     | { type: "discardChanges" }
-    | { type: "routineVersionConflict" }
+    | { type: "routineVersionConflict"; reason: "changed" | "deleted" | "syncConflict" }
     | null;
 
 export default function RoutineDetailScreen() {
@@ -70,6 +76,7 @@ export default function RoutineDetailScreen() {
         saveRoutineChanges,
         discardRoutineChanges,
         reloadRoutine,
+        saveDraftAsCopy,
 
         deleteRoutine,
         clearRoutineEditor,
@@ -120,9 +127,10 @@ export default function RoutineDetailScreen() {
         setOpenExerciseMenuId(null);
 
         if (hasUnsavedChanges) {
-            if ((await saveRoutineChanges()) === "versionConflict") {
+            const reason = await saveRoutineChanges();
+            if (reason) {
                 setDialogError(null);
-                setDialog({ type: "routineVersionConflict" });
+                setDialog({ type: "routineVersionConflict", reason });
             }
             return;
         }
@@ -141,10 +149,27 @@ export default function RoutineDetailScreen() {
         setDialog({ type: "deleteRoutine" });
     }
 
+    async function recoverDraft() {
+        setDialogError(null);
+        try {
+            const copy = await saveDraftAsCopy();
+            clearRoutineEditor();
+            setDialog(null);
+            dispatchConfirmedNavigation(StackActions.replace("RoutineDetail", copy));
+        } catch (error: unknown) {
+            setDialogError(error instanceof Error ? error.message : "Unable to save the copy.");
+        }
+    }
+
     async function confirmDialog() {
         if (!dialog) return;
 
         if (dialog.type === "routineVersionConflict") {
+            if (dialog.reason !== "changed") {
+                await recoverDraft();
+                return;
+            }
+
             setDialogError(null);
             try {
                 await reloadRoutine();
@@ -264,6 +289,9 @@ export default function RoutineDetailScreen() {
         : isStartingWorkout
           ? "Starting..."
           : "Start Workout";
+
+    const conflictReason = dialog?.type === "routineVersionConflict" ? dialog.reason : undefined;
+    const canLoadLatest = conflictReason === "changed";
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
@@ -394,11 +422,21 @@ export default function RoutineDetailScreen() {
             />
 
             <AppDialog
-                visible={dialog?.type === "routineVersionConflict"}
-                title="Routine changed"
-                message="A newer version arrived while you were editing. Loading it will discard your unsaved changes."
+                visible={conflictReason !== undefined}
+                title={conflictReason === "deleted" ? "Routine deleted" : "Routine changed"}
+                message={
+                    canLoadLatest
+                        ? "A newer version arrived while you were editing. Loading it will discard your draft. You can also save your draft as a new routine."
+                        : conflictReason === "deleted"
+                          ? "The original routine is no longer available. You can save your draft as a new routine."
+                          : "The original routine has a sync conflict. You can save your draft as a new routine."
+                }
                 errorMessage={dialogError}
-                confirmLabel="Load Latest"
+                confirmLabel={canLoadLatest ? "Load Latest" : "Save as Copy"}
+                variant={canLoadLatest ? "danger" : "primary"}
+                secondaryAction={
+                    canLoadLatest ? { label: "Save as Copy", onPress: recoverDraft } : undefined
+                }
                 cancelLabel="Keep Draft"
                 onConfirm={confirmDialog}
                 onCancel={() => {
