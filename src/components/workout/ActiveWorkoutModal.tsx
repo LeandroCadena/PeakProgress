@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { Modal, Text, View } from "react-native";
 
 import { spacing, useAppTheme, createThemedStyles } from "../../theme";
@@ -22,16 +23,17 @@ export default function ActiveWorkoutModal({
     onCancel,
     isStarting,
 }: Props) {
+    const { t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     return (
         <Modal visible={visible} transparent animationType="fade">
             <View style={styles.overlay}>
                 <View style={styles.content}>
-                    <Text style={sharedStyles.screenTitle}>Workout already running</Text>
+                    <Text style={sharedStyles.screenTitle}>{t("workoutRunning")}</Text>
 
                     <Text style={sharedStyles.screenSubtitle}>
-                        You already have an active workout.
+                        {t("workoutRunningDescription")}
                     </Text>
 
                     <Text style={styles.routineName}>{routineName}</Text>
@@ -40,14 +42,14 @@ export default function ActiveWorkoutModal({
 
                     <AppButton
                         style={styles.appButton}
-                        title={"Resume Workout"}
+                        title={t("resumeWorkout")}
                         onPress={onResume}
                     />
 
                     <AppButton
                         style={styles.appButton}
                         variant="danger"
-                        title={isStarting ? "Starting..." : "Discard and Start New"}
+                        title={isStarting ? t("starting") : t("discardAndStart")}
                         onPress={onDiscardAndStart}
                         disabled={isStarting}
                     />
@@ -55,7 +57,7 @@ export default function ActiveWorkoutModal({
                     <AppButton
                         style={styles.appButton}
                         variant="secondary"
-                        title={"Cancel"}
+                        title={t("cancel")}
                         onPress={onCancel}
                         disabled={isStarting}
                     />

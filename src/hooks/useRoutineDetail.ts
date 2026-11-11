@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -44,6 +45,7 @@ type ActiveWorkout = {
 };
 
 export function useRoutineDetail({ routineId, routineName, navigation }: Params) {
+    const { t } = useLanguage();
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -144,15 +146,12 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         } catch (error) {
             showToast({
                 type: "error",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : "An error occurred while loading the routine.",
+                message: error instanceof Error ? error.message : t("loadRoutineError"),
             });
         } finally {
             setIsLoadingRoutine(false);
         }
-    }, [initializeEditor, routineId, showToast, user?.id]);
+    }, [initializeEditor, routineId, showToast, t, user?.id]);
 
     useFocusEffect(
         useCallback(() => {
@@ -224,7 +223,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
                         showToast({
                             type: "warning",
-                            message: "This routine is no longer available.",
+                            message: t("routineUnavailable"),
                         });
 
                         navigation.goBack();
@@ -241,7 +240,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 requestId += 1;
                 unsubscribe();
             };
-        }, [user?.id, routineId, initializeEditor, clearEditor, showToast, navigation])
+        }, [user?.id, routineId, initializeEditor, clearEditor, showToast, navigation, t])
     );
 
     function reorderRoutineExercises(reorderedExercises: RoutineExercise[]) {
@@ -268,7 +267,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         if (!Number.isFinite(normalizedValue) || normalizedValue < 0) {
             showToast({
                 type: "error",
-                message: "Please enter a valid positive number",
+                message: t("positiveNumber"),
             });
             return;
         }
@@ -330,7 +329,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
     function buildRoutineSnapshot(copyId?: string): RoutineEditorSnapshot {
         const normalizedName = name.trim();
-        if (!normalizedName) throw new Error("Routine name is required.");
+        if (!normalizedName) throw new Error(t("routineNameRequired"));
 
         // UUIDs must be stable before persisting the snapshot into the sync queue.
         const isUuid = (value: string) =>
@@ -360,7 +359,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         }
         return {
             routineId: copyId ?? routineId,
-            name: copyId ? `${normalizedName} (Copy)` : normalizedName,
+            name: copyId ? `${normalizedName} (${t("copy")})` : normalizedName,
             exercises: normalizedExercises,
             setsByExerciseId: normalizedSetsByExerciseId,
         };
@@ -373,14 +372,14 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         const latest = await getVersionedLocalRoutine({ userId: user.id, routineId });
 
         if (!latest) {
-            throw new Error("This routine is no longer available. Your draft is still open.");
+            throw new Error(t("draftStillOpen"));
         }
 
         if (
             editorBefore !== useRoutineEditorStore.getState() ||
             editorBefore.routineId !== routineId
         ) {
-            throw new Error("The editor changed while reloading. Please try again.");
+            throw new Error(t("editorChangedDuringReload"));
         }
 
         initializeEditor(latest.snapshot, latest.remoteVersion);
@@ -392,7 +391,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         if (!normalizedName) {
             showToast({
                 type: "warning",
-                message: "Routine name is required.",
+                message: t("routineNameRequired"),
             });
             return;
         }
@@ -405,7 +404,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         setIsSavingRoutine(true);
 
         try {
-            if (!user?.id) throw new Error("You must be signed in to save a routine.");
+            if (!user?.id) throw new Error(t("signInToContinue"));
             const snapshot = buildRoutineSnapshot();
             await saveLocalRoutine({
                 userId: user.id,
@@ -431,10 +430,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
             showToast({
                 type: "error",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : "An error occurred while saving the routine.",
+                message: error instanceof Error ? error.message : t("saveRoutineError"),
             });
             return;
         } finally {
@@ -444,11 +440,11 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     }
 
     async function saveDraftAsCopy() {
-        if (!user?.id) throw new Error("You must be signed in to save a routine.");
+        if (!user?.id) throw new Error(t("signInToContinue"));
 
         const editor = useRoutineEditorStore.getState();
         if (editor.routineId !== routineId || !editor.hasUnsavedChanges) {
-            throw new Error("This routine draft is no longer open.");
+            throw new Error(t("draftNoLongerOpen"));
         }
 
         const snapshot = buildRoutineSnapshot(Crypto.randomUUID());
@@ -471,7 +467,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         if (hasUnsavedChanges) {
             showToast({
                 type: "warning",
-                message: "Save your routine changes before starting the workout.",
+                message: t("saveBeforeWorkout"),
             });
             return;
         }
@@ -479,7 +475,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         if (!user) {
             showToast({
                 type: "error",
-                message: "User not found",
+                message: t("userNotFound"),
             });
             return;
         }
@@ -561,7 +557,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         navigation.navigate("WorkoutSession", {
             sessionId: activeWorkout.id,
             routineId: activeWorkout.routine_id,
-            routineName: getActiveRoutineName(activeWorkout) ?? "Workout",
+            routineName: getActiveRoutineName(activeWorkout) ?? t("workout"),
         });
     }
 
@@ -634,8 +630,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
         activeWorkoutModalVisible,
         activeWorkoutRoutineName: activeWorkout
-            ? (getActiveRoutineName(activeWorkout) ?? "Workout")
-            : "Workout",
+            ? (getActiveRoutineName(activeWorkout) ?? t("workout"))
+            : t("workout"),
         activeWorkoutElapsedText: activeWorkout
             ? getElapsedText(activeWorkout.started_at)
             : undefined,

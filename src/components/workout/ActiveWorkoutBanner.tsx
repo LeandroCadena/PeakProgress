@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { Clock3, Hourglass } from "lucide-react-native"; //remove later
 import { Pressable, Text, View } from "react-native";
@@ -18,6 +19,7 @@ export default function ActiveWorkoutBanner({
     restRemainingText,
     onPress,
 }: Props) {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     return (
@@ -29,7 +31,7 @@ export default function ActiveWorkoutBanner({
                     </View>
 
                     <View>
-                        <Text style={styles.label}>WORKOUT RUNNING</Text>
+                        <Text style={styles.label}>{t("workoutRunning").toUpperCase()}</Text>
                         <Text style={styles.routineName}>{routineName}</Text>
                     </View>
                 </View>

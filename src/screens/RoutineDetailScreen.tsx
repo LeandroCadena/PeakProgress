@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import {
     NavigationAction,
@@ -39,6 +40,7 @@ type DialogState =
     | null;
 
 export default function RoutineDetailScreen() {
+    const { t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const navigation = useNavigation<any>();
@@ -159,7 +161,7 @@ export default function RoutineDetailScreen() {
             setDialog(null);
             dispatchConfirmedNavigation(StackActions.replace("RoutineDetail", copy));
         } catch (error: unknown) {
-            setDialogError(error instanceof Error ? error.message : "Unable to save the copy.");
+            setDialogError(error instanceof Error ? error.message : t("copyError"));
         }
     }
 
@@ -177,9 +179,7 @@ export default function RoutineDetailScreen() {
                 await reloadRoutine();
                 setDialog(null);
             } catch (error: unknown) {
-                setDialogError(
-                    error instanceof Error ? error.message : "Unable to load the latest routine."
-                );
+                setDialogError(error instanceof Error ? error.message : t("reloadError"));
             }
             return;
         }
@@ -204,11 +204,7 @@ export default function RoutineDetailScreen() {
                     type: "GO_BACK",
                 });
             } catch (error: unknown) {
-                setDialogError(
-                    error instanceof Error
-                        ? error.message
-                        : "Unable to delete routine. Please try again."
-                );
+                setDialogError(error instanceof Error ? error.message : t("deleteRoutineError"));
             }
 
             return;
@@ -270,7 +266,7 @@ export default function RoutineDetailScreen() {
 
                 {index < routineExercises.length - 1 ? (
                     <RestTimeEditor
-                        label="Rest before next exercise"
+                        label={t("restBeforeExercise")}
                         value={item.exercise_rest_seconds ?? 120}
                         editable
                         onChange={(value) => {
@@ -286,11 +282,11 @@ export default function RoutineDetailScreen() {
 
     const primaryActionTitle = hasUnsavedChanges
         ? isSavingRoutine
-            ? "Saving..."
-            : "Save"
+            ? t("saving")
+            : t("save")
         : isStartingWorkout
-          ? "Starting..."
-          : "Start Workout";
+          ? t("starting")
+          : t("startWorkout");
 
     const conflictReason = dialog?.type === "routineVersionConflict" ? dialog.reason : undefined;
     const canLoadLatest = conflictReason === "changed";
@@ -313,7 +309,7 @@ export default function RoutineDetailScreen() {
                         items={[
                             {
                                 key: "delete",
-                                label: "Delete Routine",
+                                label: t("deleteRoutine"),
                                 icon: "trash-outline",
                                 destructive: true,
                                 onPress: handleDeleteRoutine,
@@ -333,7 +329,7 @@ export default function RoutineDetailScreen() {
                         onChangeText={setRoutineName}
                         editable={!isLoadingRoutine && !isSavingRoutine}
                         numberOfLines={1}
-                        placeholder="Routine name"
+                        placeholder={t("routineName")}
                         placeholderTextColor={colors.textSecondary}
                         selectionColor={colors.primary}
                         style={[sharedStyles.cardTitle, styles.titleInput]}
@@ -368,14 +364,14 @@ export default function RoutineDetailScreen() {
                         <LoadingCard />
                     ) : (
                         <EmptyStateCard
-                            title="No exercises added yet"
-                            message="Add your first exercise now."
+                            title={t("noExercisesAdded")}
+                            message={t("addFirstExercise")}
                         />
                     )
                 }
                 ListFooterComponent={
                     <AppButton
-                        title="+ Add Exercise"
+                        title={t("addExercise")}
                         variant="success"
                         disabled={isLoadingRoutine || isSavingRoutine}
                         onPress={navigateToExercisePicker}
@@ -399,21 +395,21 @@ export default function RoutineDetailScreen() {
                 visible={dialog !== null && dialog.type !== "routineVersionConflict"}
                 title={
                     dialog?.type === "deleteExercise"
-                        ? "Delete exercise?"
+                        ? t("deleteExerciseQuestion")
                         : dialog?.type === "deleteRoutine"
-                          ? "Delete routine?"
-                          : "Discard changes?"
+                          ? t("deleteRoutineQuestion")
+                          : t("discardChangesQuestion")
                 }
                 message={
                     dialog?.type === "deleteExercise"
-                        ? "The exercise and its sets will be removed from this routine."
+                        ? t("removeExerciseDescription")
                         : dialog?.type === "deleteRoutine"
-                          ? "This action cannot be undone."
-                          : "You have unsaved changes in this routine."
+                          ? t("actionCannotBeUndone")
+                          : t("unsavedRoutineChanges")
                 }
                 errorMessage={dialogError}
-                confirmLabel={dialog?.type === "discardChanges" ? "Discard" : "Delete"}
-                cancelLabel={dialog?.type === "discardChanges" ? "Keep Editing" : "Cancel"}
+                confirmLabel={dialog?.type === "discardChanges" ? t("discard") : t("delete")}
+                cancelLabel={dialog?.type === "discardChanges" ? t("keepEditing") : t("cancel")}
                 variant="danger"
                 onConfirm={confirmDialog}
                 onCancel={() => {
@@ -425,21 +421,21 @@ export default function RoutineDetailScreen() {
 
             <AppDialog
                 visible={conflictReason !== undefined}
-                title={conflictReason === "deleted" ? "Routine deleted" : "Routine changed"}
+                title={conflictReason === "deleted" ? t("routineDeleted") : t("routineChanged")}
                 message={
                     canLoadLatest
-                        ? "A newer version arrived while you were editing. Loading it will discard your draft. You can also save your draft as a new routine."
+                        ? t("routineChangedDescription")
                         : conflictReason === "deleted"
-                          ? "The original routine is no longer available. You can save your draft as a new routine."
-                          : "The original routine has a sync conflict. You can save your draft as a new routine."
+                          ? t("routineDeletedDescription")
+                          : t("routineSyncConflictDescription")
                 }
                 errorMessage={dialogError}
-                confirmLabel={canLoadLatest ? "Load Latest" : "Save as Copy"}
+                confirmLabel={canLoadLatest ? t("loadLatest") : t("saveAsCopy")}
                 variant={canLoadLatest ? "danger" : "primary"}
                 secondaryAction={
-                    canLoadLatest ? { label: "Save as Copy", onPress: recoverDraft } : undefined
+                    canLoadLatest ? { label: t("saveAsCopy"), onPress: recoverDraft } : undefined
                 }
-                cancelLabel="Keep Draft"
+                cancelLabel={t("keepDraft")}
                 onConfirm={confirmDialog}
                 onCancel={() => {
                     setDialogError(null);
