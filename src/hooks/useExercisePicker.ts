@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import * as Crypto from "expo-crypto";
 import { useEffect, useRef, useState } from "react";
 
@@ -34,6 +35,7 @@ export function useExercisePicker({
     mode,
     sessionId,
 }: Params) {
+    const { t } = useLanguage();
     const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
@@ -88,8 +90,7 @@ export function useExercisePicker({
                     return;
                 }
 
-                const message =
-                    error instanceof Error ? error.message : "Unable to load exercise filters.";
+                const message = error instanceof Error ? error.message : t("filtersLoadError");
 
                 setCatalogError(message);
                 showToast({
@@ -104,7 +105,7 @@ export function useExercisePicker({
         return () => {
             cancelled = true;
         };
-    }, [catalogRevision, showToast]);
+    }, [catalogRevision, showToast, t]);
 
     useEffect(() => {
         let cancelled = false;
@@ -135,8 +136,7 @@ export function useExercisePicker({
                     return;
                 }
 
-                const message =
-                    error instanceof Error ? error.message : "Unable to load exercises.";
+                const message = error instanceof Error ? error.message : t("exercisesLoadError");
 
                 setCatalogError(message);
                 showToast({
@@ -155,7 +155,7 @@ export function useExercisePicker({
         return () => {
             cancelled = true;
         };
-    }, [filterMode, selectedFilterIds, catalogRevision, showToast]);
+    }, [filterMode, selectedFilterIds, catalogRevision, showToast, t]);
 
     const addedIds = new Set(currentExerciseIds);
     const filteredExercises = exercises.filter(
@@ -268,7 +268,7 @@ export function useExercisePicker({
         } catch (error: unknown) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to add exercises.",
+                message: error instanceof Error ? error.message : t("addExercisesError"),
             });
         } finally {
             addingRef.current = false;

@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { Image, Pressable, Text, View } from "react-native";
 
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
@@ -26,6 +27,7 @@ export default function ExerciseListCard({
     selected = false,
     onSelect,
 }: Props) {
+    const { t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const card = (
@@ -40,7 +42,7 @@ export default function ExerciseListCard({
                     <Image source={{ uri: exercise.image_url }} style={styles.image} />
                 ) : (
                     <View style={styles.imagePlaceholder}>
-                        <Text style={styles.placeholderText}>No image</Text>
+                        <Text style={styles.placeholderText}>{t("noExerciseImage")}</Text>
                     </View>
                 )}
 
@@ -48,19 +50,19 @@ export default function ExerciseListCard({
                     <Text style={sharedStyles.screenTitle}>{exercise.name}</Text>
 
                     <Text style={styles.text}>
-                        {exercise.equipment ?? "No equipment"} ·{" "}
-                        {exercise.difficulty ?? "No difficulty"}
+                        {exercise.equipment ?? t("noEquipment")} ·{" "}
+                        {exercise.difficulty ?? t("noDifficulty")}
                     </Text>
 
                     {alreadyAdded ? (
-                        <Text style={styles.alreadyAddedText}>Already added</Text>
+                        <Text style={styles.alreadyAddedText}>{t("alreadyAdded")}</Text>
                     ) : null}
                 </View>
             </View>
 
             <View style={styles.actions}>
                 <AppButton
-                    title="More Info"
+                    title={t("moreInfo")}
                     variant="secondary"
                     onPress={onMoreInfo}
                     style={styles.actionButton}
@@ -69,12 +71,12 @@ export default function ExerciseListCard({
                 {selectable ? (
                     <View style={styles.selectionIndicator}>
                         <Text style={styles.selectionText}>
-                            {selected ? "✓ Selected" : "Select"}
+                            {selected ? t("selected") : t("select")}
                         </Text>
                     </View>
                 ) : showAddButton ? (
                     <AppButton
-                        title={alreadyAdded ? "Added" : "Add"}
+                        title={alreadyAdded ? t("added") : t("add")}
                         variant="success"
                         disabled={alreadyAdded}
                         onPress={onAdd ?? (() => {})}
