@@ -1,4 +1,13 @@
-type RoutineChangeListener = (userId: string) => void;
+type RoutineVersionAcknowledgement = {
+    routineId: string;
+    previousVersion: number | null;
+    remoteVersion: number;
+};
+
+type RoutineChangeListener = (
+    userId: string,
+    acknowledgement?: RoutineVersionAcknowledgement
+) => void;
 
 const listeners = new Set<RoutineChangeListener>();
 
@@ -10,10 +19,13 @@ export function subscribeToRoutineChanges(listener: RoutineChangeListener): () =
     };
 }
 
-export function notifyRoutineChanges(userId: string): void {
+export function notifyRoutineChanges(
+    userId: string,
+    acknowledgement?: RoutineVersionAcknowledgement
+): void {
     for (const listener of listeners) {
         try {
-            listener(userId);
+            listener(userId, acknowledgement);
         } catch (error) {
             console.warn("Routine change listener failed:", error);
         }

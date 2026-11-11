@@ -8,7 +8,7 @@ import ExercisePickerScreen from "../screens/ExercisePickerScreen";
 import ExerciseProgressScreen from "../screens/ExerciseProgressScreen";
 import ExercisesScreen from "../screens/ExercisesScreen";
 import HistoryScreen from "../screens/HistoryScreen";
-import LoginScreen from "../screens/LoginScreen";
+import LoginScreen from "../screens/loginScreen";
 import PersonalInformationScreen from "../screens/PersonalInformationScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import RoutineDetailScreen from "../screens/RoutineDetailScreen";

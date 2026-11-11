@@ -5,8 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
-    getLocalRoutine,
     getLocalRoutineSyncMetadata,
+    getVersionedLocalRoutine,
     hydrateLocalRoutine,
     saveLocalRoutine,
 } from "../database/repositories/routineRepository";
@@ -46,7 +46,6 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const { user } = useAuth();
     const { showToast } = useToast();
 
-    const editorRoutineId = useRoutineEditorStore((state) => state.routineId);
     const name = useRoutineEditorStore((state) => state.name);
 
     const exercises = useRoutineEditorStore((state) => state.exercises);
@@ -72,6 +71,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
     const [isLoadingRoutine, setIsLoadingRoutine] = useState(false);
     const [isSavingRoutine, setIsSavingRoutine] = useState(false);
+    const isSavingRoutineRef = useRef(false);
     const [isStartingWorkout, setIsStartingWorkout] = useState(false);
     const isStartingWorkoutRef = useRef(false);
 
@@ -95,7 +95,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         async (options?: { force?: boolean }) => {
             const force = options?.force ?? false;
 
-            if (editorRoutineId === routineId && hasUnsavedChanges && !force) {
+            const editorBefore = useRoutineEditorStore.getState();
+            if (editorBefore.routineId === routineId && editorBefore.hasUnsavedChanges && !force) {
                 return;
             }
 
@@ -106,12 +107,14 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                     throw new Error("You must be signed in to load a routine.");
                 }
 
-                const localSnapshot = await getLocalRoutine({
+                const localRoutine = await getVersionedLocalRoutine({
                     userId: user.id,
                     routineId,
                 });
-                if (localSnapshot) {
-                    initializeEditor(localSnapshot);
+                if (localRoutine) {
+                    if (useRoutineEditorStore.getState() === editorBefore) {
+                        initializeEditor(localRoutine.snapshot, localRoutine.remoteVersion);
+                    }
                     return;
                 }
 
@@ -130,19 +133,16 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                     userId: user.id,
                     routineId,
                 });
-                const hydrated = await hydrateLocalRoutine({
+                await hydrateLocalRoutine({
                     userId: user.id,
                     snapshot: remote.snapshot,
                     remoteVersion: remote.remoteVersion,
                 });
-                if (!hydrated) {
-                    // A concurrent local edit or delete may have won the race.
-                    const latest = await getLocalRoutine({ userId: user.id, routineId });
-                    if (!latest) throw new Error("Routine changed during hydration.");
-                    initializeEditor(latest);
-                    return;
+                const latest = await getVersionedLocalRoutine({ userId: user.id, routineId });
+                if (!latest) throw new Error("Routine changed during hydration.");
+                if (useRoutineEditorStore.getState() === editorBefore) {
+                    initializeEditor(latest.snapshot, latest.remoteVersion);
                 }
-                initializeEditor(remote.snapshot);
             } catch (error) {
                 showToast({
                     type: "error",
@@ -155,7 +155,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 setIsLoadingRoutine(false);
             }
         },
-        [editorRoutineId, hasUnsavedChanges, initializeEditor, routineId, showToast, user?.id]
+        [initializeEditor, routineId, showToast, user?.id]
     );
 
     useFocusEffect(
@@ -163,6 +163,23 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             void fetchRoutine();
         }, [fetchRoutine])
     );
+
+    useEffect(() => {
+        if (!user?.id) return;
+        return subscribeToRoutineChanges((changedUserId, acknowledgement) => {
+            if (changedUserId !== user.id || acknowledgement?.routineId !== routineId) return;
+
+            const editor = useRoutineEditorStore.getState();
+            if (
+                editor.routineId === routineId &&
+                editor.baseRemoteVersion === acknowledgement.previousVersion
+            ) {
+                useRoutineEditorStore.setState({
+                    baseRemoteVersion: acknowledgement.remoteVersion,
+                });
+            }
+        });
+    }, [routineId, user?.id]);
 
     useFocusEffect(
         useCallback(() => {
@@ -172,8 +189,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             let active = true;
             let requestId = 0;
 
-            const unsubscribe = subscribeToRoutineChanges((changedUserId) => {
-                if (changedUserId !== ownerId) return;
+            const unsubscribe = subscribeToRoutineChanges((changedUserId, acknowledgement) => {
+                if (changedUserId !== ownerId || acknowledgement) return;
 
                 const editorBefore = useRoutineEditorStore.getState();
 
@@ -184,11 +201,11 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
                 const currentRequest = ++requestId;
 
-                void getLocalRoutine({
+                void getVersionedLocalRoutine({
                     userId: ownerId,
                     routineId,
                 })
-                    .then((snapshot) => {
+                    .then((localRoutine) => {
                         if (!active || currentRequest !== requestId) return;
 
                         const editorNow = useRoutineEditorStore.getState();
@@ -202,8 +219,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                             return;
                         }
 
-                        if (snapshot) {
-                            initializeEditor(snapshot);
+                        if (localRoutine) {
+                            initializeEditor(localRoutine.snapshot, localRoutine.remoteVersion);
                             return;
                         }
 
@@ -364,26 +381,35 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             return false;
         }
 
-        if (!hasUnsavedChanges || isSavingRoutine) {
-            return true;
-        }
+        const editorBefore = useRoutineEditorStore.getState();
+        if (isSavingRoutineRef.current || editorBefore.routineId !== routineId) return false;
+        if (!editorBefore.hasUnsavedChanges) return true;
 
+        isSavingRoutineRef.current = true;
         setIsSavingRoutine(true);
 
         try {
             if (!user?.id) throw new Error("You must be signed in to save a routine.");
-            // Do not overwrite a remote-only routine before it has been hydrated locally.
-            const local = await getLocalRoutine({ userId: user.id, routineId });
-            if (!local)
-                throw new Error("Routine is not available locally. Sync it before editing.");
-
             const snapshot = buildRoutineSnapshot();
             await saveLocalRoutine({
                 userId: user.id,
                 snapshot,
                 syncOperationId: Crypto.randomUUID(),
+                expectedLocalRemoteVersion: editorBefore.baseRemoteVersion,
             });
-            initializeEditor(snapshot);
+
+            const editorNow = useRoutineEditorStore.getState();
+            if (
+                editorNow.originalSnapshot === editorBefore.originalSnapshot &&
+                editorNow.editingValues === editorBefore.editingValues &&
+                editorNow.name === editorBefore.name &&
+                editorNow.exercises === editorBefore.exercises &&
+                editorNow.setsByExerciseId === editorBefore.setsByExerciseId
+            ) {
+                initializeEditor(snapshot, editorNow.baseRemoteVersion);
+            } else if (editorNow.originalSnapshot === editorBefore.originalSnapshot) {
+                editorNow.updateSavedSnapshot(snapshot);
+            }
             return true;
         } catch (error: any) {
             showToast({
@@ -395,6 +421,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
             });
             return false;
         } finally {
+            isSavingRoutineRef.current = false;
             setIsSavingRoutine(false);
         }
     }

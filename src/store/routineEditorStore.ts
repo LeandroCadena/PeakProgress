@@ -30,9 +30,11 @@ type RoutineEditorState = {
     editingValues: Record<string, string>;
 
     originalSnapshot: RoutineEditorSnapshot | null;
+    baseRemoteVersion: number | null;
     hasUnsavedChanges: boolean;
 
-    initializeEditor: (snapshot: RoutineEditorSnapshot) => void;
+    initializeEditor: (snapshot: RoutineEditorSnapshot, remoteVersion: number | null) => void;
+    updateSavedSnapshot: (snapshot: RoutineEditorSnapshot) => void;
 
     setName: (name: string) => void;
 
@@ -68,6 +70,7 @@ const initialState = {
     editingValues: {},
 
     originalSnapshot: null,
+    baseRemoteVersion: null,
     hasUnsavedChanges: false,
 };
 
@@ -116,7 +119,7 @@ function createCurrentSnapshot(
 export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
     ...initialState,
 
-    initializeEditor: (snapshot) => {
+    initializeEditor: (snapshot, remoteVersion) => {
         const nextSnapshot = cloneSnapshot(snapshot);
 
         set({
@@ -126,9 +129,12 @@ export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
             setsByExerciseId: nextSnapshot.setsByExerciseId,
             editingValues: {},
             originalSnapshot: cloneSnapshot(nextSnapshot),
+            baseRemoteVersion: remoteVersion,
             hasUnsavedChanges: false,
         });
     },
+
+    updateSavedSnapshot: (snapshot) => set({ originalSnapshot: cloneSnapshot(snapshot) }),
 
     setName: (name) => {
         set({

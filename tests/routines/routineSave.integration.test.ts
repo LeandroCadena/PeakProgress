@@ -4,6 +4,7 @@ import {
     applyRemoteRoutineDeletion,
     deleteLocalRoutine,
     getLocalRoutine,
+    getVersionedLocalRoutine,
     hydrateLocalRoutine,
     saveLocalRoutine,
 } from "../../src/database/repositories/routineRepository";
@@ -879,7 +880,13 @@ describe("Routine save regression", () => {
                 ownerQueueBefore
             );
 
-            // La rutina failedSnapshot está sincronizada con versión 1.
+            const editorBase = await getVersionedLocalRoutine({
+                userId,
+                routineId: failedRoutineId,
+            });
+            expect(editorBase).toEqual({ snapshot: failedSnapshot, remoteVersion: 1 });
+            if (!editorBase) throw new Error("Expected an existing editor snapshot.");
+
             const refreshedSnapshot: RoutineEditorSnapshot = {
                 ...failedSnapshot,
                 name: "Updated on another device",
@@ -962,7 +969,7 @@ describe("Routine save regression", () => {
                     userId,
                     snapshot: staleDraft,
                     syncOperationId: "stale-editor-save",
-                    expectedLocalRemoteVersion: 1,
+                    expectedLocalRemoteVersion: editorBase.remoteVersion,
                 })
             ).rejects.toThrow("Routine changed since it was loaded. Reload it before saving.");
 
