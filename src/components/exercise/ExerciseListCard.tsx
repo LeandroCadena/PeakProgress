@@ -1,3 +1,4 @@
+import { localizedExerciseText } from "../../i18n/exerciseText";
 import { useLanguage } from "../../i18n/LanguageProvider";
 import { Image, Pressable, Text, View } from "react-native";
 
@@ -27,7 +28,7 @@ export default function ExerciseListCard({
     selected = false,
     onSelect,
 }: Props) {
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const card = (
@@ -47,7 +48,9 @@ export default function ExerciseListCard({
                 )}
 
                 <View style={styles.info}>
-                    <Text style={sharedStyles.screenTitle}>{exercise.name}</Text>
+                    <Text style={sharedStyles.screenTitle}>
+                        {localizedExerciseText(exercise, "name", language)}
+                    </Text>
 
                     <Text style={styles.text}>
                         {exercise.equipment ?? t("noEquipment")} ·{" "}

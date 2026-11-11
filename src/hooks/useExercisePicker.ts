@@ -1,3 +1,4 @@
+import { matchesExerciseName } from "../i18n/exerciseText";
 import { useLanguage } from "../i18n/LanguageProvider";
 import * as Crypto from "expo-crypto";
 import { useEffect, useRef, useState } from "react";
@@ -35,7 +36,7 @@ export function useExercisePicker({
     mode,
     sessionId,
 }: Params) {
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
@@ -159,9 +160,7 @@ export function useExercisePicker({
 
     const addedIds = new Set(currentExerciseIds);
     const filteredExercises = exercises.filter(
-        (exercise) =>
-            !addedIds.has(exercise.id) &&
-            exercise.name.toLowerCase().includes(search.trim().toLowerCase())
+        (exercise) => !addedIds.has(exercise.id) && matchesExerciseName(exercise, search, language)
     );
 
     function toggleExerciseSelection(id: string) {

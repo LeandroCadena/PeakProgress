@@ -1,3 +1,4 @@
+import { localizedExerciseText } from "../i18n/exerciseText";
 import { useLanguage } from "../i18n/LanguageProvider";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
@@ -17,13 +18,13 @@ type RouteParams = {
 };
 
 export default function ExerciseDetailScreen() {
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "ExerciseDetail">>();
     const { exerciseId } = route.params;
 
-    const [exercise, setExercise] = useState<any>(null);
+    const [exercise, setExercise] = useState<Awaited<ReturnType<typeof getExerciseDetail>>>(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -74,6 +75,11 @@ export default function ExerciseDetailScreen() {
             .filter(Boolean)
             .join(", ") || t("noMusclesListed");
 
+    const name = localizedExerciseText(exercise, "name", language);
+    const description = localizedExerciseText(exercise, "description", language);
+    const instructions = localizedExerciseText(exercise, "instructions", language);
+    const tips = localizedExerciseText(exercise, "tips", language);
+
     return (
         <ScreenContainer scroll>
             {exercise.image_url ? (
@@ -84,7 +90,7 @@ export default function ExerciseDetailScreen() {
                 </View>
             )}
 
-            <Text style={styles.title}>{exercise.name}</Text>
+            <Text style={styles.title}>{name}</Text>
 
             <Text style={styles.meta}>
                 {exercise.equipment ?? t("noEquipment")} ·{" "}
@@ -96,24 +102,24 @@ export default function ExerciseDetailScreen() {
                 <Text style={styles.text}>{muscles}</Text>
             </Card>
 
-            {exercise.description ? (
+            {description ? (
                 <Card style={styles.infoCard}>
                     <Text style={sharedStyles.screenTitle}>{t("description")}</Text>
-                    <Text style={styles.text}>{exercise.description}</Text>
+                    <Text style={styles.text}>{description}</Text>
                 </Card>
             ) : null}
 
-            {exercise.instructions ? (
+            {instructions ? (
                 <Card style={styles.infoCard}>
                     <Text style={sharedStyles.screenTitle}>{t("instructions")}</Text>
-                    <Text style={styles.text}>{exercise.instructions}</Text>
+                    <Text style={styles.text}>{instructions}</Text>
                 </Card>
             ) : null}
 
-            {exercise.tips ? (
+            {tips ? (
                 <Card style={styles.infoCard}>
                     <Text style={sharedStyles.screenTitle}>{t("tips")}</Text>
-                    <Text style={styles.text}>{exercise.tips}</Text>
+                    <Text style={styles.text}>{tips}</Text>
                 </Card>
             ) : null}
 

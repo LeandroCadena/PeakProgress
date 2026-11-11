@@ -1,3 +1,4 @@
+import { matchesExerciseName } from "../i18n/exerciseText";
 import { useLanguage } from "../i18n/LanguageProvider";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
@@ -22,7 +23,7 @@ import { componentStyles, spacing, typography, useAppTheme, createThemedStyles }
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const { showToast } = useToast();
@@ -167,7 +168,7 @@ export default function ExercisesScreen({ navigation }: any) {
     const filterOptions = filterMode === "muscle" ? muscles : regions;
 
     const filteredExercises = exercises.filter((exercise) =>
-        exercise.name.toLowerCase().includes(search.toLowerCase())
+        matchesExerciseName(exercise, search, language)
     );
 
     function toggleFilterId(id: string) {

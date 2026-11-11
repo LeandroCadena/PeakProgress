@@ -1,6 +1,6 @@
 import type * as SQLite from "expo-sqlite";
 
-const DATABASE_VERSION = 10;
+const DATABASE_VERSION = 11;
 
 export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
     await db.execAsync("PRAGMA foreign_keys = ON;");
@@ -357,6 +357,15 @@ export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
             id, auto_update_on_cellular
         ) VALUES (1, 0);
     `);
+        }
+
+        if (currentVersion < 11) {
+            await tx.execAsync(`
+                ALTER TABLE catalog_exercises ADD COLUMN name_es TEXT;
+                ALTER TABLE catalog_exercises ADD COLUMN description_es TEXT;
+                ALTER TABLE catalog_exercises ADD COLUMN instructions_es TEXT;
+                ALTER TABLE catalog_exercises ADD COLUMN tips_es TEXT;
+            `);
         }
 
         await tx.execAsync(`PRAGMA user_version = ${DATABASE_VERSION};`);
