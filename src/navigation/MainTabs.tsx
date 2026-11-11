@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
+import { useLanguage } from "../i18n/LanguageProvider";
 import ExercisesScreen from "../screens/ExercisesScreen";
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
@@ -19,6 +20,7 @@ type MainTabsParamList = {
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 export default function MainTabs() {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     return (
         <Tab.Navigator
@@ -43,11 +45,27 @@ export default function MainTabs() {
                 },
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Routines" component={RoutinesScreen} />
-            <Tab.Screen name="Exercises" component={ExercisesScreen} />
-            <Tab.Screen name="Progress" component={ProgressScreen} />
-            <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="Home" component={HomeScreen} options={{ title: t("home") }} />
+            <Tab.Screen
+                name="Routines"
+                component={RoutinesScreen}
+                options={{ title: t("routines") }}
+            />
+            <Tab.Screen
+                name="Exercises"
+                component={ExercisesScreen}
+                options={{ title: t("exercises") }}
+            />
+            <Tab.Screen
+                name="Progress"
+                component={ProgressScreen}
+                options={{ title: t("progress") }}
+            />
+            <Tab.Screen
+                name="Profile"
+                component={ProfileScreen}
+                options={{ title: t("profile") }}
+            />
         </Tab.Navigator>
     );
 }

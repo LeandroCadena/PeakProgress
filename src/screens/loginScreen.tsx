@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { useLanguage } from "../i18n/LanguageProvider";
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
@@ -10,6 +11,7 @@ import { useToast } from "../context/ToastContext";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function LoginScreen({ navigation }: any) {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     const { signIn } = useAuth();
@@ -24,7 +26,7 @@ export default function LoginScreen({ navigation }: any) {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Login error.",
+                message: error instanceof Error ? error.message : t("loginError"),
             });
         }
     }
@@ -34,10 +36,10 @@ export default function LoginScreen({ navigation }: any) {
             <View style={styles.content}>
                 <Card style={styles.card}>
                     <Text style={styles.title}>PeakProgress</Text>
-                    <Text style={styles.subtitle}>Track your workouts. Build your progress.</Text>
+                    <Text style={styles.subtitle}>{t("loginDescription")}</Text>
 
                     <AppInput
-                        placeholder="Email"
+                        placeholder={t("email")}
                         autoCapitalize="none"
                         keyboardType="email-address"
                         value={email}
@@ -45,16 +47,16 @@ export default function LoginScreen({ navigation }: any) {
                     />
 
                     <AppInput
-                        placeholder="Password"
+                        placeholder={t("password")}
                         secureTextEntry
                         value={password}
                         onChangeText={setPassword}
                     />
 
-                    <AppButton title="Login" onPress={handleLogin} />
+                    <AppButton title={t("login")} onPress={handleLogin} />
 
                     <Pressable onPress={() => navigation.navigate("Register")}>
-                        <Text style={styles.link}>Create account</Text>
+                        <Text style={styles.link}>{t("createAccount")}</Text>
                     </Pressable>
                 </Card>
             </View>

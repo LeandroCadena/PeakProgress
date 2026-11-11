@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthProvider } from "./src/context/AuthContext";
 import { ToastProvider } from "./src/context/ToastContext";
 import { DatabaseProvider } from "./src/database/DatabaseProvider";
+import { LanguageProvider } from "./src/i18n/LanguageProvider";
 import AppNavigator from "./src/navigation/AppNavigator";
 import SyncCoordinator from "./src/sync/SyncCoordinator";
 import { ThemeProvider } from "./src/theme";
@@ -26,16 +27,18 @@ export default function App() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <ThemeProvider>
-                <DatabaseProvider>
-                    <AuthProvider>
-                        <ToastProvider>
-                            <SyncCoordinator />
-                            <AppNavigator />
-                        </ToastProvider>
-                    </AuthProvider>
-                </DatabaseProvider>
-            </ThemeProvider>
+            <LanguageProvider>
+                <ThemeProvider>
+                    <DatabaseProvider>
+                        <AuthProvider>
+                            <ToastProvider>
+                                <SyncCoordinator />
+                                <AppNavigator />
+                            </ToastProvider>
+                        </AuthProvider>
+                    </DatabaseProvider>
+                </ThemeProvider>
+            </LanguageProvider>
         </GestureHandlerRootView>
     );
 }

@@ -1,5 +1,6 @@
 import { Text, Pressable } from "react-native";
 
+import { useLanguage } from "../i18n/LanguageProvider";
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
@@ -7,31 +8,32 @@ import { useAuth } from "../context/AuthContext";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function ProfileScreen({ navigation }: any) {
+    const { t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const { signOut } = useAuth();
 
     return (
         <ScreenContainer>
-            <Text style={styles.title}>Profile</Text>
+            <Text style={styles.title}>{t("profile")}</Text>
 
             <Card style={styles.profileCard}>
-                <Text style={sharedStyles.screenSubtitle}>Athlete</Text>
-                <Text style={styles.profileSubtitle}>Track your workouts and stay consistent.</Text>
+                <Text style={sharedStyles.screenSubtitle}>{t("athlete")}</Text>
+                <Text style={styles.profileSubtitle}>{t("profileDescription")}</Text>
             </Card>
 
-            <Text style={sharedStyles.screenTitle}>Account</Text>
+            <Text style={sharedStyles.screenTitle}>{t("account")}</Text>
 
             <Card style={styles.menuItem}>
                 <Pressable
                     style={styles.menuContent}
                     onPress={() => navigation.navigate("PersonalInformation")}
                 >
-                    <Text style={styles.menuTitle}>Personal Information</Text>
+                    <Text style={styles.menuTitle}>{t("personalInformation")}</Text>
                     <Text style={styles.chevron}>›</Text>
                 </Pressable>
 
-                <Text style={styles.menuSubtitle}>Manage your profile and account</Text>
+                <Text style={styles.menuSubtitle}>{t("manageAccount")}</Text>
             </Card>
 
             <Card style={styles.menuItem}>
@@ -39,11 +41,11 @@ export default function ProfileScreen({ navigation }: any) {
                     style={styles.menuContent}
                     onPress={() => navigation.navigate("History")}
                 >
-                    <Text style={styles.menuTitle}>History</Text>
+                    <Text style={styles.menuTitle}>{t("history")}</Text>
                     <Text style={styles.chevron}>›</Text>
                 </Pressable>
 
-                <Text style={styles.menuSubtitle}>View your completed workouts</Text>
+                <Text style={styles.menuSubtitle}>{t("completedWorkouts")}</Text>
             </Card>
 
             <Card style={styles.menuItem}>
@@ -51,15 +53,15 @@ export default function ProfileScreen({ navigation }: any) {
                     style={styles.menuContent}
                     onPress={() => navigation.navigate("Settings")}
                 >
-                    <Text style={styles.menuTitle}>Settings</Text>
+                    <Text style={styles.menuTitle}>{t("settings")}</Text>
                     <Text style={styles.chevron}>›</Text>
                 </Pressable>
 
-                <Text style={styles.menuSubtitle}>App preferences and timers</Text>
+                <Text style={styles.menuSubtitle}>{t("appPreferences")}</Text>
             </Card>
 
             <AppButton
-                title="Logout"
+                title={t("logout")}
                 variant="danger"
                 onPress={signOut}
                 style={styles.logoutButton}

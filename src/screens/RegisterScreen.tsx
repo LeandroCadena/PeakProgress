@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { useLanguage } from "../i18n/LanguageProvider";
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
@@ -10,6 +11,7 @@ import { useToast } from "../context/ToastContext";
 import { componentStyles, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function RegisterScreen({ navigation }: any) {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     const { signUp } = useAuth();
@@ -23,13 +25,13 @@ export default function RegisterScreen({ navigation }: any) {
             await signUp(email.trim(), password);
             showToast({
                 type: "success",
-                message: "Account created. Please check your email to confirm your account.",
+                message: t("accountCreated"),
             });
             navigation.navigate("Login");
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Register error.",
+                message: error instanceof Error ? error.message : t("registerError"),
             });
         }
     }
@@ -38,11 +40,11 @@ export default function RegisterScreen({ navigation }: any) {
         <ScreenContainer>
             <View style={styles.content}>
                 <Card style={styles.card}>
-                    <Text style={styles.title}>Create account</Text>
-                    <Text style={styles.subtitle}>Start tracking your gym progress today.</Text>
+                    <Text style={styles.title}>{t("createAccount")}</Text>
+                    <Text style={styles.subtitle}>{t("registerDescription")}</Text>
 
                     <AppInput
-                        placeholder="Email"
+                        placeholder={t("email")}
                         autoCapitalize="none"
                         keyboardType="email-address"
                         value={email}
@@ -50,16 +52,16 @@ export default function RegisterScreen({ navigation }: any) {
                     />
 
                     <AppInput
-                        placeholder="Password"
+                        placeholder={t("password")}
                         secureTextEntry
                         value={password}
                         onChangeText={setPassword}
                     />
 
-                    <AppButton title="Register" onPress={handleRegister} />
+                    <AppButton title={t("register")} onPress={handleRegister} />
 
                     <Pressable onPress={() => navigation.navigate("Login")}>
-                        <Text style={styles.link}>Already have an account?</Text>
+                        <Text style={styles.link}>{t("alreadyRegistered")}</Text>
                     </Pressable>
                 </Card>
             </View>
