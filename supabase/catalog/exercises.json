@@ -2,107 +2,490 @@
   "Peso corporal": [
     {
       "id": "10a40be1-8868-50bd-87cc-da82b9630ee9",
-      "name_es": "Sentadilla con peso corporal"
+      "name_es": "Sentadilla con peso corporal",
+      "name": "Bodyweight Squat",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Abdominales"
+      ],
+      "description": "Unloaded squat on both legs.",
+      "description_es": "Sentadilla sin carga sobre ambas piernas.",
+      "instructions": "Bend your hips and knees to lower between your feet, then stand up while keeping your feet flat.",
+      "instructions_es": "Flexioná la cadera y las rodillas para bajar entre los pies. Volvé a subir manteniendo los pies apoyados."
     },
     {
       "id": "ec31cbec-b675-5389-9457-53aa8fba58c1",
-      "name_es": "Sentadilla búlgara con peso corporal"
+      "name_es": "Sentadilla búlgara con peso corporal",
+      "name": "Bodyweight Bulgarian Split Squat",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Split squat with the rear foot elevated.",
+      "description_es": "Sentadilla dividida con el pie trasero elevado.",
+      "instructions": "Rest your rear foot on a low bench. Bend the front knee to lower, then push through the front foot to rise.",
+      "instructions_es": "Apoyá el pie trasero en un banco bajo. Flexioná la rodilla delantera para bajar y empujá con ese pie para subir."
     },
     {
       "id": "a787ff34-920e-5daf-8500-a54692877dbd",
-      "name_es": "Sentadilla a una pierna"
+      "name_es": "Sentadilla a una pierna",
+      "name": "Pistol Squat",
+      "equipment": "Bodyweight",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Squat on one leg with the other held forward.",
+      "description_es": "Sentadilla sobre una pierna con la otra extendida hacia adelante.",
+      "instructions": "Extend one leg forward. Bend the supporting knee and hip as far as you can control, then stand without putting the raised foot down.",
+      "instructions_es": "Extendé una pierna hacia adelante. Flexioná la rodilla y la cadera de apoyo hasta donde puedas controlar y volvé a subir sin apoyar el otro pie."
     },
     {
       "id": "74c18d0b-8cc8-571a-8d64-1ee84b174fa5",
-      "name_es": "Zancada hacia adelante"
+      "name_es": "Zancada hacia adelante",
+      "name": "Forward Lunge",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Lunge initiated by stepping forward.",
+      "description_es": "Zancada que comienza con un paso hacia adelante.",
+      "instructions": "Step forward, bend both knees to lower, then push through the front foot to return to standing.",
+      "instructions_es": "Da un paso hacia adelante, flexioná ambas rodillas para bajar y empujá con el pie delantero para volver a la posición inicial."
     },
     {
       "id": "43416f39-c044-5cd8-af6c-b802f2cb6f61",
-      "name_es": "Zancada hacia atrás"
+      "name_es": "Zancada hacia atrás",
+      "name": "Reverse Lunge",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Lunge initiated by stepping backward.",
+      "description_es": "Zancada que comienza con un paso hacia atrás.",
+      "instructions": "Step backward and bend both knees. Push through the front foot and bring the rear foot forward to stand.",
+      "instructions_es": "Da un paso hacia atrás y flexioná ambas rodillas. Empujá con el pie delantero y acercá el pie trasero para volver a pararte."
     },
     {
       "id": "cc2dffa2-f913-5fc7-a6fb-d3d1d2ab07ca",
-      "name_es": "Zancada lateral"
+      "name_es": "Zancada lateral",
+      "name": "Lateral Lunge",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor",
+        "Aductores"
+      ],
+      "muscles_secondary": [
+        "Glúteo medio"
+      ],
+      "description": "Lunge toward the side with the other leg extended.",
+      "description_es": "Zancada lateral con la otra pierna extendida.",
+      "instructions": "Step sideways, bend the stepping knee and sit your hips back. Push off that foot to return to the center.",
+      "instructions_es": "Da un paso al costado, flexioná la rodilla de ese lado y llevá la cadera hacia atrás. Empujá con ese pie para volver al centro."
     },
     {
       "id": "db4ba2ac-8953-56a2-b869-7697e26edba8",
-      "name_es": "Subida al cajón"
+      "name_es": "Subida al cajón",
+      "name": "Box Step-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Glúteo medio"
+      ],
+      "description": "Step onto a box using one leg at a time.",
+      "description_es": "Subida a un cajón con una pierna por vez.",
+      "instructions": "Place one foot fully on a stable box. Push through that foot to stand on the box, then step down slowly.",
+      "instructions_es": "Apoyá todo un pie sobre un cajón estable. Empujá con ese pie para subir y bajá despacio."
     },
     {
       "id": "27da8400-4078-5e5c-b20f-b6efda2e675e",
-      "name_es": "Puente de glúteos"
+      "name_es": "Puente de glúteos",
+      "name": "Glute Bridge",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Abdominales"
+      ],
+      "description": "Hip extension while lying on the floor.",
+      "description_es": "Extensión de cadera acostado en el piso.",
+      "instructions": "Lie on your back with knees bent and feet flat. Raise your hips, then lower them under control.",
+      "instructions_es": "Acostate boca arriba con las rodillas flexionadas y los pies apoyados. Elevá la cadera y bajala de forma controlada."
     },
     {
       "id": "ebab5621-a23c-5205-ba7d-2f57b3029fd6",
-      "name_es": "Puente de glúteos a una pierna"
+      "name_es": "Puente de glúteos a una pierna",
+      "name": "Single-Leg Glute Bridge",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Glúteo medio",
+        "Abdominales"
+      ],
+      "description": "Glute bridge with one foot on the floor.",
+      "description_es": "Puente de glúteos con un solo pie apoyado.",
+      "instructions": "Lift one foot from the floor and press through the other foot to raise your hips. Keep your pelvis level as you lower.",
+      "instructions_es": "Levantá un pie del piso y empujá con el otro para elevar la cadera. Mantené la pelvis nivelada al bajar."
     },
     {
       "id": "c603dd04-9f85-5be3-9dee-8a446c4b0fb4",
-      "name_es": "Elevación de talones a una pierna"
+      "name_es": "Elevación de talones a una pierna",
+      "name": "Single-Leg Calf Raise",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Gastrocnemio",
+        "Sóleo"
+      ],
+      "muscles_secondary": [
+        "Tibial posterior"
+      ],
+      "description": "Heel raise performed on one foot.",
+      "description_es": "Elevación del talón sobre un solo pie.",
+      "instructions": "Stand on one foot and use a stable support for balance if needed. Raise your heel and lower it slowly.",
+      "instructions_es": "Parate sobre un pie y usá un apoyo firme si lo necesitás. Elevá el talón y bajalo despacio."
     },
     {
       "id": "292edf18-86ae-5386-adbc-c42d4aa46b3e",
-      "name_es": "Flexiones de brazos"
+      "name_es": "Flexiones de brazos",
+      "name": "Push-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor",
+        "Tríceps"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Abdominales"
+      ],
+      "description": "Horizontal bodyweight press from the floor.",
+      "description_es": "Empuje horizontal con peso corporal desde el piso.",
+      "instructions": "Start in a high plank. Bend your elbows to lower your chest toward the floor, then push back up.",
+      "instructions_es": "Empezá en plancha alta. Flexioná los codos para acercar el pecho al piso y empujá para volver a subir."
     },
     {
       "id": "5f19deee-ea4a-5d84-921a-2ebe7355f37f",
-      "name_es": "Flexiones inclinadas"
+      "name_es": "Flexiones inclinadas",
+      "name": "Incline Push-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor",
+        "Tríceps"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Abdominales"
+      ],
+      "description": "Push-up with hands on an elevated surface.",
+      "description_es": "Flexión de brazos con las manos en un apoyo elevado.",
+      "instructions": "Place your hands on a stable raised surface and keep your body straight. Lower your chest toward your hands, then push up.",
+      "instructions_es": "Apoyá las manos en una superficie elevada y firme. Mantené el cuerpo alineado, acercá el pecho a las manos y empujá para subir."
     },
     {
       "id": "a67dd76d-e8c8-5c74-865d-b48e8e28a55e",
-      "name_es": "Flexiones declinadas"
+      "name_es": "Flexiones declinadas",
+      "name": "Decline Push-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor",
+        "Deltoides anterior"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Abdominales"
+      ],
+      "description": "Push-up with feet elevated above the hands.",
+      "description_es": "Flexión de brazos con los pies elevados por encima de las manos.",
+      "instructions": "Place your feet on a stable bench and hands on the floor. Lower your chest without letting your hips sag, then press up.",
+      "instructions_es": "Apoyá los pies en un banco firme y las manos en el piso. Bajá el pecho sin dejar caer la cadera y empujá para subir."
     },
     {
       "id": "569f354e-7d19-528f-9d94-a926184e7d5c",
-      "name_es": "Flexiones diamante"
+      "name_es": "Flexiones diamante",
+      "name": "Diamond Push-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps",
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Abdominales"
+      ],
+      "description": "Close-hand push-up with thumbs and index fingers forming a diamond.",
+      "description_es": "Flexión con las manos juntas y los pulgares e índices formando un diamante.",
+      "instructions": "Set your hands close together below your chest. Bend your elbows to lower, then push back to a high plank.",
+      "instructions_es": "Colocá las manos juntas debajo del pecho. Flexioná los codos para bajar y empujá para volver a la plancha alta."
     },
     {
       "id": "79b2d42a-0964-5fc0-9ce8-3f7d19257d38",
-      "name_es": "Flexiones a un brazo"
+      "name_es": "Flexiones a un brazo",
+      "name": "One-Arm Push-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Pectoral mayor",
+        "Tríceps"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Oblicuos"
+      ],
+      "description": "Push-up supported by one arm and both feet.",
+      "description_es": "Flexión apoyada en un brazo y ambos pies.",
+      "instructions": "Set one hand under the working shoulder and spread your feet. Lower under control, then press up while limiting torso rotation.",
+      "instructions_es": "Apoyá una mano debajo del hombro que trabaja y separá los pies. Bajá de forma controlada y empujá evitando que el torso gire."
     },
     {
       "id": "805f2fe1-bd55-5a4b-a8c0-230566ab85a0",
-      "name_es": "Fondos en paralelas"
+      "name_es": "Fondos en paralelas",
+      "name": "Parallel-Bar Dip",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps",
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Bodyweight press between parallel bars.",
+      "description_es": "Empuje con peso corporal entre barras paralelas.",
+      "instructions": "Support yourself on the bars with arms extended. Bend your elbows to a comfortable depth, then press up.",
+      "instructions_es": "Sostenete en las barras con los brazos extendidos. Flexioná los codos hasta una profundidad cómoda y empujá para subir."
     },
     {
       "id": "98cfa410-09e2-535f-a1b1-da8c3d3c061f",
-      "name_es": "Dominadas con agarre prono"
+      "name_es": "Dominadas con agarre prono",
+      "name": "Overhand Pull-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio",
+        "Antebrazos"
+      ],
+      "description": "Vertical pull with palms facing away.",
+      "description_es": "Tracción vertical con las palmas hacia adelante.",
+      "instructions": "Hang from a bar with an overhand grip. Pull your upper chest toward the bar, then lower under control.",
+      "instructions_es": "Colgate de una barra con agarre prono. Llevá la parte alta del pecho hacia la barra y bajá de forma controlada."
     },
     {
       "id": "de1a9faf-78b5-5ca8-9e9e-d39a7304c2a6",
-      "name_es": "Dominadas con agarre supino"
+      "name_es": "Dominadas con agarre supino",
+      "name": "Chin-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Trapecio",
+        "Antebrazos"
+      ],
+      "description": "Vertical pull with palms facing you.",
+      "description_es": "Tracción vertical con las palmas hacia vos.",
+      "instructions": "Hang with palms facing you. Pull until your chin clears the bar, then lower without swinging.",
+      "instructions_es": "Colgate con las palmas hacia vos. Subí hasta pasar la barra con el mentón y bajá sin balancearte."
     },
     {
       "id": "dc714193-e8ca-5df2-95e8-2658e1550c59",
-      "name_es": "Dominadas con agarre neutro"
+      "name_es": "Dominadas con agarre neutro",
+      "name": "Neutral-Grip Pull-Up",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Braquial",
+        "Antebrazos"
+      ],
+      "description": "Vertical pull using handles with palms facing each other.",
+      "description_es": "Tracción vertical en manijas con las palmas enfrentadas.",
+      "instructions": "Hang from parallel handles. Pull your chest toward the handles, then lower until your arms extend.",
+      "instructions_es": "Colgate de manijas paralelas. Llevá el pecho hacia las manijas y bajá hasta extender los brazos."
     },
     {
       "id": "c6252420-cd35-57a6-a72c-5fb9b595383c",
-      "name_es": "Remo invertido"
+      "name_es": "Remo invertido",
+      "name": "Inverted Row",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior"
+      ],
+      "description": "Horizontal bodyweight row from underneath a fixed bar.",
+      "description_es": "Remo horizontal con peso corporal debajo de una barra fija.",
+      "instructions": "Hold a securely fixed low bar with your heels on the floor. Pull your chest toward the bar and lower with your body straight.",
+      "instructions_es": "Sujetá una barra baja bien fija con los talones en el piso. Acercá el pecho a la barra y bajá manteniendo el cuerpo alineado."
     },
     {
       "id": "cfa143c8-5fb2-5535-801e-05dbf219b23c",
-      "name_es": "Plancha frontal"
+      "name_es": "Plancha frontal",
+      "name": "Front Plank",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Abdominales"
+      ],
+      "muscles_secondary": [
+        "Oblicuos",
+        "Glúteo mayor"
+      ],
+      "description": "Isometric hold on forearms and toes.",
+      "description_es": "Posición isométrica sobre antebrazos y puntas de los pies.",
+      "instructions": "Set your elbows under your shoulders and extend your legs. Hold your trunk steady without letting your hips sag.",
+      "instructions_es": "Apoyá los codos debajo de los hombros y extendé las piernas. Mantené el tronco firme sin dejar caer la cadera."
     },
     {
       "id": "007c41bc-1418-5dbd-8058-b1c58c7b8469",
-      "name_es": "Plancha lateral"
+      "name_es": "Plancha lateral",
+      "name": "Side Plank",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Oblicuos"
+      ],
+      "muscles_secondary": [
+        "Abdominales",
+        "Glúteo medio"
+      ],
+      "description": "Isometric hold supported on one forearm and the side of the feet.",
+      "description_es": "Posición isométrica sobre un antebrazo y el lateral de los pies.",
+      "instructions": "Set your elbow below your shoulder and stack your feet. Lift your hips and hold your body in a straight line.",
+      "instructions_es": "Apoyá el codo debajo del hombro y colocá un pie sobre el otro. Elevá la cadera y mantené el cuerpo alineado."
     },
     {
       "id": "ce827f3e-ccdf-521e-b155-18bbd01ec10d",
-      "name_es": "Elevación de rodillas colgado"
+      "name_es": "Elevación de rodillas colgado",
+      "name": "Hanging Knee Raise",
+      "equipment": "Bodyweight",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Abdominales",
+        "Flexores de cadera"
+      ],
+      "muscles_secondary": [
+        "Oblicuos",
+        "Antebrazos"
+      ],
+      "description": "Knee raise while hanging from a bar.",
+      "description_es": "Elevación de rodillas mientras estás colgado de una barra.",
+      "instructions": "Hang from a bar and bring your bent knees toward your chest. Lower slowly without swinging.",
+      "instructions_es": "Colgate de una barra y acercá las rodillas flexionadas al pecho. Bajá despacio sin balancearte."
     },
     {
       "id": "525b4ef5-2841-5f24-ad1a-ed868ce8a02c",
-      "name_es": "Elevación de piernas colgado"
+      "name_es": "Elevación de piernas colgado",
+      "name": "Hanging Leg Raise",
+      "equipment": "Bodyweight",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Abdominales",
+        "Flexores de cadera"
+      ],
+      "muscles_secondary": [
+        "Oblicuos",
+        "Antebrazos"
+      ],
+      "description": "Straight-leg raise while hanging from a bar.",
+      "description_es": "Elevación de piernas extendidas mientras estás colgado de una barra.",
+      "instructions": "Hang from a bar and raise your legs together with knees mostly straight. Lower them slowly without swinging.",
+      "instructions_es": "Colgate de una barra y elevá las piernas juntas con las rodillas casi extendidas. Bajalas despacio sin balancearte."
     },
     {
       "id": "2074b1e8-4054-57a5-8c1d-c4068b652d73",
-      "name_es": "Abdominales inversos"
+      "name_es": "Abdominales inversos",
+      "name": "Reverse Crunch",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Abdominales"
+      ],
+      "muscles_secondary": [
+        "Oblicuos"
+      ],
+      "description": "Abdominal curl that lifts the pelvis instead of the shoulders.",
+      "description_es": "Abdominal en el que se eleva la pelvis con los hombros apoyados.",
+      "instructions": "Lie on your back with knees bent. Curl your pelvis toward your ribs until your hips lift slightly, then lower slowly.",
+      "instructions_es": "Acostate boca arriba con las rodillas flexionadas. Acercá la pelvis a las costillas hasta despegar un poco la cadera y bajá despacio."
     },
     {
       "id": "992e84ff-9653-5b94-aa0f-5ea4ed2c49df",
-      "name_es": "Bicho muerto"
+      "name_es": "Bicho muerto",
+      "name": "Dead Bug",
+      "equipment": "Bodyweight",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Abdominales"
+      ],
+      "muscles_secondary": [
+        "Oblicuos",
+        "Flexores de cadera"
+      ],
+      "description": "Alternating opposite-arm and opposite-leg extension while lying on your back.",
+      "description_es": "Extensión alternada del brazo y la pierna contrarios, acostado boca arriba.",
+      "instructions": "Start with arms reaching up and knees bent above your hips. Lower one arm and the opposite leg, then return and switch sides.",
+      "instructions_es": "Empezá con los brazos hacia arriba y las rodillas flexionadas sobre la cadera. Bajá un brazo y la pierna contraria, volvé al centro y alterná."
     }
   ],
   "Máquinas": [
