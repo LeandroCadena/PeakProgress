@@ -2710,161 +2710,714 @@
   "Barra guiada": [
     {
       "id": "f6591a5c-0a53-5ab1-b475-b9ef739ab566",
-      "name_es": "Sentadilla en barra guiada"
+      "name_es": "Sentadilla en barra guiada",
+      "name": "Smith Machine Squat",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores"
+      ],
+      "description": "Squat on a fixed bar path.",
+      "description_es": "Sentadilla con recorrido guiado de la barra.",
+      "instructions": "Set the stops, position the bar across your upper back and bend your hips and knees. Push through both feet to stand.",
+      "instructions_es": "Ajustá los topes, apoyá la barra sobre la espalda alta y flexioná la cadera y las rodillas. Empujá con ambos pies para subir."
     },
     {
       "id": "ebc7ac7e-5fc5-5b14-b9db-7d4a39fbb7ec",
-      "name_es": "Sentadilla búlgara en barra guiada"
+      "name_es": "Sentadilla búlgara en barra guiada",
+      "name": "Smith Machine Bulgarian Split Squat",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Glúteo medio",
+        "Aductores"
+      ],
+      "description": "Rear-foot-elevated split squat with a guided bar.",
+      "description_es": "Sentadilla dividida con barra guiada y el pie trasero elevado.",
+      "instructions": "Place the rear foot on a stable bench. Lower by bending the front knee and press through the front foot to rise.",
+      "instructions_es": "Apoyá el pie trasero en un banco firme. Bajá flexionando la rodilla delantera y empujá con ese pie para subir."
     },
     {
       "id": "be91ffa9-c6f0-5097-857a-5a5e83ff3e15",
-      "name_es": "Peso muerto rumano en barra guiada"
+      "name_es": "Peso muerto rumano en barra guiada",
+      "name": "Smith Machine Romanian Deadlift",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Isquiotibiales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Erectores espinales",
+        "Antebrazos"
+      ],
+      "description": "Hip hinge using a guided bar.",
+      "description_es": "Bisagra de cadera con barra guiada.",
+      "instructions": "Soften your knees, move your hips back and lower the bar close to your legs. Extend your hips to stand.",
+      "instructions_es": "Flexioná apenas las rodillas, llevá la cadera hacia atrás y bajá la barra cerca de las piernas. Extendé la cadera para subir."
     },
     {
       "id": "f83c5f98-56e1-501a-8276-c76c5095588b",
-      "name_es": "Empuje de cadera en barra guiada"
+      "name_es": "Empuje de cadera en barra guiada",
+      "name": "Smith Machine Hip Thrust",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Aductores"
+      ],
+      "description": "Hip extension against a padded guided bar.",
+      "description_es": "Extensión de cadera contra una barra guiada acolchada.",
+      "instructions": "Brace your upper back on a stable bench and set the padded bar across your hips. Push through your feet to lift your pelvis and lower slowly.",
+      "instructions_es": "Apoyá la espalda alta en un banco firme y colocá la barra acolchada sobre la cadera. Empujá con los pies para elevar la pelvis y bajá despacio."
     },
     {
       "id": "cdff231f-2b5f-525d-a30c-880acbda07fe",
-      "name_es": "Elevación de talones en barra guiada"
+      "name_es": "Elevación de talones en barra guiada",
+      "name": "Smith Machine Calf Raise",
+      "equipment": "Smith Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Gastrocnemio",
+        "Sóleo"
+      ],
+      "muscles_secondary": [],
+      "description": "Standing heel raise with a guided bar on the upper back.",
+      "description_es": "Elevación de talones de pie con barra guiada sobre la espalda alta.",
+      "instructions": "With the balls of your feet on a stable platform, raise your heels and lower them slowly, keeping your knees nearly straight.",
+      "instructions_es": "Con la parte delantera de los pies sobre una plataforma firme, elevá los talones y bajalos despacio con las rodillas casi extendidas."
     },
     {
       "id": "9fc4d4ce-332d-5709-8c4a-d26e2cdf00da",
-      "name_es": "Press de banca en barra guiada"
+      "name_es": "Press de banca en barra guiada",
+      "name": "Smith Machine Bench Press",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Horizontal press on a flat bench under a guided bar.",
+      "description_es": "Empuje horizontal en banco plano debajo de una barra guiada.",
+      "instructions": "Center the bench and set the stops. Lower the bar toward your chest and press it up with both feet planted.",
+      "instructions_es": "Centrá el banco y ajustá los topes. Bajá la barra hacia el pecho y empujala con ambos pies apoyados."
     },
     {
       "id": "8e19342f-b942-5a3e-bf31-e03d780d1d21",
-      "name_es": "Press inclinado en barra guiada"
+      "name_es": "Press inclinado en barra guiada",
+      "name": "Incline Smith Machine Bench Press",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Tríceps"
+      ],
+      "description": "Incline chest press using a guided bar.",
+      "description_es": "Press inclinado de pecho con barra guiada.",
+      "instructions": "Position an incline bench so the bar reaches your upper chest. Set the stops, lower under control and press up.",
+      "instructions_es": "Ubicá un banco inclinado para que la barra baje hacia la parte alta del pecho. Ajustá los topes, bajá de forma controlada y empujá hacia arriba."
     },
     {
       "id": "d5cec14d-6bbd-5889-8ae8-631adfb6ef26",
-      "name_es": "Press de hombros en barra guiada"
+      "name_es": "Press de hombros en barra guiada",
+      "name": "Smith Machine Shoulder Press",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps"
+      ],
+      "description": "Seated overhead press using a guided bar.",
+      "description_es": "Empuje sentado por encima de la cabeza con barra guiada.",
+      "instructions": "Sit on an upright bench with the bar in front of you. Press from shoulder height and lower slowly.",
+      "instructions_es": "Sentate en un banco con respaldo vertical y la barra por delante. Empujá desde la altura de los hombros y bajá despacio."
     },
     {
       "id": "16d54358-84cc-5873-9210-4b1ccbbe7ae3",
-      "name_es": "Remo inclinado en barra guiada"
+      "name_es": "Remo inclinado en barra guiada",
+      "name": "Smith Machine Bent-Over Row",
+      "equipment": "Smith Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior",
+        "Erectores espinales"
+      ],
+      "description": "Bent-over row on the machine’s fixed bar path.",
+      "description_es": "Remo inclinado sobre el recorrido fijo de la barra guiada.",
+      "instructions": "Hinge at the hips and pull the bar toward your lower ribs. Extend your arms without changing your torso angle.",
+      "instructions_es": "Incliná el torso desde la cadera y llevá la barra hacia las costillas bajas. Extendé los brazos sin cambiar la inclinación del torso."
     }
   ],
   "Pesas rusas": [
     {
       "id": "7861e2f8-c6e8-549b-bc5f-026e54204e67",
-      "name_es": "Balanceo con pesa rusa a dos manos"
+      "name_es": "Balanceo con pesa rusa a dos manos",
+      "name": "Two-Hand Kettlebell Swing",
+      "equipment": "Kettlebell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Glúteo mayor",
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Erectores espinales",
+        "Antebrazos"
+      ],
+      "description": "Ballistic hip hinge holding the kettlebell with both hands.",
+      "description_es": "Bisagra de cadera explosiva con la pesa rusa sostenida con ambas manos.",
+      "instructions": "Hike the bell between your legs, then extend your hips quickly to let it float forward. Hinge again as it returns.",
+      "instructions_es": "Llevá la pesa entre las piernas y extendé la cadera con rapidez para que avance. Volvé a flexionar la cadera cuando regrese."
     },
     {
       "id": "e4f85cce-308d-5720-816c-22cf8ab0019b",
-      "name_es": "Balanceo con pesa rusa a un brazo"
+      "name_es": "Balanceo con pesa rusa a un brazo",
+      "name": "Single-Arm Kettlebell Swing",
+      "equipment": "Kettlebell",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Glúteo mayor",
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Oblicuos",
+        "Antebrazos"
+      ],
+      "description": "Kettlebell swing with one hand and added rotational demand.",
+      "description_es": "Balanceo de pesa rusa con una mano que exige estabilizar la rotación.",
+      "instructions": "Guide the bell between your legs with one hand. Drive it forward from the hips while keeping your shoulders facing ahead.",
+      "instructions_es": "Guiá la pesa entre las piernas con una mano. Impulsala desde la cadera con los hombros orientados hacia adelante."
     },
     {
       "id": "86334d0e-2487-526a-8daf-2ca6619a5b86",
-      "name_es": "Sentadilla con pesa rusa al pecho"
+      "name_es": "Sentadilla con pesa rusa al pecho",
+      "name": "Kettlebell Goblet Squat",
+      "equipment": "Kettlebell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Abdominales"
+      ],
+      "description": "Squat with a kettlebell held close to the chest.",
+      "description_es": "Sentadilla con una pesa rusa sostenida cerca del pecho.",
+      "instructions": "Hold the bell by the sides of the handle. Bend your hips and knees, then stand while keeping your feet flat.",
+      "instructions_es": "Sujetá la pesa por los costados del asa. Flexioná la cadera y las rodillas y volvé a subir con los pies apoyados."
     },
     {
       "id": "0463c0d4-98a9-531f-a021-998610cea239",
-      "name_es": "Peso muerto con pesa rusa"
+      "name_es": "Peso muerto con pesa rusa",
+      "name": "Kettlebell Deadlift",
+      "equipment": "Kettlebell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo mayor",
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Cuádriceps",
+        "Erectores espinales"
+      ],
+      "description": "Two-hand lift of a kettlebell from the floor.",
+      "description_es": "Levantamiento de una pesa rusa desde el piso con ambas manos.",
+      "instructions": "Stand over the bell, bend your hips and knees and grasp the handle. Stand tall, then set it back down under control.",
+      "instructions_es": "Parate sobre la pesa, flexioná la cadera y las rodillas y sujetá el asa. Parate erguido y volvé a apoyarla de forma controlada."
     },
     {
       "id": "93a0c3fe-9c67-5a21-978a-7764800735ef",
-      "name_es": "Peso muerto a una pierna con pesa rusa"
+      "name_es": "Peso muerto a una pierna con pesa rusa",
+      "name": "Single-Leg Kettlebell Deadlift",
+      "equipment": "Kettlebell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Isquiotibiales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Glúteo medio",
+        "Oblicuos"
+      ],
+      "description": "Kettlebell hip hinge supported on one leg.",
+      "description_es": "Bisagra de cadera con pesa rusa sobre una pierna.",
+      "instructions": "Hold the bell opposite the supporting leg. Reach your free leg back as you lower the bell, then stand without turning your pelvis.",
+      "instructions_es": "Sostené la pesa del lado contrario a la pierna de apoyo. Llevá la pierna libre hacia atrás al bajar y volvé a pararte sin girar la pelvis."
     },
     {
       "id": "5210c1b6-00f3-550f-95ec-602450e9fdef",
-      "name_es": "Remo a un brazo con pesa rusa"
+      "name_es": "Remo a un brazo con pesa rusa",
+      "name": "Single-Arm Kettlebell Row",
+      "equipment": "Kettlebell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior"
+      ],
+      "description": "One-arm row using a kettlebell.",
+      "description_es": "Remo a un brazo con pesa rusa.",
+      "instructions": "Brace your free hand on a bench, hinge at the hips and pull the bell toward your waist. Lower without twisting.",
+      "instructions_es": "Apoyá la mano libre en un banco, incliná el torso desde la cadera y acercá la pesa a la cintura. Bajala sin girar."
     },
     {
       "id": "53887c7f-b108-5c21-ad7d-5c50de57abd0",
-      "name_es": "Press de hombros a un brazo con pesa rusa"
+      "name_es": "Press de hombros a un brazo con pesa rusa",
+      "name": "Single-Arm Kettlebell Shoulder Press",
+      "equipment": "Kettlebell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Oblicuos"
+      ],
+      "description": "Strict overhead press from a one-sided kettlebell rack position.",
+      "description_es": "Empuje estricto por encima de la cabeza con la pesa rusa apoyada de un lado.",
+      "instructions": "Start with the bell near one shoulder and resting against your forearm. Press overhead and return without leaning sideways.",
+      "instructions_es": "Empezá con la pesa cerca de un hombro, apoyada contra el antebrazo. Empujá por encima de la cabeza y volvé sin inclinarte al costado."
     },
     {
       "id": "9ec6bdca-b146-55f0-946d-f548a6db6478",
-      "name_es": "Levantamiento turco con pesa rusa"
+      "name_es": "Levantamiento turco con pesa rusa",
+      "name": "Kettlebell Turkish Get-Up",
+      "equipment": "Kettlebell",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Abdominales",
+        "Oblicuos"
+      ],
+      "muscles_secondary": [
+        "Glúteo mayor",
+        "Cuádriceps",
+        "Tríceps"
+      ],
+      "description": "Floor-to-standing sequence holding a kettlebell overhead.",
+      "description_es": "Secuencia del piso a la posición de pie con una pesa rusa sostenida por encima de la cabeza.",
+      "instructions": "With the loaded arm vertical, roll to the opposite elbow and hand, sweep the free leg under into a half-kneel and stand. Reverse the sequence to return.",
+      "instructions_es": "Con el brazo cargado vertical, apoyate sobre el codo y la mano contrarios. Pasá la pierna libre por debajo para quedar con una rodilla apoyada y parate. Invertí la secuencia para bajar."
     }
   ],
   "Bandas elásticas": [
     {
       "id": "3b56c57d-a1c3-595a-a20e-8224892ddae8",
-      "name_es": "Sentadilla con banda elástica"
+      "name_es": "Sentadilla con banda elástica",
+      "name": "Resistance Band Squat",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Abdominales"
+      ],
+      "description": "Squat against a band held at shoulder height.",
+      "description_es": "Sentadilla contra una banda sostenida a la altura de los hombros.",
+      "instructions": "Stand on the center of the band and hold the ends near your shoulders. Squat with your feet planted and stand back up.",
+      "instructions_es": "Pisá el centro de la banda y sostené los extremos cerca de los hombros. Bajá en sentadilla con los pies apoyados y volvé a subir."
     },
     {
       "id": "92db6a17-c643-531a-b99b-aa8f0761cb34",
-      "name_es": "Caminata lateral con banda elástica"
+      "name_es": "Caminata lateral con banda elástica",
+      "name": "Lateral Band Walk",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo medio",
+        "Glúteo menor"
+      ],
+      "muscles_secondary": [
+        "Tensor de la fascia lata"
+      ],
+      "description": "Side steps against a loop band.",
+      "description_es": "Pasos laterales contra una banda cerrada.",
+      "instructions": "Place the loop above your knees, bend your hips and knees slightly and take controlled side steps while keeping tension in the band.",
+      "instructions_es": "Colocá la banda por encima de las rodillas, flexioná levemente la cadera y las rodillas y da pasos laterales controlados manteniendo la tensión."
     },
     {
       "id": "9af9b6ea-0e70-52db-94f9-2c09bd8308c6",
-      "name_es": "Abducción de cadera con banda elástica"
+      "name_es": "Abducción de cadera con banda elástica",
+      "name": "Band Hip Abduction",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo medio",
+        "Glúteo menor"
+      ],
+      "muscles_secondary": [
+        "Tensor de la fascia lata"
+      ],
+      "description": "Standing side leg raise against a loop band.",
+      "description_es": "Elevación lateral de pierna de pie con una banda cerrada.",
+      "instructions": "Place the loop around your ankles and hold a stable support. Move one leg out to the side without tilting your pelvis.",
+      "instructions_es": "Colocá la banda alrededor de los tobillos y sujetate de un apoyo firme. Separá una pierna hacia el costado sin inclinar la pelvis."
     },
     {
       "id": "4a8fb294-9ccc-5bde-b3b8-0013a5103e4f",
-      "name_es": "Puente de glúteos con banda elástica"
+      "name_es": "Puente de glúteos con banda elástica",
+      "name": "Banded Glute Bridge",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Glúteo medio",
+        "Isquiotibiales"
+      ],
+      "description": "Floor bridge with a loop band above the knees.",
+      "description_es": "Puente de glúteos en el piso con una banda por encima de las rodillas.",
+      "instructions": "Lie on your back with both feet planted. Keep slight outward tension on the band as you lift and lower your hips.",
+      "instructions_es": "Acostate boca arriba con ambos pies apoyados. Mantené una leve tensión hacia afuera en la banda al elevar y bajar la cadera."
     },
     {
       "id": "3065b610-0471-5656-83af-f94979387c32",
-      "name_es": "Dominadas asistidas con banda elástica"
+      "name_es": "Dominadas asistidas con banda elástica",
+      "name": "Band-Assisted Pull-Up",
+      "equipment": "Resistance Band",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio",
+        "Antebrazos"
+      ],
+      "description": "Pull-up assisted by an elastic loop secured to the bar.",
+      "description_es": "Dominada asistida por una banda cerrada fijada a la barra.",
+      "instructions": "Secure the loop to the bar and place a foot or knee in it. Pull toward the bar and lower slowly.",
+      "instructions_es": "Fijá la banda a la barra y colocá un pie o una rodilla dentro. Acercate a la barra y bajá despacio."
     },
     {
       "id": "62858e37-e4ee-5956-8c12-bb618131d9a8",
-      "name_es": "Remo con banda elástica"
+      "name_es": "Remo con banda elástica",
+      "name": "Resistance Band Row",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio"
+      ],
+      "description": "Two-arm horizontal row against an anchored band.",
+      "description_es": "Remo horizontal a dos brazos contra una banda anclada.",
+      "instructions": "Anchor the band near waist height. Draw both elbows back and extend your arms slowly.",
+      "instructions_es": "Anclá la banda cerca de la cintura. Llevá ambos codos hacia atrás y extendé los brazos despacio."
     },
     {
       "id": "d086903c-d156-520c-b44b-14f753a515f0",
-      "name_es": "Remo a un brazo con banda elástica"
+      "name_es": "Remo a un brazo con banda elástica",
+      "name": "Single-Arm Resistance Band Row",
+      "equipment": "Resistance Band",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Oblicuos"
+      ],
+      "description": "One-arm horizontal row against an anchored band.",
+      "description_es": "Remo horizontal a un brazo contra una banda anclada.",
+      "instructions": "Face a waist-height anchor. Pull the band toward your side without turning your torso, then switch arms.",
+      "instructions_es": "Parate frente a un anclaje a la altura de la cintura. Tirá de la banda hacia el costado sin girar el torso y cambiá de brazo."
     },
     {
       "id": "3170c48f-3860-5a36-82f9-5cb9a480cc24",
-      "name_es": "Press de pecho con banda elástica"
+      "name_es": "Press de pecho con banda elástica",
+      "name": "Resistance Band Chest Press",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Standing forward press against a band anchored behind you.",
+      "description_es": "Empuje de pecho de pie contra una banda anclada detrás.",
+      "instructions": "Face away from a chest-height anchor with one foot forward. Press both hands forward and return slowly.",
+      "instructions_es": "Ponete de espaldas a un anclaje a la altura del pecho con un pie adelante. Empujá ambas manos hacia adelante y volvé despacio."
     },
     {
       "id": "2e7c8397-d1b5-58ae-892c-8e8166b68513",
-      "name_es": "Press de pecho a un brazo con banda elástica"
+      "name_es": "Press de pecho a un brazo con banda elástica",
+      "name": "Single-Arm Resistance Band Chest Press",
+      "equipment": "Resistance Band",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior",
+        "Oblicuos"
+      ],
+      "description": "Standing one-arm chest press against a band.",
+      "description_es": "Empuje de pecho de pie a un brazo contra una banda.",
+      "instructions": "Face away from the anchor and press the band forward with one hand. Keep your shoulders square and switch sides.",
+      "instructions_es": "Ponete de espaldas al anclaje y empujá la banda hacia adelante con una mano. Mantené los hombros alineados y cambiá de lado."
     },
     {
       "id": "81fca59c-ff6f-5593-8d42-149d1ae4c880",
-      "name_es": "Elevación lateral a un brazo con banda elástica"
+      "name_es": "Elevación lateral a un brazo con banda elástica",
+      "name": "Single-Arm Resistance Band Lateral Raise",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Supraespinoso",
+        "Trapecio"
+      ],
+      "description": "One-arm side raise against a band underfoot.",
+      "description_es": "Elevación lateral a un brazo contra una banda pisada.",
+      "instructions": "Step on one end of the band. With a soft elbow, raise the working arm out to shoulder height and lower slowly.",
+      "instructions_es": "Pisá un extremo de la banda. Con el codo apenas flexionado, elevá el brazo hacia el costado hasta la altura del hombro y bajalo despacio."
     },
     {
       "id": "c5c02120-d14c-562c-b394-9a60bc17c021",
-      "name_es": "Curl de bíceps con banda elástica"
+      "name_es": "Curl de bíceps con banda elástica",
+      "name": "Resistance Band Biceps Curl",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "Standing curl against a band under both feet.",
+      "description_es": "Curl de pie contra una banda pisada con ambos pies.",
+      "instructions": "Stand on the band, hold the ends with palms up and bend your elbows. Lower without swinging.",
+      "instructions_es": "Pisá la banda, sujetá los extremos con las palmas hacia arriba y flexioná los codos. Bajá sin balancearte."
     },
     {
       "id": "379ce4e7-e9f2-5c5c-992b-0ca69cc5650c",
-      "name_es": "Extensión de tríceps con banda elástica"
+      "name_es": "Extensión de tríceps con banda elástica",
+      "name": "Resistance Band Triceps Pushdown",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Elbow extension against a band anchored overhead.",
+      "description_es": "Extensión de codos contra una banda anclada arriba.",
+      "instructions": "Anchor the band overhead and hold its ends. Keep your elbows at your sides, extend them downward and return slowly.",
+      "instructions_es": "Anclá la banda arriba y sujetá los extremos. Mantené los codos a los costados, extendelos hacia abajo y volvé despacio."
     },
     {
       "id": "a6b03680-bfa3-5017-831a-db1e60f6e020",
-      "name_es": "Rotación externa de hombro con banda elástica"
+      "name_es": "Rotación externa de hombro con banda elástica",
+      "name": "Resistance Band Shoulder External Rotation",
+      "equipment": "Resistance Band",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Infraespinoso",
+        "Redondo menor"
+      ],
+      "muscles_secondary": [
+        "Deltoides posterior"
+      ],
+      "description": "Outward shoulder rotation against a band at elbow height.",
+      "description_es": "Rotación externa del hombro contra una banda a la altura del codo.",
+      "instructions": "Stand sideways to the anchor. Hold the band with the far hand, keep that elbow against your side and rotate the forearm outward.",
+      "instructions_es": "Parate de costado al anclaje. Sujetá la banda con la mano más alejada, mantené el codo pegado al cuerpo y girá el antebrazo hacia afuera."
     }
   ],
   "Otros accesorios": [
     {
       "id": "60abb484-f50f-5172-913b-0d5dcd3f30e3",
-      "name_es": "Abdominales con rueda"
+      "name_es": "Abdominales con rueda",
+      "name": "Ab Wheel Rollout",
+      "equipment": "Ab Wheel",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Abdominales",
+        "Oblicuos"
+      ],
+      "muscles_secondary": [
+        "Dorsal ancho",
+        "Glúteo mayor"
+      ],
+      "description": "Kneeling rollout that challenges control of trunk extension.",
+      "description_es": "Desplazamiento con rueda desde las rodillas que exige controlar la extensión del tronco.",
+      "instructions": "Kneel and roll the wheel forward only as far as you can keep your lower back steady. Pull back to the start.",
+      "instructions_es": "Arrodillate y llevá la rueda hacia adelante solo hasta donde puedas mantener firme la zona lumbar. Volvé a la posición inicial."
     },
     {
       "id": "a203f582-9c0f-5cc0-bd4f-07d791f488df",
-      "name_es": "Extensión de espalda en banco a 45°"
+      "name_es": "Extensión de espalda en banco a 45°",
+      "name": "45-Degree Back Extension",
+      "equipment": "Back Extension Bench",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Erectores espinales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales"
+      ],
+      "description": "Hip hinge on a 45-degree back extension bench.",
+      "description_es": "Bisagra de cadera en banco de extensión a 45°.",
+      "instructions": "Set the pad below your hip crease and secure your feet. Hinge down and rise until your torso aligns with your legs.",
+      "instructions_es": "Ajustá la almohadilla debajo del pliegue de la cadera y asegurá los pies. Bajá desde la cadera y subí hasta alinear el torso con las piernas."
     },
     {
       "id": "31dcce99-e678-5d98-912e-6e5163cc705f",
-      "name_es": "Extensión de espalda en banco a 45° con disco"
+      "name_es": "Extensión de espalda en banco a 45° con disco",
+      "name": "Weighted 45-Degree Back Extension",
+      "equipment": "Back Extension Bench and Plate",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Erectores espinales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales"
+      ],
+      "description": "45-degree back extension holding a plate at the chest.",
+      "description_es": "Extensión de espalda en banco a 45° con un disco contra el pecho.",
+      "instructions": "Hold a plate at your chest, lower by hinging at the hips and rise until your torso aligns with your legs.",
+      "instructions_es": "Sostené un disco contra el pecho, bajá flexionando la cadera y subí hasta alinear el torso con las piernas."
     },
     {
       "id": "c661f6a2-01f6-58b6-a068-39cc98c29e18",
-      "name_es": "Curl nórdico"
+      "name_es": "Curl nórdico",
+      "name": "Nordic Hamstring Curl",
+      "equipment": "Nordic Bench",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Gastrocnemio",
+        "Glúteo mayor"
+      ],
+      "description": "Kneeling hamstring exercise with the ankles anchored.",
+      "description_es": "Ejercicio de isquiotibiales desde las rodillas con los tobillos fijados.",
+      "instructions": "Anchor your ankles and lower your body forward from the knees with hips extended. Catch yourself with your hands and use them as needed to return.",
+      "instructions_es": "Fijá los tobillos y bajá el cuerpo hacia adelante desde las rodillas con la cadera extendida. Frená con las manos y usalas para volver si hace falta."
     },
     {
       "id": "2ee56e5c-790c-5166-a75c-8793a3e9c24a",
-      "name_es": "Lanzamiento de balón medicinal al suelo"
+      "name_es": "Lanzamiento de balón medicinal al suelo",
+      "name": "Medicine Ball Slam",
+      "equipment": "Medicine Ball",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Abdominales",
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Cuádriceps"
+      ],
+      "description": "Overhead throw of a slam ball into the floor.",
+      "description_es": "Lanzamiento al piso desde arriba con un balón apto para impactos.",
+      "instructions": "Lift a low-bounce slam ball overhead. Drive it into the floor in front of you and reset before repeating.",
+      "instructions_es": "Elevá por encima de la cabeza un balón de bajo rebote apto para impactos. Lanzalo al piso delante tuyo y retomá la posición antes de repetir."
     },
     {
       "id": "95fc254b-b96b-5fea-9e95-7b7872db17dc",
-      "name_es": "Lanzamiento rotacional de balón medicinal contra la pared"
+      "name_es": "Lanzamiento rotacional de balón medicinal contra la pared",
+      "name": "Rotational Medicine Ball Wall Throw",
+      "equipment": "Medicine Ball",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Oblicuos",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Pectoral mayor",
+        "Deltoides anterior"
+      ],
+      "description": "Side-on medicine ball throw driven by hip and torso rotation.",
+      "description_es": "Lanzamiento lateral de balón medicinal impulsado por la rotación de la cadera y el torso.",
+      "instructions": "Stand sideways to a suitable wall. Rotate your hips and torso to throw the ball at the wall, then reset and repeat on both sides.",
+      "instructions_es": "Parate de costado a una pared apta para lanzamientos. Girá la cadera y el torso para lanzar el balón, retomá la posición y repetí de ambos lados."
     },
     {
       "id": "4f8c27f1-c84c-5554-aabf-ea5473181ed7",
-      "name_es": "Ondas alternadas con cuerdas de batalla"
+      "name_es": "Ondas alternadas con cuerdas de batalla",
+      "name": "Alternating Battle Rope Waves",
+      "equipment": "Battle Ropes",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Antebrazos"
+      ],
+      "muscles_secondary": [
+        "Abdominales",
+        "Trapecio"
+      ],
+      "description": "Alternating waves sent along two anchored rope ends.",
+      "description_es": "Ondas alternadas en los dos extremos de una cuerda anclada.",
+      "instructions": "Hold one rope end in each hand and soften your knees. Raise and lower your hands alternately while keeping your trunk steady.",
+      "instructions_es": "Sujetá un extremo de la cuerda con cada mano y flexioná apenas las rodillas. Subí y bajá las manos de forma alternada con el tronco firme."
     },
     {
       "id": "c4f18dbd-35b4-5efc-922e-06509153d88a",
-      "name_es": "Empuje de trineo"
+      "name_es": "Empuje de trineo",
+      "name": "Sled Push",
+      "equipment": "Sled",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Gastrocnemio",
+        "Sóleo",
+        "Abdominales"
+      ],
+      "description": "Forward push of a weighted sled across the floor.",
+      "description_es": "Empuje hacia adelante de un trineo con carga.",
+      "instructions": "Grip the handles, lean into the sled and drive it forward with short, steady steps.",
+      "instructions_es": "Sujetá las manijas, inclinate hacia el trineo y empujalo hacia adelante con pasos cortos y parejos."
     }
   ]
 }
