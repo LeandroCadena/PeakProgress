@@ -1529,159 +1529,708 @@
   "Mancuernas": [
     {
       "id": "18d8efbf-8c83-5499-b481-38eef828b1a2",
-      "name_es": "Sentadilla con mancuerna al pecho"
+      "name_es": "Sentadilla con mancuerna al pecho",
+      "name": "Dumbbell Goblet Squat",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Abdominales"
+      ],
+      "description": "Squat with a dumbbell held at the chest.",
+      "description_es": "Sentadilla con una mancuerna sostenida frente al pecho.",
+      "instructions": "Hold the dumbbell close to your chest. Bend your knees and hips, then stand with both feet flat.",
+      "instructions_es": "Sostené la mancuerna cerca del pecho. Flexioná las rodillas y la cadera, y volvé a subir con ambos pies apoyados."
     },
     {
       "id": "dd0098e9-d036-5b87-ab00-c08698e6ddbe",
-      "name_es": "Sentadilla búlgara con mancuernas"
+      "name_es": "Sentadilla búlgara con mancuernas",
+      "name": "Dumbbell Bulgarian Split Squat",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Loaded split squat with the rear foot elevated.",
+      "description_es": "Sentadilla dividida con mancuernas y el pie trasero elevado.",
+      "instructions": "Hold a dumbbell at each side and place your rear foot on a bench. Lower by bending your front knee, then push through the front foot.",
+      "instructions_es": "Sostené una mancuerna a cada lado y apoyá el pie trasero en un banco. Bajá flexionando la rodilla delantera y empujá con ese pie para subir."
     },
     {
       "id": "0d8361e0-9409-599f-bad6-2f7af587c9cc",
-      "name_es": "Zancadas caminando con mancuernas"
+      "name_es": "Zancadas caminando con mancuernas",
+      "name": "Dumbbell Walking Lunge",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Alternating forward lunges that travel across the floor.",
+      "description_es": "Zancadas alternadas hacia adelante con desplazamiento.",
+      "instructions": "Hold the dumbbells at your sides. Step forward and lower, then rise and step through with the other leg.",
+      "instructions_es": "Sostené las mancuernas a los costados. Da un paso hacia adelante y bajá. Subí y avanzá con la otra pierna."
     },
     {
       "id": "b354c3c8-dd3e-541e-b595-c861d73aabf1",
-      "name_es": "Zancada hacia atrás con mancuernas"
+      "name_es": "Zancada hacia atrás con mancuernas",
+      "name": "Dumbbell Reverse Lunge",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Loaded lunge initiated with a backward step.",
+      "description_es": "Zancada con mancuernas que comienza con un paso atrás.",
+      "instructions": "Hold the dumbbells at your sides. Step back and bend both knees, then push through the front foot to return.",
+      "instructions_es": "Sostené las mancuernas a los costados. Da un paso atrás y flexioná ambas rodillas. Empujá con el pie delantero para volver."
     },
     {
       "id": "1e075a74-9943-5ca8-a80c-dc9810a72c20",
-      "name_es": "Subida al cajón con mancuernas"
+      "name_es": "Subida al cajón con mancuernas",
+      "name": "Dumbbell Box Step-Up",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Glúteo medio"
+      ],
+      "description": "Step-up onto a box while holding dumbbells.",
+      "description_es": "Subida a un cajón con mancuernas en las manos.",
+      "instructions": "Place one foot fully on a stable box. Drive through that foot to step up and lower slowly with the dumbbells at your sides.",
+      "instructions_es": "Apoyá todo un pie sobre un cajón firme. Empujá con ese pie para subir y bajá despacio con las mancuernas a los costados."
     },
     {
       "id": "4b739f4c-9f93-5db9-a445-640ee93b7e30",
-      "name_es": "Peso muerto rumano con mancuernas"
+      "name_es": "Peso muerto rumano con mancuernas",
+      "name": "Dumbbell Romanian Deadlift",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Isquiotibiales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Erectores espinales",
+        "Antebrazos"
+      ],
+      "description": "Hip hinge with dumbbells held close to the legs.",
+      "description_es": "Bisagra de cadera con las mancuernas cerca de las piernas.",
+      "instructions": "Keep a slight knee bend and send your hips back as the dumbbells slide down your thighs. Extend your hips to stand.",
+      "instructions_es": "Flexioná apenas las rodillas y llevá la cadera hacia atrás mientras bajás las mancuernas cerca de los muslos. Extendé la cadera para subir."
     },
     {
       "id": "a8f0918a-e1f7-59b7-a561-60159d3b2f85",
-      "name_es": "Peso muerto rumano a una pierna con mancuernas"
+      "name_es": "Peso muerto rumano a una pierna con mancuernas",
+      "name": "Single-Leg Dumbbell Romanian Deadlift",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Isquiotibiales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Glúteo medio",
+        "Erectores espinales"
+      ],
+      "description": "Dumbbell hip hinge balanced on one leg.",
+      "description_es": "Bisagra de cadera con mancuernas sobre una pierna.",
+      "instructions": "Balance on one leg and reach the other leg back as you lower the dumbbells. Keep your pelvis level and return to standing.",
+      "instructions_es": "Apoyate en una pierna y llevá la otra hacia atrás mientras bajás las mancuernas. Mantené la pelvis nivelada y volvé a pararte."
     },
     {
       "id": "28ab9f8b-13ed-55b5-babe-4e8260b09238",
-      "name_es": "Elevación de talón a una pierna con mancuerna"
+      "name_es": "Elevación de talón a una pierna con mancuerna",
+      "name": "Single-Leg Dumbbell Calf Raise",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Gastrocnemio",
+        "Sóleo"
+      ],
+      "muscles_secondary": [
+        "Tibial posterior"
+      ],
+      "description": "Single-leg heel raise with a dumbbell for resistance.",
+      "description_es": "Elevación de talón a una pierna con una mancuerna como carga.",
+      "instructions": "Hold a dumbbell in one hand and use the other hand for balance if needed. Raise and lower the heel of the supporting foot.",
+      "instructions_es": "Sostené una mancuerna en una mano y usá la otra para apoyarte si hace falta. Elevá y bajá el talón del pie de apoyo."
     },
     {
       "id": "f0cc817a-c538-5568-a651-8d3aae986f37",
-      "name_es": "Press de banca con mancuernas"
+      "name_es": "Press de banca con mancuernas",
+      "name": "Dumbbell Bench Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Horizontal chest press with dumbbells on a flat bench.",
+      "description_es": "Empuje horizontal de pecho con mancuernas sobre banco plano.",
+      "instructions": "Lie on a flat bench with both feet planted. Press the dumbbells up from chest height and lower them slowly.",
+      "instructions_es": "Acostate en un banco plano con ambos pies apoyados. Empujá las mancuernas desde la altura del pecho y bajalas despacio."
     },
     {
       "id": "6845455d-7ff1-5031-b070-0e11a98818c1",
-      "name_es": "Press de banca a un brazo con mancuerna"
+      "name_es": "Press de banca a un brazo con mancuerna",
+      "name": "Single-Arm Dumbbell Bench Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior",
+        "Oblicuos"
+      ],
+      "description": "Flat bench press using one dumbbell.",
+      "description_es": "Press en banco plano con una sola mancuerna.",
+      "instructions": "Plant both feet and keep your shoulders and hips on the bench. Press one dumbbell up and lower it without twisting.",
+      "instructions_es": "Apoyá ambos pies y mantené los hombros y la cadera sobre el banco. Empujá una mancuerna hacia arriba y bajala sin girar el torso."
     },
     {
       "id": "9cc522f4-974c-5008-8ae2-c388e701a176",
-      "name_es": "Press inclinado con mancuernas"
+      "name_es": "Press inclinado con mancuernas",
+      "name": "Incline Dumbbell Bench Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Tríceps"
+      ],
+      "description": "Chest press with dumbbells on an incline bench.",
+      "description_es": "Press de pecho con mancuernas sobre banco inclinado.",
+      "instructions": "With your back on the incline pad, lower the dumbbells toward the sides of your upper chest and press upward.",
+      "instructions_es": "Con la espalda sobre el respaldo inclinado, bajá las mancuernas a los lados de la parte alta del pecho y empujá hacia arriba."
     },
     {
       "id": "fd2312d9-ce3e-51a4-b5d8-9debdf8404a8",
-      "name_es": "Press inclinado a un brazo con mancuerna"
+      "name_es": "Press inclinado a un brazo con mancuerna",
+      "name": "Single-Arm Incline Dumbbell Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Tríceps",
+        "Oblicuos"
+      ],
+      "description": "Incline bench press performed one arm at a time.",
+      "description_es": "Press en banco inclinado con un brazo por vez.",
+      "instructions": "Plant both feet and press one dumbbell above the working shoulder. Lower it without turning on the bench.",
+      "instructions_es": "Apoyá ambos pies y empujá una mancuerna por encima del hombro que trabaja. Bajala sin girar sobre el banco."
     },
     {
       "id": "44e3e8f3-ac28-5db5-b356-a9411866b92f",
-      "name_es": "Press de pecho en el suelo con mancuernas"
+      "name_es": "Press de pecho en el suelo con mancuernas",
+      "name": "Dumbbell Floor Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor",
+        "Tríceps"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Chest press from the floor with the upper arms stopping at the floor.",
+      "description_es": "Press de pecho en el suelo con el recorrido limitado por el apoyo de los brazos.",
+      "instructions": "Lie on the floor with knees bent. Press both dumbbells up, then lower until your upper arms gently touch the floor.",
+      "instructions_es": "Acostate en el piso con las rodillas flexionadas. Empujá ambas mancuernas y bajalas hasta que la parte superior de los brazos toque suavemente el piso."
     },
     {
       "id": "7657d1bb-3edf-5167-88c1-5d47bf25a9b3",
-      "name_es": "Press de pecho en el suelo a un brazo con mancuerna"
+      "name_es": "Press de pecho en el suelo a un brazo con mancuerna",
+      "name": "Single-Arm Dumbbell Floor Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor",
+        "Tríceps"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Oblicuos"
+      ],
+      "description": "Floor press using one dumbbell.",
+      "description_es": "Press de pecho en el suelo con una sola mancuerna.",
+      "instructions": "Lie on the floor with both feet planted. Press one dumbbell up and lower until the upper arm touches the floor without rotating your torso.",
+      "instructions_es": "Acostate en el piso con ambos pies apoyados. Empujá una mancuerna y bajala hasta apoyar el brazo, sin girar el torso."
     },
     {
       "id": "55a4bae5-b02e-5e15-8304-47d65a7a0afe",
-      "name_es": "Aperturas de pecho con mancuernas"
+      "name_es": "Aperturas de pecho con mancuernas",
+      "name": "Dumbbell Chest Fly",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Chest fly with dumbbells on a flat bench.",
+      "description_es": "Apertura de pecho con mancuernas en banco plano.",
+      "instructions": "Start with dumbbells above your chest and elbows slightly bent. Open your arms in an arc to a comfortable depth, then bring them back together.",
+      "instructions_es": "Empezá con las mancuernas sobre el pecho y los codos apenas flexionados. Abrí los brazos en arco hasta una profundidad cómoda y volvé a juntarlos."
     },
     {
       "id": "855996a3-73d3-58a7-9efc-17665e497904",
-      "name_es": "Aperturas inclinadas con mancuernas"
+      "name_es": "Aperturas inclinadas con mancuernas",
+      "name": "Incline Dumbbell Chest Fly",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Chest fly with dumbbells on an incline bench.",
+      "description_es": "Apertura de pecho con mancuernas en banco inclinado.",
+      "instructions": "Rest your back against the incline bench. Open the dumbbells out to the sides with soft elbows, then bring them together above your upper chest.",
+      "instructions_es": "Apoyá la espalda en el banco inclinado. Abrí las mancuernas hacia los costados con los codos levemente flexionados y juntalas sobre la parte alta del pecho."
     },
     {
       "id": "83e26ca0-d769-56f5-9474-0eddeb84b1eb",
-      "name_es": "Remo inclinado con mancuernas"
+      "name_es": "Remo inclinado con mancuernas",
+      "name": "Bent-Over Dumbbell Row",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio",
+        "Erectores espinales"
+      ],
+      "description": "Two-arm row with dumbbells from a hip hinge.",
+      "description_es": "Remo a dos brazos con mancuernas y el torso inclinado.",
+      "instructions": "Hinge at the hips and let both arms hang. Pull the dumbbells toward your ribs and lower them without moving your torso.",
+      "instructions_es": "Incliná el torso desde la cadera y dejá caer ambos brazos. Llevá las mancuernas hacia las costillas y bajalas sin mover el torso."
     },
     {
       "id": "859aeaf7-e3ff-521a-ad67-bf940e6729db",
-      "name_es": "Remo a un brazo con mancuerna y apoyo en banco"
+      "name_es": "Remo a un brazo con mancuerna y apoyo en banco",
+      "name": "Bench-Supported Single-Arm Dumbbell Row",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio",
+        "Deltoides posterior"
+      ],
+      "description": "Single-arm dumbbell row with the other hand and knee supported.",
+      "description_es": "Remo a un brazo con la otra mano y la rodilla del mismo lado apoyadas.",
+      "instructions": "Place one hand and the same-side knee on a bench. With the other foot on the floor, pull the dumbbell toward your waist and lower slowly.",
+      "instructions_es": "Apoyá una mano y la rodilla del mismo lado en un banco. Con el otro pie en el piso, llevá la mancuerna hacia la cintura y bajala despacio."
     },
     {
       "id": "987111e4-879a-5217-bd87-53520c270ef3",
-      "name_es": "Remo con mancuernas y apoyo de pecho"
+      "name_es": "Remo con mancuernas y apoyo de pecho",
+      "name": "Chest-Supported Dumbbell Row",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior"
+      ],
+      "description": "Two-arm dumbbell row with the chest supported by an incline bench.",
+      "description_es": "Remo a dos brazos con mancuernas y el pecho apoyado en un banco inclinado.",
+      "instructions": "Lie face down against an incline bench. Pull the dumbbells toward your ribs and extend your arms without lifting your chest.",
+      "instructions_es": "Apoyá el pecho boca abajo sobre un banco inclinado. Llevá las mancuernas hacia las costillas y extendé los brazos sin despegar el pecho."
     },
     {
       "id": "942ed8d2-b064-5e61-a6e7-00ab920c01d5",
-      "name_es": "Pullover con mancuerna"
+      "name_es": "Pullover con mancuerna",
+      "name": "Dumbbell Pullover",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Redondo mayor"
+      ],
+      "description": "Shoulder extension with a dumbbell held in both hands.",
+      "description_es": "Extensión de hombros con una mancuerna sostenida con ambas manos.",
+      "instructions": "Lie on a bench and hold the dumbbell above your chest. Lower it behind your head with soft elbows, then sweep it back over your chest.",
+      "instructions_es": "Acostate en un banco y sostené la mancuerna sobre el pecho. Bajala detrás de la cabeza con los codos levemente flexionados y volvé a llevarla sobre el pecho."
     },
     {
       "id": "c80db312-ed3d-5388-8008-09f3bf62bc68",
-      "name_es": "Press de hombros sentado con mancuernas"
+      "name_es": "Press de hombros sentado con mancuernas",
+      "name": "Seated Dumbbell Shoulder Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps"
+      ],
+      "description": "Seated overhead press with two dumbbells.",
+      "description_es": "Empuje sentado por encima de la cabeza con dos mancuernas.",
+      "instructions": "Start with the dumbbells at shoulder height. Press both upward, then lower them under control.",
+      "instructions_es": "Empezá con las mancuernas a la altura de los hombros. Empujá las dos hacia arriba y bajalas de forma controlada."
     },
     {
       "id": "1dde869c-fc8a-54ce-831c-d5e3a972dce0",
-      "name_es": "Press de hombros sentado a un brazo con mancuerna"
+      "name_es": "Press de hombros sentado a un brazo con mancuerna",
+      "name": "Seated Single-Arm Dumbbell Shoulder Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Oblicuos"
+      ],
+      "description": "Seated overhead press with one dumbbell.",
+      "description_es": "Empuje sentado por encima de la cabeza con una mancuerna.",
+      "instructions": "Sit with both feet planted. Press one dumbbell overhead without leaning to the side, then lower and switch arms.",
+      "instructions_es": "Sentate con ambos pies apoyados. Empujá una mancuerna por encima de la cabeza sin inclinarte hacia el costado. Bajala y cambiá de brazo."
     },
     {
       "id": "8ad84299-1145-59e3-b603-aa968f2273ec",
-      "name_es": "Press Arnold con mancuernas"
+      "name_es": "Press Arnold con mancuernas",
+      "name": "Dumbbell Arnold Press",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps"
+      ],
+      "description": "Overhead dumbbell press with a rotating grip.",
+      "description_es": "Empuje por encima de la cabeza con rotación del agarre.",
+      "instructions": "Start with palms facing you. Turn your palms forward as you press overhead and reverse the motion as you lower.",
+      "instructions_es": "Empezá con las palmas hacia vos. Giralas hacia adelante al empujar por encima de la cabeza e invertí el movimiento al bajar."
     },
     {
       "id": "4a6cb7ec-c67e-5b6f-a064-bfecc71d3828",
-      "name_es": "Elevaciones laterales con mancuernas"
+      "name_es": "Elevaciones laterales con mancuernas",
+      "name": "Dumbbell Lateral Raise",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Supraespinoso",
+        "Trapecio"
+      ],
+      "description": "Side arm raise performed with two dumbbells.",
+      "description_es": "Elevación de brazos hacia los costados con dos mancuernas.",
+      "instructions": "With elbows slightly bent, raise both dumbbells out to shoulder height and lower them without swinging.",
+      "instructions_es": "Con los codos levemente flexionados, elevá ambas mancuernas hacia los costados hasta la altura de los hombros y bajalas sin balancearte."
     },
     {
       "id": "ced94fa4-f1ef-598f-8688-8b8433aa4d76",
-      "name_es": "Elevación lateral a un brazo con mancuerna"
+      "name_es": "Elevación lateral a un brazo con mancuerna",
+      "name": "Single-Arm Dumbbell Lateral Raise",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Supraespinoso",
+        "Trapecio"
+      ],
+      "description": "Side arm raise performed one arm at a time.",
+      "description_es": "Elevación lateral con una mancuerna y un brazo por vez.",
+      "instructions": "Raise one dumbbell out to the side to shoulder height while keeping your torso still. Lower and switch arms.",
+      "instructions_es": "Elevá una mancuerna hacia el costado hasta la altura del hombro con el torso quieto. Bajala y cambiá de brazo."
     },
     {
       "id": "e7c8e927-c2a9-5239-9755-b27e769bd3d2",
-      "name_es": "Elevaciones frontales alternadas con mancuernas"
+      "name_es": "Elevaciones frontales alternadas con mancuernas",
+      "name": "Alternating Dumbbell Front Raise",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides anterior"
+      ],
+      "muscles_secondary": [
+        "Pectoral mayor"
+      ],
+      "description": "Forward arm raise alternating sides.",
+      "description_es": "Elevación frontal con mancuernas alternando brazos.",
+      "instructions": "Raise one dumbbell forward to shoulder height without leaning back. Lower it before lifting the other.",
+      "instructions_es": "Elevá una mancuerna hacia adelante hasta la altura del hombro sin inclinarte hacia atrás. Bajala antes de levantar la otra."
     },
     {
       "id": "b13cc624-5467-54c7-bf88-ce9d8fee8d17",
-      "name_es": "Aperturas inversas con mancuernas"
+      "name_es": "Aperturas inversas con mancuernas",
+      "name": "Dumbbell Reverse Fly",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides posterior"
+      ],
+      "muscles_secondary": [
+        "Romboides",
+        "Trapecio"
+      ],
+      "description": "Rear shoulder fly with dumbbells from a bent-over position.",
+      "description_es": "Apertura inversa con mancuernas y el torso inclinado.",
+      "instructions": "Hinge at the hips and let your arms hang. Raise the dumbbells out to the sides with soft elbows, then lower slowly.",
+      "instructions_es": "Incliná el torso desde la cadera y dejá caer los brazos. Abrí las mancuernas hacia los costados con los codos levemente flexionados y bajalas despacio."
     },
     {
       "id": "34da9a16-812f-5a41-96c9-1bf398b990f3",
-      "name_es": "Encogimientos de hombros con mancuernas"
+      "name_es": "Encogimientos de hombros con mancuernas",
+      "name": "Dumbbell Shrug",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Elevador de la escápula",
+        "Antebrazos"
+      ],
+      "description": "Shoulder elevation while holding dumbbells at the sides.",
+      "description_es": "Elevación de hombros con mancuernas a los costados.",
+      "instructions": "Stand tall with arms straight. Raise your shoulders toward your ears and lower slowly without rolling them.",
+      "instructions_es": "Parate erguido con los brazos extendidos. Elevá los hombros hacia las orejas y bajalos despacio sin hacer círculos."
     },
     {
       "id": "4f2f4ba3-28a5-5f56-86b0-462f4182aded",
-      "name_es": "Curl de bíceps alternado con mancuernas"
+      "name_es": "Curl de bíceps alternado con mancuernas",
+      "name": "Alternating Dumbbell Biceps Curl",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "Standing dumbbell curl performed one arm at a time.",
+      "description_es": "Curl de bíceps de pie alternando brazos.",
+      "instructions": "Curl one dumbbell with the palm turning up. Lower without swinging and repeat with the other arm.",
+      "instructions_es": "Elevá una mancuerna girando la palma hacia arriba. Bajala sin balancearte y repetí con el otro brazo."
     },
     {
       "id": "b4441a78-1825-5e6c-896c-76991d448f9f",
-      "name_es": "Curl inclinado con mancuernas"
+      "name_es": "Curl inclinado con mancuernas",
+      "name": "Incline Dumbbell Curl",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial"
+      ],
+      "description": "Seated dumbbell curl with the arms hanging behind the torso.",
+      "description_es": "Curl sentado con mancuernas y los brazos detrás del torso.",
+      "instructions": "Lean back on an incline bench and let your arms hang. Curl the dumbbells without bringing your elbows forward.",
+      "instructions_es": "Recostate en un banco inclinado y dejá caer los brazos. Elevá las mancuernas sin adelantar los codos."
     },
     {
       "id": "188cbc0c-c2da-52c3-b97d-6af3ab4b5c27",
-      "name_es": "Curl concentrado a un brazo con mancuerna"
+      "name_es": "Curl concentrado a un brazo con mancuerna",
+      "name": "Single-Arm Dumbbell Concentration Curl",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial"
+      ],
+      "description": "Seated one-arm curl with the upper arm braced against the thigh.",
+      "description_es": "Curl sentado a un brazo con apoyo contra la cara interna del muslo.",
+      "instructions": "Sit with your feet apart and brace your upper arm against your inner thigh. Curl the dumbbell and lower slowly.",
+      "instructions_es": "Sentate con los pies separados y apoyá el brazo contra la cara interna del muslo. Elevá la mancuerna y bajala despacio."
     },
     {
       "id": "33ef3970-1fde-5b8d-8fd7-39111e83d710",
-      "name_es": "Curl predicador a un brazo con mancuerna"
+      "name_es": "Curl predicador a un brazo con mancuerna",
+      "name": "Single-Arm Dumbbell Preacher Curl",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "One-arm dumbbell curl with the upper arm on a preacher pad.",
+      "description_es": "Curl a un brazo con la parte superior del brazo apoyada en el banco predicador.",
+      "instructions": "Set your upper arm on the angled pad. Bend your elbow to lift the dumbbell, then lower without lifting your arm from the pad.",
+      "instructions_es": "Apoyá la parte superior del brazo en la almohadilla inclinada. Flexioná el codo para elevar la mancuerna y bajala sin despegar el brazo."
     },
     {
       "id": "68840ca2-3350-5778-b3aa-e579b518a0ed",
-      "name_es": "Curl martillo alternado con mancuernas"
+      "name_es": "Curl martillo alternado con mancuernas",
+      "name": "Alternating Dumbbell Hammer Curl",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "muscles_secondary": [
+        "Bíceps"
+      ],
+      "description": "Alternating dumbbell curl with a neutral grip.",
+      "description_es": "Curl alternado con mancuernas y agarre neutro.",
+      "instructions": "Keep your thumbs up and elbows at your sides. Curl one dumbbell, lower it and repeat with the other arm.",
+      "instructions_es": "Mantené los pulgares hacia arriba y los codos a los costados. Elevá una mancuerna, bajala y repetí con el otro brazo."
     },
     {
       "id": "73ffb2ac-39a1-57ef-96dd-aaf09142ce5a",
-      "name_es": "Extensión de tríceps por encima de la cabeza con mancuerna"
+      "name_es": "Extensión de tríceps por encima de la cabeza con mancuerna",
+      "name": "Two-Hand Dumbbell Overhead Triceps Extension",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Overhead elbow extension holding one dumbbell with both hands.",
+      "description_es": "Extensión de codos por encima de la cabeza con una mancuerna sostenida con ambas manos.",
+      "instructions": "Hold the dumbbell above your head with both hands. Bend your elbows to lower it behind your head, then extend both elbows.",
+      "instructions_es": "Sostené la mancuerna por encima de la cabeza con ambas manos. Flexioná los codos para bajarla detrás de la cabeza y volvé a extenderlos."
     },
     {
       "id": "ffbd3c64-78df-53da-be5e-aac90798bebf",
-      "name_es": "Extensión de tríceps a un brazo por encima de la cabeza con mancuerna"
+      "name_es": "Extensión de tríceps a un brazo por encima de la cabeza con mancuerna",
+      "name": "Single-Arm Dumbbell Overhead Triceps Extension",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Overhead elbow extension with one dumbbell and one arm.",
+      "description_es": "Extensión de codo por encima de la cabeza con una mancuerna y un solo brazo.",
+      "instructions": "Raise one upper arm beside your head. Lower the dumbbell behind your head by bending the elbow, then extend it.",
+      "instructions_es": "Elevá un brazo al lado de la cabeza. Bajá la mancuerna detrás de la cabeza flexionando el codo y volvé a extenderlo."
     },
     {
       "id": "1a33d246-e2d0-5f2a-8d53-9e0ef27b3a25",
-      "name_es": "Extensión de tríceps acostado a un brazo con mancuerna"
+      "name_es": "Extensión de tríceps acostado a un brazo con mancuerna",
+      "name": "Lying Single-Arm Dumbbell Triceps Extension",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "One-arm elbow extension while lying on a bench.",
+      "description_es": "Extensión de codo a un brazo acostado en un banco.",
+      "instructions": "Lie on a bench with the working arm raised. Bend the elbow to lower the dumbbell beside your head, then extend it.",
+      "instructions_es": "Acostate en un banco con el brazo que trabaja elevado. Flexioná el codo para bajar la mancuerna al costado de la cabeza y volvé a extenderlo."
     },
     {
       "id": "61e2f002-6563-507b-be1c-1f7acfbf630a",
-      "name_es": "Patada de tríceps a un brazo con mancuerna"
+      "name_es": "Patada de tríceps a un brazo con mancuerna",
+      "name": "Single-Arm Dumbbell Triceps Kickback",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Bent-over elbow extension with the upper arm held back.",
+      "description_es": "Extensión de codo con el torso inclinado y el brazo hacia atrás.",
+      "instructions": "Support your free hand on a bench. Keep the working upper arm beside your torso, extend the elbow backward and return slowly.",
+      "instructions_es": "Apoyá la mano libre en un banco. Mantené el brazo que trabaja al costado del torso, extendé el codo hacia atrás y volvé despacio."
     },
     {
       "id": "f7d376d8-c7b2-5cb8-a118-6f0d8dcd2ab0",
-      "name_es": "Caminata del granjero con mancuernas"
+      "name_es": "Caminata del granjero con mancuernas",
+      "name": "Dumbbell Farmer’s Walk",
+      "equipment": "Dumbbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Antebrazos",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Abdominales",
+        "Oblicuos"
+      ],
+      "description": "Loaded walk with a dumbbell in each hand.",
+      "description_es": "Caminata con una mancuerna en cada mano.",
+      "instructions": "Hold one dumbbell at each side and walk with even steps, keeping your trunk upright.",
+      "instructions_es": "Sostené una mancuerna a cada lado y caminá con pasos parejos manteniendo el tronco erguido."
     },
     {
       "id": "2aee2393-95b4-5678-a988-6ef61d1b3efc",
-      "name_es": "Caminata con mancuerna a un lado"
+      "name_es": "Caminata con mancuerna a un lado",
+      "name": "Dumbbell Suitcase Carry",
+      "equipment": "Dumbbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Oblicuos",
+        "Antebrazos"
+      ],
+      "muscles_secondary": [
+        "Trapecio",
+        "Abdominales"
+      ],
+      "description": "Loaded walk with a dumbbell on one side.",
+      "description_es": "Caminata con una mancuerna de un solo lado.",
+      "instructions": "Hold a dumbbell at one side and walk without leaning toward or away from the load. Switch hands for the next length.",
+      "instructions_es": "Sostené una mancuerna de un lado y caminá sin inclinarte hacia la carga ni hacia el lado contrario. Cambiá de mano en el próximo tramo."
     }
   ],
   "Barras": [
