@@ -1004,123 +1004,526 @@
   "Poleas": [
     {
       "id": "6eb30c47-b884-570b-9d1d-d9a5c9420ea6",
-      "name_es": "Jalón al pecho con agarre prono"
+      "name_es": "Jalón al pecho con agarre prono",
+      "name": "Overhand Lat Pulldown",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio"
+      ],
+      "description": "Vertical pull with an overhand grip.",
+      "description_es": "Tracción vertical con agarre prono.",
+      "instructions": "Hold the high bar with palms forward, pull it toward your upper chest and extend your arms slowly.",
+      "instructions_es": "Sujetá la barra alta con las palmas hacia adelante, llevala hacia la parte alta del pecho y extendé los brazos despacio."
     },
     {
       "id": "72a481d4-5269-5df5-9fcf-50f7721e878c",
-      "name_es": "Jalón al pecho con agarre neutro"
+      "name_es": "Jalón al pecho con agarre neutro",
+      "name": "Neutral-Grip Lat Pulldown",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Braquial"
+      ],
+      "description": "Vertical pull with palms facing each other.",
+      "description_es": "Tracción vertical con las palmas enfrentadas.",
+      "instructions": "Grip the neutral handle on the high pulley, draw your elbows down and return without rocking.",
+      "instructions_es": "Sujetá la manija neutra de la polea alta, bajá los codos y volvé sin balancearte."
     },
     {
       "id": "f3e01678-3ae4-5f53-98b8-9fc0852f8bb3",
-      "name_es": "Jalón al pecho a un brazo"
+      "name_es": "Jalón al pecho a un brazo",
+      "name": "Single-Arm Lat Pulldown",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Braquial"
+      ],
+      "description": "Vertical cable pull performed one arm at a time.",
+      "description_es": "Tracción vertical en polea con un brazo por vez.",
+      "instructions": "Pull a high single handle toward your shoulder, guiding your elbow down. Extend the arm and switch sides.",
+      "instructions_es": "Llevá una manija de polea alta hacia el hombro guiando el codo hacia abajo. Extendé el brazo y cambiá de lado."
     },
     {
       "id": "b7159c31-8da5-5a61-b6eb-3bfef2465ccb",
-      "name_es": "Jalón con brazos rectos"
+      "name_es": "Jalón con brazos rectos",
+      "name": "Straight-Arm Cable Pulldown",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Redondo mayor",
+        "Tríceps"
+      ],
+      "description": "Shoulder extension with nearly straight elbows.",
+      "description_es": "Extensión de hombros con los codos casi extendidos.",
+      "instructions": "Face a high pulley and sweep the bar from shoulder height toward your thighs without changing your elbow angle.",
+      "instructions_es": "Ubicate frente a una polea alta y llevá la barra desde la altura de los hombros hasta los muslos sin cambiar el ángulo de los codos."
     },
     {
       "id": "1a54696b-e1d1-59fa-b01f-49bad36b5e64",
-      "name_es": "Remo sentado en polea baja"
+      "name_es": "Remo sentado en polea baja",
+      "name": "Seated Low Cable Row",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio"
+      ],
+      "description": "Horizontal pull from a low pulley while seated.",
+      "description_es": "Tracción horizontal sentado desde una polea baja.",
+      "instructions": "Brace your feet and pull the handle toward your abdomen, then extend your arms without rounding your back.",
+      "instructions_es": "Apoyá bien los pies, llevá la manija hacia el abdomen y extendé los brazos sin redondear la espalda."
     },
     {
       "id": "9fe64538-6975-572c-9f58-c1c6e0c43cac",
-      "name_es": "Remo sentado a un brazo en polea baja"
+      "name_es": "Remo sentado a un brazo en polea baja",
+      "name": "Seated Single-Arm Low Cable Row",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Oblicuos"
+      ],
+      "description": "Seated low cable row using one handle.",
+      "description_es": "Remo sentado en polea baja con una sola manija.",
+      "instructions": "Pull the handle toward your waist with one arm. Return without twisting your torso and switch sides.",
+      "instructions_es": "Llevá la manija hacia la cintura con un brazo. Volvé sin girar el torso y cambiá de lado."
     },
     {
       "id": "a0eefc37-886e-5a86-94e9-816aa59809cc",
-      "name_es": "Remo de pie a un brazo en polea"
+      "name_es": "Remo de pie a un brazo en polea",
+      "name": "Standing Single-Arm Cable Row",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Oblicuos"
+      ],
+      "description": "Single-arm horizontal row from a standing position.",
+      "description_es": "Remo horizontal a un brazo de pie.",
+      "instructions": "Set the pulley near waist height. Stand facing it and draw one elbow back without rotating your torso.",
+      "instructions_es": "Ajustá la polea cerca de la cintura. Parate de frente y llevá un codo hacia atrás sin girar el torso."
     },
     {
       "id": "1206a5e0-c109-5bfb-bd4d-421f96ec930f",
-      "name_es": "Press de pecho de pie en poleas"
+      "name_es": "Press de pecho de pie en poleas",
+      "name": "Standing Cable Chest Press",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Standing chest press using two cables.",
+      "description_es": "Empuje de pecho de pie con dos poleas.",
+      "instructions": "Set both pulleys near chest height and face away in a split stance. Press both handles forward and return slowly.",
+      "instructions_es": "Ajustá ambas poleas cerca de la altura del pecho y ponete de espaldas con un pie adelante. Empujá ambas manijas y volvé despacio."
     },
     {
       "id": "2be0a956-c938-59af-a99a-062a0dcacdeb",
-      "name_es": "Press de pecho de pie a un brazo en polea"
+      "name_es": "Press de pecho de pie a un brazo en polea",
+      "name": "Standing Single-Arm Cable Chest Press",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior",
+        "Oblicuos"
+      ],
+      "description": "Standing chest press using one cable.",
+      "description_es": "Empuje de pecho de pie con una sola polea.",
+      "instructions": "Face away from a chest-height pulley. Press one handle forward while keeping your hips and shoulders facing ahead.",
+      "instructions_es": "Ponete de espaldas a una polea a la altura del pecho. Empujá una manija hacia adelante sin girar la cadera ni los hombros."
     },
     {
       "id": "9c0708d2-ce4f-5eba-995f-89fac060fbbf",
-      "name_es": "Cruce de poleas de arriba hacia abajo"
+      "name_es": "Cruce de poleas de arriba hacia abajo",
+      "name": "High-to-Low Cable Crossover",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Chest fly from high pulleys toward the lower chest.",
+      "description_es": "Apertura de pecho desde poleas altas hacia la parte baja del pecho.",
+      "instructions": "Step forward between two high pulleys. With elbows slightly bent, bring your hands together down and in front of you.",
+      "instructions_es": "Da un paso adelante entre dos poleas altas. Con los codos levemente flexionados, juntá las manos hacia abajo y adelante."
     },
     {
       "id": "3d2dcd9c-263c-5659-bcfc-514a81d564fc",
-      "name_es": "Cruce de poleas de abajo hacia arriba"
+      "name_es": "Cruce de poleas de abajo hacia arriba",
+      "name": "Low-to-High Cable Crossover",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Chest fly from low pulleys on an upward path.",
+      "description_es": "Apertura de pecho ascendente desde poleas bajas.",
+      "instructions": "Start with the handles low and out to the sides. Sweep them up and together in front of your upper chest, then reopen slowly.",
+      "instructions_es": "Empezá con las manijas bajas y a los costados. Llevalas hacia arriba y juntas frente a la parte alta del pecho, y volvé a abrir despacio."
     },
     {
       "id": "6e491da8-e8c3-56b4-9ed2-e84e8d634783",
-      "name_es": "Apertura de pecho a un brazo en polea"
+      "name_es": "Apertura de pecho a un brazo en polea",
+      "name": "Single-Arm Cable Chest Fly",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Oblicuos"
+      ],
+      "description": "Chest fly using one cable at chest height.",
+      "description_es": "Apertura de pecho a un brazo con la polea a la altura del pecho.",
+      "instructions": "Stand sideways to the pulley. With a slight elbow bend, sweep the handle across the front of your chest without turning.",
+      "instructions_es": "Parate de costado a la polea. Con el codo apenas flexionado, llevá la manija por delante del pecho sin girar el torso."
     },
     {
       "id": "551cd117-038d-512a-943a-a3d59cc9e541",
-      "name_es": "Apertura inversa a un brazo en polea"
+      "name_es": "Apertura inversa a un brazo en polea",
+      "name": "Single-Arm Reverse Cable Fly",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides posterior"
+      ],
+      "muscles_secondary": [
+        "Romboides",
+        "Trapecio"
+      ],
+      "description": "Rear shoulder fly using one cable.",
+      "description_es": "Apertura inversa a un brazo en polea.",
+      "instructions": "Set the pulley near shoulder height. Start with your hand across your chest, open the arm to the side and return slowly.",
+      "instructions_es": "Ajustá la polea cerca de la altura del hombro. Empezá con la mano cruzada frente al pecho, abrí el brazo hacia el costado y volvé despacio."
     },
     {
       "id": "9b0f8dcf-8cfc-5b6b-b980-5b2884940a57",
-      "name_es": "Tirón a la cara con cuerda"
+      "name_es": "Tirón a la cara con cuerda",
+      "name": "Rope Face Pull",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides posterior",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Romboides",
+        "Infraespinoso"
+      ],
+      "description": "Rope pull toward the face with elbows out.",
+      "description_es": "Tracción con cuerda hacia la cara con los codos abiertos.",
+      "instructions": "Set a rope near eye height. Pull its ends toward either side of your face, then extend your arms slowly.",
+      "instructions_es": "Colocá la cuerda cerca de la altura de los ojos. Llevá las puntas a los lados de la cara y extendé los brazos despacio."
     },
     {
       "id": "f3587085-fd22-5ca9-aa25-848a1ca0561f",
-      "name_es": "Elevación lateral a un brazo en polea"
+      "name_es": "Elevación lateral a un brazo en polea",
+      "name": "Single-Arm Cable Lateral Raise",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Supraespinoso",
+        "Trapecio"
+      ],
+      "description": "Side arm raise using a low pulley.",
+      "description_es": "Elevación lateral de un brazo desde una polea baja.",
+      "instructions": "Stand sideways and hold the low handle with the far hand. Raise your arm out to shoulder height and lower slowly.",
+      "instructions_es": "Parate de costado y sujetá la manija baja con la mano más alejada. Elevá el brazo hacia el costado hasta la altura del hombro y bajalo despacio."
     },
     {
       "id": "5dc0adc1-edbf-56e6-bc5a-91a876145f34",
-      "name_es": "Elevación frontal a un brazo en polea"
+      "name_es": "Elevación frontal a un brazo en polea",
+      "name": "Single-Arm Cable Front Raise",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides anterior"
+      ],
+      "muscles_secondary": [
+        "Pectoral mayor"
+      ],
+      "description": "Forward arm raise using a low pulley.",
+      "description_es": "Elevación frontal de un brazo desde una polea baja.",
+      "instructions": "Face away from the low pulley. Lift one handle forward to shoulder height, then lower without leaning back.",
+      "instructions_es": "Ponete de espaldas a la polea baja. Elevá una manija hacia adelante hasta la altura del hombro y bajala sin inclinarte hacia atrás."
     },
     {
       "id": "6be8f016-3c98-5b18-b2bb-27e146be1383",
-      "name_es": "Curl de bíceps con barra en polea baja"
+      "name_es": "Curl de bíceps con barra en polea baja",
+      "name": "Low Cable Bar Curl",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "Two-arm curl with a bar on a low pulley.",
+      "description_es": "Curl a dos brazos con barra en polea baja.",
+      "instructions": "Hold the bar with palms up. Bend your elbows to lift it without moving your upper arms, then lower slowly.",
+      "instructions_es": "Sujetá la barra con las palmas hacia arriba. Flexioná los codos para levantarla sin mover la parte superior de los brazos y bajá despacio."
     },
     {
       "id": "5ba05323-8df2-580e-83d1-1ec9f1f747d1",
-      "name_es": "Curl de bíceps a un brazo en polea baja"
+      "name_es": "Curl de bíceps a un brazo en polea baja",
+      "name": "Single-Arm Low Cable Curl",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "Single-arm curl facing a low pulley.",
+      "description_es": "Curl a un brazo de frente a una polea baja.",
+      "instructions": "Face the pulley and curl the handle with your palm up. Lower it under control and switch arms.",
+      "instructions_es": "Parate de frente a la polea y elevá la manija con la palma hacia arriba. Bajala de forma controlada y cambiá de brazo."
     },
     {
       "id": "5d442acd-1a04-56dd-8890-5c2f4f2a4007",
-      "name_es": "Curl de bíceps a un brazo de espaldas a la polea"
+      "name_es": "Curl de bíceps a un brazo de espaldas a la polea",
+      "name": "Behind-the-Body Single-Arm Cable Curl",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial"
+      ],
+      "description": "Single-arm curl with the cable pulling from behind.",
+      "description_es": "Curl a un brazo con la polea detrás del cuerpo.",
+      "instructions": "Face away from a low pulley with the working arm slightly behind you. Curl the handle without bringing your elbow forward.",
+      "instructions_es": "Ponete de espaldas a una polea baja con el brazo que trabaja apenas detrás del torso. Elevá la manija sin adelantar el codo."
     },
     {
       "id": "685c15fb-9958-5703-ac5c-16b2417c0aa1",
-      "name_es": "Curl martillo con cuerda en polea"
+      "name_es": "Curl martillo con cuerda en polea",
+      "name": "Cable Rope Hammer Curl",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "muscles_secondary": [
+        "Bíceps"
+      ],
+      "description": "Rope curl with palms facing each other.",
+      "description_es": "Curl con cuerda y palmas enfrentadas.",
+      "instructions": "Attach a rope to the low pulley. Curl both ends upward with a neutral grip, keeping your elbows near your sides.",
+      "instructions_es": "Colocá una cuerda en la polea baja. Elevá ambas puntas con agarre neutro y mantené los codos cerca del cuerpo."
     },
     {
       "id": "49e0493c-1909-56e4-bb55-80cdf8861b44",
-      "name_es": "Extensión de tríceps con barra en polea alta"
+      "name_es": "Extensión de tríceps con barra en polea alta",
+      "name": "Cable Bar Triceps Pushdown",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Elbow extension with a bar on a high pulley.",
+      "description_es": "Extensión de codos con barra en polea alta.",
+      "instructions": "Hold the bar with palms down and elbows close to your sides. Press it down, then bend your elbows slowly.",
+      "instructions_es": "Sujetá la barra con las palmas hacia abajo y los codos cerca del cuerpo. Empujá hacia abajo y volvé a flexionar los codos despacio."
     },
     {
       "id": "26d57b43-8e38-513f-a8dc-4d993777ba94",
-      "name_es": "Extensión de tríceps con cuerda en polea alta"
+      "name_es": "Extensión de tríceps con cuerda en polea alta",
+      "name": "Cable Rope Triceps Pushdown",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Elbow extension with a rope on a high pulley.",
+      "description_es": "Extensión de codos con cuerda en polea alta.",
+      "instructions": "Hold the rope with palms facing each other. Extend your elbows and separate the rope ends slightly at the bottom.",
+      "instructions_es": "Sujetá la cuerda con las palmas enfrentadas. Extendé los codos y separá apenas las puntas al final del recorrido."
     },
     {
       "id": "cfe6544e-4801-5608-9cdc-549156fd7330",
-      "name_es": "Extensión de tríceps a un brazo en polea alta"
+      "name_es": "Extensión de tríceps a un brazo en polea alta",
+      "name": "Single-Arm Cable Triceps Pushdown",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Single-arm elbow extension from a high pulley.",
+      "description_es": "Extensión de codo a un brazo desde una polea alta.",
+      "instructions": "Keep your working elbow at your side. Press one handle down until the elbow extends, then return slowly and switch arms.",
+      "instructions_es": "Mantené el codo que trabaja cerca del cuerpo. Empujá una manija hacia abajo hasta extender el codo, volvé despacio y cambiá de brazo."
     },
     {
       "id": "110e4206-65d8-541e-8746-d378b9af1524",
-      "name_es": "Extensión de tríceps por encima de la cabeza con cuerda"
+      "name_es": "Extensión de tríceps por encima de la cabeza con cuerda",
+      "name": "Overhead Cable Rope Triceps Extension",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Overhead elbow extension using a rope.",
+      "description_es": "Extensión de codos por encima de la cabeza con cuerda.",
+      "instructions": "Face away from the pulley with the rope behind your head. Keep your upper arms raised while extending both elbows.",
+      "instructions_es": "Ponete de espaldas a la polea con la cuerda detrás de la cabeza. Mantené los brazos elevados mientras extendés ambos codos."
     },
     {
       "id": "8eb993c4-9ac5-5754-b152-828fb72eda31",
-      "name_es": "Extensión de tríceps a un brazo por encima de la cabeza en polea"
+      "name_es": "Extensión de tríceps a un brazo por encima de la cabeza en polea",
+      "name": "Single-Arm Overhead Cable Triceps Extension",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Overhead elbow extension with one cable handle.",
+      "description_es": "Extensión de codo por encima de la cabeza con una manija.",
+      "instructions": "Face away from the pulley and hold the handle behind your head. Extend the working elbow without dropping your upper arm.",
+      "instructions_es": "Ponete de espaldas a la polea y sujetá la manija detrás de la cabeza. Extendé el codo que trabaja sin bajar el brazo."
     },
     {
       "id": "edaad750-6f20-50b0-9bf0-ac4aba4989e6",
-      "name_es": "Patada de glúteo en polea"
+      "name_es": "Patada de glúteo en polea",
+      "name": "Cable Glute Kickback",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales"
+      ],
+      "description": "Standing hip extension using an ankle strap.",
+      "description_es": "Extensión de cadera de pie con tobillera en polea.",
+      "instructions": "Attach an ankle strap to a low pulley. Move the leg back from the hip without arching your lower back, then return slowly.",
+      "instructions_es": "Conectá una tobillera a la polea baja. Llevá la pierna hacia atrás desde la cadera sin arquear la zona lumbar y volvé despacio."
     },
     {
       "id": "20d0c647-ed0d-5b28-8caf-ca054634b813",
-      "name_es": "Abducción de cadera de pie en polea"
+      "name_es": "Abducción de cadera de pie en polea",
+      "name": "Standing Cable Hip Abduction",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo medio",
+        "Glúteo menor"
+      ],
+      "muscles_secondary": [
+        "Tensor de la fascia lata"
+      ],
+      "description": "Sideways leg raise using a low cable.",
+      "description_es": "Elevación lateral de la pierna desde una polea baja.",
+      "instructions": "Stand sideways with the strap on the far ankle. Move that leg outward and return without tilting your pelvis.",
+      "instructions_es": "Parate de costado con la tobillera en el tobillo más alejado. Separá esa pierna hacia el costado y volvé sin inclinar la pelvis."
     },
     {
       "id": "5199e1a6-bdc7-5499-9917-f8e7bc36d582",
-      "name_es": "Abdominales de rodillas con cuerda"
+      "name_es": "Abdominales de rodillas con cuerda",
+      "name": "Kneeling Cable Rope Crunch",
+      "equipment": "Cable",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Abdominales"
+      ],
+      "muscles_secondary": [
+        "Oblicuos"
+      ],
+      "description": "Kneeling trunk flexion against a high cable.",
+      "description_es": "Flexión del tronco de rodillas contra una polea alta.",
+      "instructions": "Kneel facing a high pulley with the rope near your temples. Curl your ribs toward your pelvis and return slowly.",
+      "instructions_es": "Arrodillate frente a una polea alta con la cuerda cerca de las sienes. Acercá las costillas a la pelvis y volvé despacio."
     },
     {
       "id": "e9f596a0-2893-52dc-a311-fae72eab30de",
-      "name_es": "Press antirrotación en polea"
+      "name_es": "Press antirrotación en polea",
+      "name": "Cable Pallof Press",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Oblicuos",
+        "Abdominales"
+      ],
+      "muscles_secondary": [
+        "Glúteo medio"
+      ],
+      "description": "Anti-rotation press with the cable pulling from the side.",
+      "description_es": "Empuje antirrotación con la polea tirando desde el costado.",
+      "instructions": "Stand sideways to a chest-height pulley. Press the handle away from your chest without letting the cable turn your torso.",
+      "instructions_es": "Parate de costado a una polea a la altura del pecho. Alejá la manija del pecho sin dejar que el cable gire el torso."
     },
     {
       "id": "5ea491a2-acd8-51a7-8277-a37cf3b7a4b2",
-      "name_es": "Rotación de tronco en polea"
+      "name_es": "Rotación de tronco en polea",
+      "name": "Cable Trunk Rotation",
+      "equipment": "Cable",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Oblicuos"
+      ],
+      "muscles_secondary": [
+        "Abdominales"
+      ],
+      "description": "Controlled trunk rotation against a horizontal cable.",
+      "description_es": "Rotación controlada del tronco contra una polea horizontal.",
+      "instructions": "Stand sideways to a chest-height pulley and hold the handle with both hands. Turn away through a controlled range and return slowly.",
+      "instructions_es": "Parate de costado a una polea a la altura del pecho y sujetá la manija con ambas manos. Girá en sentido opuesto dentro de un recorrido controlado y volvé despacio."
     }
   ],
   "Mancuernas": [
