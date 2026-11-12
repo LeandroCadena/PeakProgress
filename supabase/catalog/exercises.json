@@ -2236,103 +2236,475 @@
   "Barras": [
     {
       "id": "e0d6cac7-6e1c-5a9f-94d5-473782ee8ee7",
-      "name_es": "Sentadilla trasera con barra"
+      "name_es": "Sentadilla trasera con barra",
+      "name": "Barbell Back Squat",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Erectores espinales"
+      ],
+      "description": "Squat with a barbell supported across the upper back.",
+      "description_es": "Sentadilla con la barra apoyada en la parte alta de la espalda.",
+      "instructions": "Brace your trunk, bend your hips and knees to lower, then stand with your feet planted.",
+      "instructions_es": "Afirmá el tronco, flexioná la cadera y las rodillas para bajar y volvé a subir con los pies apoyados."
     },
     {
       "id": "8dd17c0a-b059-5c83-926c-f7cb715ca57f",
-      "name_es": "Sentadilla frontal con barra"
+      "name_es": "Sentadilla frontal con barra",
+      "name": "Barbell Front Squat",
+      "equipment": "Barbell",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Abdominales"
+      ],
+      "description": "Squat with the barbell resting across the front of the shoulders.",
+      "description_es": "Sentadilla con la barra apoyada en la parte delantera de los hombros.",
+      "instructions": "Keep your elbows high as you bend your knees and hips. Stand back up without letting your chest drop.",
+      "instructions_es": "Mantené los codos altos mientras flexionás las rodillas y la cadera. Volvé a subir sin dejar caer el pecho."
     },
     {
       "id": "dbc8acf0-8114-52b7-b01b-55d8047eb038",
-      "name_es": "Sentadilla búlgara con barra"
+      "name_es": "Sentadilla búlgara con barra",
+      "name": "Barbell Bulgarian Split Squat",
+      "equipment": "Barbell",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Split squat with a barbell on the back and rear foot elevated.",
+      "description_es": "Sentadilla dividida con barra en la espalda y el pie trasero elevado.",
+      "instructions": "Place your rear foot on a stable bench, lower by bending the front knee and press through the front foot to rise.",
+      "instructions_es": "Apoyá el pie trasero en un banco firme, bajá flexionando la rodilla delantera y empujá con ese pie para subir."
     },
     {
       "id": "51006f92-5038-52c2-97e7-3a6a529d92f6",
-      "name_es": "Peso muerto convencional con barra"
+      "name_es": "Peso muerto convencional con barra",
+      "name": "Conventional Barbell Deadlift",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Glúteo mayor",
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Cuádriceps",
+        "Erectores espinales",
+        "Antebrazos"
+      ],
+      "description": "Barbell lift from the floor with the hands outside the legs.",
+      "description_es": "Levantamiento de la barra desde el piso con las manos por fuera de las piernas.",
+      "instructions": "Start with the bar over midfoot. Grip just outside your legs, brace and stand while keeping the bar close. Lower under control.",
+      "instructions_es": "Empezá con la barra sobre la mitad de los pies. Sujetala por fuera de las piernas, afirmá el tronco y levantate con la barra cerca del cuerpo. Bajala de forma controlada."
     },
     {
       "id": "860858a5-4aa4-551c-a6a1-08c2d07a56dd",
-      "name_es": "Peso muerto sumo con barra"
+      "name_es": "Peso muerto sumo con barra",
+      "name": "Sumo Barbell Deadlift",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Glúteo mayor",
+        "Cuádriceps",
+        "Aductores"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Erectores espinales",
+        "Antebrazos"
+      ],
+      "description": "Barbell lift from the floor with a wide stance and hands inside the knees.",
+      "description_es": "Levantamiento de la barra desde el piso con los pies separados y las manos por dentro de las rodillas.",
+      "instructions": "Set your feet wide with toes angled out. Grip between the knees, brace and push through the floor to stand.",
+      "instructions_es": "Separá los pies con las puntas hacia afuera. Sujetá la barra entre las rodillas, afirmá el tronco y empujá el piso para pararte."
     },
     {
       "id": "9cc87f0e-64de-5941-bf30-f64f6da8ba7c",
-      "name_es": "Peso muerto rumano con barra"
+      "name_es": "Peso muerto rumano con barra",
+      "name": "Barbell Romanian Deadlift",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Isquiotibiales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Erectores espinales",
+        "Antebrazos"
+      ],
+      "description": "Barbell hip hinge performed from a standing start.",
+      "description_es": "Bisagra de cadera con barra que comienza de pie.",
+      "instructions": "With a slight knee bend, send your hips back and lower the bar close to your legs. Extend your hips to stand.",
+      "instructions_es": "Flexioná apenas las rodillas, llevá la cadera hacia atrás y bajá la barra cerca de las piernas. Extendé la cadera para volver a pararte."
     },
     {
       "id": "22edb665-e38f-51d6-9726-3f84d3d2d6de",
-      "name_es": "Peso muerto con barra hexagonal"
+      "name_es": "Peso muerto con barra hexagonal",
+      "name": "Trap Bar Deadlift",
+      "equipment": "Trap Bar",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Erectores espinales",
+        "Antebrazos"
+      ],
+      "description": "Deadlift performed inside a hexagonal bar using side handles.",
+      "description_es": "Peso muerto dentro de una barra hexagonal con manijas laterales.",
+      "instructions": "Stand centered inside the bar and grip the handles. Push through your feet to stand, then lower the bar to the floor.",
+      "instructions_es": "Parate en el centro de la barra y sujetá las manijas. Empujá con los pies para pararte y bajá la barra hasta el piso."
     },
     {
       "id": "c76e3cf8-0957-5833-adc8-a38237dbd42e",
-      "name_es": "Buenos días con barra"
+      "name_es": "Buenos días con barra",
+      "name": "Barbell Good Morning",
+      "equipment": "Barbell",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Isquiotibiales",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Erectores espinales",
+        "Abdominales"
+      ],
+      "description": "Hip hinge with a barbell supported on the upper back.",
+      "description_es": "Bisagra de cadera con la barra apoyada en la parte alta de la espalda.",
+      "instructions": "With knees slightly bent, send your hips back and incline your torso within a controlled range. Extend your hips to rise.",
+      "instructions_es": "Con las rodillas levemente flexionadas, llevá la cadera hacia atrás e incliná el torso dentro de un recorrido controlado. Extendé la cadera para subir."
     },
     {
       "id": "fd87bc20-4e1c-5e14-adea-5b9ce91c828a",
-      "name_es": "Empuje de cadera con barra"
+      "name_es": "Empuje de cadera con barra",
+      "name": "Barbell Hip Thrust",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Aductores"
+      ],
+      "description": "Hip extension with the upper back on a bench and a barbell over the hips.",
+      "description_es": "Extensión de cadera con la espalda alta apoyada en un banco y la barra sobre la cadera.",
+      "instructions": "Support your upper back on a stable bench and position a padded bar across your hips. Press through your feet to raise and lower your pelvis.",
+      "instructions_es": "Apoyá la espalda alta en un banco firme y colocá la barra acolchada sobre la cadera. Empujá con los pies para elevar la pelvis y bajala de forma controlada."
     },
     {
       "id": "c690cb6f-82a0-5f9b-a58d-a75fa3561985",
-      "name_es": "Press de banca con barra"
+      "name_es": "Press de banca con barra",
+      "name": "Barbell Bench Press",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Horizontal barbell press on a flat bench.",
+      "description_es": "Empuje horizontal con barra en banco plano.",
+      "instructions": "Plant both feet and lower the bar toward your chest under control. Press it back up over your shoulders.",
+      "instructions_es": "Apoyá ambos pies y bajá la barra hacia el pecho de forma controlada. Empujala hacia arriba hasta quedar sobre los hombros."
     },
     {
       "id": "68704bb0-3c72-502d-87a7-21ddc427ea09",
-      "name_es": "Press inclinado con barra"
+      "name_es": "Press inclinado con barra",
+      "name": "Incline Barbell Bench Press",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Tríceps"
+      ],
+      "description": "Barbell chest press on an incline bench.",
+      "description_es": "Press de pecho con barra sobre banco inclinado.",
+      "instructions": "Keep your back supported, lower the bar toward your upper chest and press it back up.",
+      "instructions_es": "Mantené la espalda apoyada, bajá la barra hacia la parte alta del pecho y empujala hacia arriba."
     },
     {
       "id": "11ef6175-baec-5b10-afc3-6768eac1d4a9",
-      "name_es": "Press declinado con barra"
+      "name_es": "Press declinado con barra",
+      "name": "Decline Barbell Bench Press",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Barbell chest press on a decline bench.",
+      "description_es": "Press de pecho con barra sobre banco declinado.",
+      "instructions": "Secure your legs on the bench, lower the bar toward your lower chest and press it back up under control.",
+      "instructions_es": "Asegurá las piernas en el banco, bajá la barra hacia la parte baja del pecho y empujala hacia arriba de forma controlada."
     },
     {
       "id": "603dd0bd-8802-5780-969c-9d09c4327e93",
-      "name_es": "Press de banca con agarre cerrado"
+      "name_es": "Press de banca con agarre cerrado",
+      "name": "Close-Grip Barbell Bench Press",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps",
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Flat bench press using a narrower barbell grip.",
+      "description_es": "Press de banca plano con agarre más cerrado.",
+      "instructions": "Grip about shoulder-width. Lower the bar toward your lower chest with elbows close to your sides, then press up.",
+      "instructions_es": "Sujetá la barra aproximadamente al ancho de los hombros. Bajala hacia la parte baja del pecho con los codos cerca del cuerpo y empujá para subir."
     },
     {
       "id": "b1030a69-2ad4-5b35-bf1f-276f277deb01",
-      "name_es": "Press militar de pie con barra"
+      "name_es": "Press militar de pie con barra",
+      "name": "Standing Barbell Overhead Press",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Abdominales"
+      ],
+      "description": "Strict standing overhead press with a barbell.",
+      "description_es": "Empuje estricto de pie con barra por encima de la cabeza.",
+      "instructions": "Start with the bar at shoulder height. Press it overhead without driving with your legs, then lower to your shoulders.",
+      "instructions_es": "Empezá con la barra a la altura de los hombros. Empujala por encima de la cabeza sin impulsarte con las piernas y volvé a bajarla hasta los hombros."
     },
     {
       "id": "f0e9623b-5b85-581f-8021-83390497cdde",
-      "name_es": "Remo inclinado con barra"
+      "name_es": "Remo inclinado con barra",
+      "name": "Bent-Over Barbell Row",
+      "equipment": "Barbell",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior",
+        "Erectores espinales"
+      ],
+      "description": "Barbell row from a sustained hip hinge.",
+      "description_es": "Remo con barra manteniendo el torso inclinado.",
+      "instructions": "Hinge at your hips and let the bar hang. Pull it toward your torso and lower it without changing the angle of your back.",
+      "instructions_es": "Incliná el torso desde la cadera y dejá que la barra cuelgue. Llevala hacia el torso y bajala sin cambiar la inclinación de la espalda."
     },
     {
       "id": "4bf73bc3-8688-5965-b002-b47e81caf9eb",
-      "name_es": "Remo Pendlay con barra"
+      "name_es": "Remo Pendlay con barra",
+      "name": "Pendlay Row",
+      "equipment": "Barbell",
+      "difficulty": "Advanced",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior",
+        "Erectores espinales"
+      ],
+      "description": "Barbell row that resets on the floor between repetitions.",
+      "description_es": "Remo con barra que vuelve al piso entre repeticiones.",
+      "instructions": "Start with the bar on the floor and torso close to horizontal. Pull toward your lower chest, then set the bar down before the next rep.",
+      "instructions_es": "Empezá con la barra en el piso y el torso casi horizontal. Llevala hacia la parte baja del pecho y apoyala antes de repetir."
     },
     {
       "id": "f3298914-ac5d-59e2-8e2b-24b0c4a498b0",
-      "name_es": "Remo con barra T"
+      "name_es": "Remo con barra T",
+      "name": "T-Bar Row",
+      "equipment": "Landmine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior",
+        "Erectores espinales"
+      ],
+      "description": "Two-arm row using a close handle on an anchored barbell.",
+      "description_es": "Remo a dos brazos con una manija cerrada sobre una barra anclada.",
+      "instructions": "Stand astride the bar and hinge at the hips. Pull the handle toward your abdomen, then lower with your torso steady.",
+      "instructions_es": "Parate con un pie a cada lado de la barra e incliná el torso desde la cadera. Llevá la manija hacia el abdomen y bajala con el torso firme."
     },
     {
       "id": "d6fe2b6f-9e92-54ee-b591-1cd74279736e",
-      "name_es": "Remo a un brazo con barra anclada"
+      "name_es": "Remo a un brazo con barra anclada",
+      "name": "Single-Arm Landmine Row",
+      "equipment": "Landmine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior",
+        "Oblicuos"
+      ],
+      "description": "One-arm row from the free end of an anchored barbell.",
+      "description_es": "Remo a un brazo desde el extremo libre de una barra anclada.",
+      "instructions": "Stand beside the free end and hinge at the hips. Pull the bar toward your side and lower it without twisting your trunk.",
+      "instructions_es": "Parate al costado del extremo libre e incliná el torso desde la cadera. Tirá de la barra hacia el costado y bajala sin girar el tronco."
     },
     {
       "id": "51ae29c0-1397-5c16-8319-c6603c315973",
-      "name_es": "Press a un brazo con barra anclada"
+      "name_es": "Press a un brazo con barra anclada",
+      "name": "Single-Arm Landmine Press",
+      "equipment": "Landmine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior"
+      ],
+      "muscles_secondary": [
+        "Pectoral mayor",
+        "Tríceps",
+        "Oblicuos"
+      ],
+      "description": "Angled shoulder press with one arm using an anchored barbell.",
+      "description_es": "Empuje inclinado de hombro a un brazo con barra anclada.",
+      "instructions": "Hold the free end near one shoulder in a split stance. Press up and forward without rotating your trunk, then return slowly.",
+      "instructions_es": "Sostené el extremo libre cerca de un hombro con un pie adelantado. Empujá hacia arriba y adelante sin girar el tronco y volvé despacio."
     },
     {
       "id": "d254fd60-686f-537b-a7c0-f02c08ecdd38",
-      "name_es": "Encogimientos de hombros con barra"
+      "name_es": "Encogimientos de hombros con barra",
+      "name": "Barbell Shrug",
+      "equipment": "Barbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Elevador de la escápula",
+        "Antebrazos"
+      ],
+      "description": "Shoulder elevation while holding a barbell in front of the thighs.",
+      "description_es": "Elevación de hombros con la barra delante de los muslos.",
+      "instructions": "Keep your elbows straight and raise your shoulders toward your ears. Lower slowly without rolling your shoulders.",
+      "instructions_es": "Mantené los codos extendidos y elevá los hombros hacia las orejas. Bajalos despacio sin hacer círculos."
     },
     {
       "id": "7a3a0350-0e28-567d-ade7-5955e853da51",
-      "name_es": "Curl de bíceps con barra recta"
+      "name_es": "Curl de bíceps con barra recta",
+      "name": "Straight-Bar Biceps Curl",
+      "equipment": "Barbell",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "Standing elbow flexion using a straight barbell.",
+      "description_es": "Flexión de codos de pie con barra recta.",
+      "instructions": "Hold the bar with palms up. Curl it by bending your elbows without swinging your torso, then lower slowly.",
+      "instructions_es": "Sujetá la barra con las palmas hacia arriba. Elevala flexionando los codos sin balancear el torso y bajala despacio."
     },
     {
       "id": "3ca7152a-0f9e-594b-86d6-43139cd5daab",
-      "name_es": "Curl de bíceps con barra Z"
+      "name_es": "Curl de bíceps con barra Z",
+      "name": "EZ-Bar Biceps Curl",
+      "equipment": "EZ Bar",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "Standing elbow flexion using the angled grips of an EZ bar.",
+      "description_es": "Flexión de codos de pie con los agarres inclinados de una barra Z.",
+      "instructions": "Hold the angled grips with palms mostly up. Bend your elbows to lift the bar and lower it under control.",
+      "instructions_es": "Sujetá los agarres inclinados con las palmas orientadas hacia arriba. Flexioná los codos para levantar la barra y bajala de forma controlada."
     },
     {
       "id": "77f8e6fe-d059-5187-9eb5-c81a55d4c183",
-      "name_es": "Curl predicador con barra Z"
+      "name_es": "Curl predicador con barra Z",
+      "name": "EZ-Bar Preacher Curl",
+      "equipment": "EZ Bar",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "EZ-bar curl with the upper arms supported on a preacher pad.",
+      "description_es": "Curl con barra Z y los brazos apoyados en el banco predicador.",
+      "instructions": "Rest both upper arms on the angled pad. Curl the bar and lower it without lifting your arms off the pad.",
+      "instructions_es": "Apoyá la parte superior de ambos brazos en la almohadilla inclinada. Elevá la barra y bajala sin despegar los brazos."
     },
     {
       "id": "c962fd01-b652-5e3a-b9f1-09337906708e",
-      "name_es": "Curl inverso con barra Z"
+      "name_es": "Curl inverso con barra Z",
+      "name": "EZ-Bar Reverse Curl",
+      "equipment": "EZ Bar",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Braquiorradial",
+        "Braquial"
+      ],
+      "muscles_secondary": [
+        "Bíceps"
+      ],
+      "description": "EZ-bar curl performed with palms facing down.",
+      "description_es": "Curl con barra Z y las palmas orientadas hacia abajo.",
+      "instructions": "Grip the angled sections with palms down. Bend your elbows without swinging and lower the bar slowly.",
+      "instructions_es": "Sujetá las secciones inclinadas con las palmas hacia abajo. Flexioná los codos sin balancearte y bajá la barra despacio."
     },
     {
       "id": "95ad4450-f77d-54a8-a7c7-929f4eda7a04",
-      "name_es": "Extensión de tríceps acostado con barra Z"
+      "name_es": "Extensión de tríceps acostado con barra Z",
+      "name": "Lying EZ-Bar Triceps Extension",
+      "equipment": "EZ Bar",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Tríceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Lying elbow extension with an EZ bar.",
+      "description_es": "Extensión de codos acostado con barra Z.",
+      "instructions": "Lie on a flat bench with the bar above your shoulders. Bend your elbows to lower it toward the top of your head, then extend them.",
+      "instructions_es": "Acostate en un banco plano con la barra sobre los hombros. Flexioná los codos para acercarla a la parte superior de la cabeza y volvé a extenderlos."
     }
   ],
   "Barra guiada": [
