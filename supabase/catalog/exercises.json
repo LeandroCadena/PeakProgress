@@ -491,119 +491,514 @@
   "Máquinas": [
     {
       "id": "26f46e06-8459-554a-8488-1782cfcc12d1",
-      "name_es": "Prensa de piernas a 45°"
+      "name_es": "Prensa de piernas a 45°",
+      "name": "45-Degree Leg Press",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores"
+      ],
+      "description": "Leg press on an inclined sled.",
+      "description_es": "Prensa de piernas sobre un trineo inclinado.",
+      "instructions": "Keep your back on the pad, lower the sled by bending both knees and press through both feet.",
+      "instructions_es": "Mantené la espalda en el respaldo, flexioná ambas rodillas para bajar el trineo y empujá con los dos pies."
     },
     {
       "id": "23cb5414-2111-5b58-9be3-d7cc6fc532a5",
-      "name_es": "Prensa de piernas a una pierna"
+      "name_es": "Prensa de piernas a una pierna",
+      "name": "Single-Leg Leg Press",
+      "equipment": "Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores",
+        "Glúteo medio"
+      ],
+      "description": "Leg press performed with one foot on the platform.",
+      "description_es": "Prensa con un solo pie sobre la plataforma.",
+      "instructions": "Keep your pelvis against the seat, bend the working knee and push the platform away with that foot.",
+      "instructions_es": "Mantené la pelvis apoyada, flexioná la rodilla que trabaja y empujá la plataforma con ese pie."
     },
     {
       "id": "8f40a83e-be64-5b9d-848b-a6113adcbb3e",
-      "name_es": "Prensa de piernas horizontal"
+      "name_es": "Prensa de piernas horizontal",
+      "name": "Horizontal Leg Press",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores"
+      ],
+      "description": "Seated leg press along a horizontal path.",
+      "description_es": "Prensa sentada con recorrido horizontal.",
+      "instructions": "Place both feet on the platform. Bend your knees to return toward the starting position, then press away.",
+      "instructions_es": "Apoyá ambos pies en la plataforma. Flexioná las rodillas para volver hacia la posición inicial y empujá para extenderlas."
     },
     {
       "id": "ae22a114-9a44-514c-92e9-f436e181a7be",
-      "name_es": "Sentadilla hack"
+      "name_es": "Sentadilla hack",
+      "name": "Hack Squat",
+      "equipment": "Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Cuádriceps",
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Aductores"
+      ],
+      "description": "Squat with back and shoulders supported by a guided sled.",
+      "description_es": "Sentadilla guiada con apoyo para espalda y hombros.",
+      "instructions": "Set your shoulders under the pads and keep your feet flat. Bend your knees and hips to lower, then press up.",
+      "instructions_es": "Ubicá los hombros debajo de las almohadillas y apoyá bien los pies. Flexioná las rodillas y la cadera para bajar y empujá para subir."
     },
     {
       "id": "34f962bf-6f2a-5bd7-8c55-7d1c10a15293",
-      "name_es": "Extensión de rodillas en máquina"
+      "name_es": "Extensión de rodillas en máquina",
+      "name": "Machine Leg Extension",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Seated knee extension against a shin pad.",
+      "description_es": "Extensión de rodillas sentado contra una almohadilla.",
+      "instructions": "Align your knees with the pivot. Straighten both knees against the pad and lower slowly.",
+      "instructions_es": "Alineá las rodillas con el eje de la máquina. Extendé ambas rodillas contra la almohadilla y bajá despacio."
     },
     {
       "id": "1b044d89-e770-5396-b4fb-ddf8ffcf7ea7",
-      "name_es": "Extensión de rodilla a una pierna en máquina"
+      "name_es": "Extensión de rodilla a una pierna en máquina",
+      "name": "Single-Leg Machine Leg Extension",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Cuádriceps"
+      ],
+      "muscles_secondary": [],
+      "description": "Seated knee extension with one leg at a time.",
+      "description_es": "Extensión de rodilla sentado con una pierna por vez.",
+      "instructions": "Position the working shin behind the pad. Extend that knee, lower slowly and repeat on the other side.",
+      "instructions_es": "Ubicá la tibia de la pierna que trabaja detrás de la almohadilla. Extendé esa rodilla, bajá despacio y repetí del otro lado."
     },
     {
       "id": "271733b5-e19c-5176-897e-42955b632659",
-      "name_es": "Curl femoral sentado"
+      "name_es": "Curl femoral sentado",
+      "name": "Seated Leg Curl",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Gastrocnemio"
+      ],
+      "description": "Seated knee flexion against a lower-leg pad.",
+      "description_es": "Flexión de rodillas sentado contra una almohadilla.",
+      "instructions": "Secure the thigh pad. Bend both knees to draw the lower pad down and back, then extend under control.",
+      "instructions_es": "Ajustá el apoyo sobre los muslos. Flexioná las rodillas para llevar la almohadilla inferior hacia abajo y atrás, y volvé de forma controlada."
     },
     {
       "id": "89cafa36-321b-5221-9699-833a8dd39a80",
-      "name_es": "Curl femoral sentado a una pierna"
+      "name_es": "Curl femoral sentado a una pierna",
+      "name": "Single-Leg Seated Leg Curl",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Gastrocnemio"
+      ],
+      "description": "Seated leg curl performed one side at a time.",
+      "description_es": "Curl femoral sentado de a una pierna.",
+      "instructions": "Keep your thighs under the support. Bend the working knee to move the pad, then return slowly and switch sides.",
+      "instructions_es": "Mantené los muslos debajo del apoyo. Flexioná la rodilla que trabaja para mover la almohadilla, volvé despacio y cambiá de lado."
     },
     {
       "id": "e5d3bc79-ef87-5a4f-9870-5e17755fb803",
-      "name_es": "Curl femoral acostado"
+      "name_es": "Curl femoral acostado",
+      "name": "Lying Leg Curl",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Gastrocnemio"
+      ],
+      "description": "Knee flexion performed face down on a machine.",
+      "description_es": "Flexión de rodillas boca abajo en máquina.",
+      "instructions": "Lie face down with the pad above your heels. Curl the pad toward your hips and lower it without lifting your pelvis.",
+      "instructions_es": "Acostate boca abajo con la almohadilla por encima de los talones. Acercala a la cadera flexionando las rodillas y bajala sin levantar la pelvis."
     },
     {
       "id": "263f9117-7a3e-5ab0-96da-51fa2b49ec4f",
-      "name_es": "Curl femoral de pie a una pierna"
+      "name_es": "Curl femoral de pie a una pierna",
+      "name": "Standing Single-Leg Curl",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Isquiotibiales"
+      ],
+      "muscles_secondary": [
+        "Gastrocnemio"
+      ],
+      "description": "Standing machine curl performed on one leg.",
+      "description_es": "Curl femoral de pie con una pierna por vez.",
+      "instructions": "Brace yourself on the supports. Bend the working knee to raise the pad, then lower without moving your hips.",
+      "instructions_es": "Sujetate de los apoyos. Flexioná la rodilla que trabaja para elevar la almohadilla y bajala sin mover la cadera."
     },
     {
       "id": "4cf7a3eb-4bdb-57b6-8300-2303233bb241",
-      "name_es": "Abducción de cadera en máquina"
+      "name_es": "Abducción de cadera en máquina",
+      "name": "Machine Hip Abduction",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo medio",
+        "Glúteo menor"
+      ],
+      "muscles_secondary": [
+        "Tensor de la fascia lata"
+      ],
+      "description": "Outward movement of the thighs against machine resistance.",
+      "description_es": "Separación de los muslos contra la resistencia de la máquina.",
+      "instructions": "Sit with pads against the outside of your thighs. Open your knees and return slowly.",
+      "instructions_es": "Sentate con las almohadillas por fuera de los muslos. Separá las rodillas y volvé despacio."
     },
     {
       "id": "2b706a96-454a-5891-8fc6-42f414ca5805",
-      "name_es": "Aducción de cadera en máquina"
+      "name_es": "Aducción de cadera en máquina",
+      "name": "Machine Hip Adduction",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Aductores"
+      ],
+      "muscles_secondary": [],
+      "description": "Inward movement of the thighs against machine resistance.",
+      "description_es": "Aproximación de los muslos contra la resistencia de la máquina.",
+      "instructions": "Set the pads against the inside of your thighs. Bring your knees toward each other and return under control.",
+      "instructions_es": "Colocá las almohadillas por dentro de los muslos. Acercá las rodillas entre sí y volvé de forma controlada."
     },
     {
       "id": "88302f5d-e71d-5145-8406-a5c3a7c45019",
-      "name_es": "Empuje de cadera en máquina"
+      "name_es": "Empuje de cadera en máquina",
+      "name": "Machine Hip Thrust",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Glúteo mayor"
+      ],
+      "muscles_secondary": [
+        "Isquiotibiales",
+        "Aductores"
+      ],
+      "description": "Hip extension against a machine belt or pad.",
+      "description_es": "Extensión de cadera contra el cinturón o la almohadilla de la máquina.",
+      "instructions": "Secure the belt or pad across your hips. Press through your feet to raise your pelvis, then lower slowly.",
+      "instructions_es": "Ajustá el cinturón o la almohadilla sobre la cadera. Empujá con los pies para elevar la pelvis y bajá despacio."
     },
     {
       "id": "d744804b-2c50-5de3-8b90-790343212a5d",
-      "name_es": "Elevación de talones de pie en máquina"
+      "name_es": "Elevación de talones de pie en máquina",
+      "name": "Standing Machine Calf Raise",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Gastrocnemio",
+        "Sóleo"
+      ],
+      "muscles_secondary": [],
+      "description": "Calf raise performed standing with shoulder pads.",
+      "description_es": "Elevación de talones de pie con apoyo sobre los hombros.",
+      "instructions": "Place the balls of your feet on the platform. Raise your heels with knees nearly straight and lower under control.",
+      "instructions_es": "Apoyá la parte delantera de los pies en la plataforma. Elevá los talones con las rodillas casi extendidas y bajá de forma controlada."
     },
     {
       "id": "5e4d3d3e-dbde-5cb3-8751-9ed2aa097cef",
-      "name_es": "Elevación de talones sentado en máquina"
+      "name_es": "Elevación de talones sentado en máquina",
+      "name": "Seated Machine Calf Raise",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Sóleo"
+      ],
+      "muscles_secondary": [
+        "Gastrocnemio"
+      ],
+      "description": "Seated calf raise with resistance over the thighs.",
+      "description_es": "Elevación de talones sentado con carga sobre los muslos.",
+      "instructions": "Set the pads over your thighs and the balls of your feet on the platform. Lift and lower your heels.",
+      "instructions_es": "Ubicá las almohadillas sobre los muslos y la parte delantera de los pies en la plataforma. Elevá y bajá los talones."
     },
     {
       "id": "b18e2826-9ace-5010-acd8-a7fb7f47ea46",
-      "name_es": "Press de pecho en máquina"
+      "name_es": "Press de pecho en máquina",
+      "name": "Machine Chest Press",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Horizontal chest press using a machine.",
+      "description_es": "Empuje horizontal de pecho en máquina.",
+      "instructions": "Adjust the seat so the handles start near chest height. Press forward with both hands, then return slowly.",
+      "instructions_es": "Ajustá el asiento para que las manijas queden cerca de la altura del pecho. Empujá hacia adelante con ambas manos y volvé despacio."
     },
     {
       "id": "452149b8-c20d-5af8-9f60-325fe29bd827",
-      "name_es": "Press de pecho a un brazo en máquina"
+      "name_es": "Press de pecho a un brazo en máquina",
+      "name": "Single-Arm Machine Chest Press",
+      "equipment": "Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Deltoides anterior"
+      ],
+      "description": "Horizontal chest press on a machine with independent handles.",
+      "description_es": "Empuje horizontal a un brazo en una máquina con manijas independientes.",
+      "instructions": "Keep your back on the pad and press one handle forward. Return without turning your torso and switch arms.",
+      "instructions_es": "Mantené la espalda apoyada y empujá una manija hacia adelante. Volvé sin girar el torso y cambiá de brazo."
     },
     {
       "id": "ec590c87-8d4c-50f7-a63f-7dd149d3dc3c",
-      "name_es": "Press inclinado de pecho en máquina"
+      "name_es": "Press inclinado de pecho en máquina",
+      "name": "Incline Machine Chest Press",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior",
+        "Tríceps"
+      ],
+      "description": "Chest press along an upward path.",
+      "description_es": "Empuje de pecho con recorrido ascendente.",
+      "instructions": "Keep your back against the seat. Press the handles up and forward, then lower them under control.",
+      "instructions_es": "Mantené la espalda contra el respaldo. Empujá las manijas hacia arriba y adelante y volvé de forma controlada."
     },
     {
       "id": "d6d9f663-ec2e-5b3e-a86f-680d086f3d66",
-      "name_es": "Aperturas de pecho en máquina"
+      "name_es": "Aperturas de pecho en máquina",
+      "name": "Machine Chest Fly",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Chest fly performed on a pec deck machine.",
+      "description_es": "Apertura de pecho en máquina con los brazos a los lados.",
+      "instructions": "With your elbows slightly bent, bring the handles or pads together in front of your chest and reopen slowly.",
+      "instructions_es": "Con los codos levemente flexionados, acercá las manijas o almohadillas frente al pecho y volvé a abrir despacio."
     },
     {
       "id": "33d270a4-692a-5a75-b1ba-5da4229109b2",
-      "name_es": "Aperturas inversas en máquina"
+      "name_es": "Aperturas inversas en máquina",
+      "name": "Reverse Pec Deck Fly",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides posterior"
+      ],
+      "muscles_secondary": [
+        "Romboides",
+        "Trapecio"
+      ],
+      "description": "Rear shoulder fly performed facing the machine pad.",
+      "description_es": "Apertura para la parte posterior del hombro, de frente al apoyo.",
+      "instructions": "Face the pad and hold the handles in front of you. Open your arms out to the sides and return slowly.",
+      "instructions_es": "Ubicate frente al apoyo y sujetá las manijas delante tuyo. Abrí los brazos hacia los costados y volvé despacio."
     },
     {
       "id": "32bef4b6-5fee-567a-9bab-6a78611cb6fc",
-      "name_es": "Remo con apoyo de pecho en máquina"
+      "name_es": "Remo con apoyo de pecho en máquina",
+      "name": "Chest-Supported Machine Row",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior"
+      ],
+      "description": "Machine row with the chest braced against a pad.",
+      "description_es": "Remo en máquina con el pecho apoyado.",
+      "instructions": "Keep your chest on the pad, pull the handles toward your torso and let your arms extend slowly.",
+      "instructions_es": "Mantené el pecho apoyado, llevá las manijas hacia el torso y extendé los brazos despacio."
     },
     {
       "id": "bc560dca-3dfc-5fa0-914c-fb820ddbf2a2",
-      "name_es": "Remo a un brazo con apoyo de pecho en máquina"
+      "name_es": "Remo a un brazo con apoyo de pecho en máquina",
+      "name": "Single-Arm Chest-Supported Machine Row",
+      "equipment": "Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Dorsal ancho",
+        "Romboides",
+        "Trapecio"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Deltoides posterior"
+      ],
+      "description": "Chest-supported row with one independent handle.",
+      "description_es": "Remo con apoyo de pecho y una manija independiente.",
+      "instructions": "Pull one handle toward your torso without rotating away from the pad. Extend the arm and switch sides.",
+      "instructions_es": "Llevá una manija hacia el torso sin despegar ni girar el pecho. Extendé el brazo y cambiá de lado."
     },
     {
       "id": "13e8c64e-7ffa-5ef6-88c6-47f5433fbe81",
-      "name_es": "Press de hombros en máquina"
+      "name_es": "Press de hombros en máquina",
+      "name": "Machine Shoulder Press",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps"
+      ],
+      "description": "Overhead press using machine handles.",
+      "description_es": "Empuje por encima de la cabeza con manijas de máquina.",
+      "instructions": "Adjust the seat so the handles start near shoulder height. Press up, then lower slowly to the starting position.",
+      "instructions_es": "Ajustá el asiento para empezar con las manijas cerca de los hombros. Empujá hacia arriba y bajá despacio."
     },
     {
       "id": "60ea9146-0c61-54ab-8b38-0d1c225f4d26",
-      "name_es": "Press de hombros a un brazo en máquina"
+      "name_es": "Press de hombros a un brazo en máquina",
+      "name": "Single-Arm Machine Shoulder Press",
+      "equipment": "Machine",
+      "difficulty": "Intermediate",
+      "muscles_primary": [
+        "Deltoides anterior",
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Tríceps",
+        "Oblicuos"
+      ],
+      "description": "Overhead machine press with one independent handle.",
+      "description_es": "Empuje de hombro a un brazo con manija independiente.",
+      "instructions": "Press one handle overhead while keeping your back on the pad. Lower it and repeat with the other arm.",
+      "instructions_es": "Empujá una manija por encima de la cabeza con la espalda apoyada. Bajala y repetí con el otro brazo."
     },
     {
       "id": "eff8f3fe-7f14-5744-9513-fb7c77e147f5",
-      "name_es": "Elevaciones laterales en máquina"
+      "name_es": "Elevaciones laterales en máquina",
+      "name": "Machine Lateral Raise",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Deltoides lateral"
+      ],
+      "muscles_secondary": [
+        "Supraespinoso",
+        "Trapecio"
+      ],
+      "description": "Lateral arm raise against machine pads.",
+      "description_es": "Elevación lateral de brazos contra almohadillas.",
+      "instructions": "Position your arms under the pads. Raise your elbows out to the sides and lower slowly.",
+      "instructions_es": "Ubicá los brazos debajo de las almohadillas. Elevá los codos hacia los costados y bajá despacio."
     },
     {
       "id": "518d82bd-291d-54bc-adb9-ffc10452adad",
-      "name_es": "Curl de bíceps en máquina"
+      "name_es": "Curl de bíceps en máquina",
+      "name": "Machine Biceps Curl",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Bíceps"
+      ],
+      "muscles_secondary": [
+        "Braquial",
+        "Braquiorradial"
+      ],
+      "description": "Elbow flexion using a supported machine curl.",
+      "description_es": "Flexión de codos en máquina con los brazos apoyados.",
+      "instructions": "Rest your upper arms on the pad. Bend your elbows to raise the handle and lower it under control.",
+      "instructions_es": "Apoyá la parte superior de los brazos en la almohadilla. Flexioná los codos para elevar la manija y bajala de forma controlada."
     },
     {
       "id": "76d1e925-bf6c-5581-8f78-68fcf9a97d6c",
-      "name_es": "Fondos asistidos en máquina"
+      "name_es": "Fondos asistidos en máquina",
+      "name": "Assisted Dip",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Tríceps",
+        "Pectoral mayor"
+      ],
+      "muscles_secondary": [
+        "Deltoides anterior"
+      ],
+      "description": "Parallel-bar dip with machine counterweight assistance.",
+      "description_es": "Fondo en paralelas con asistencia de contrapeso.",
+      "instructions": "Set an assistance level and place your knees or feet on the platform as designed. Lower by bending your elbows, then press up.",
+      "instructions_es": "Elegí la asistencia y colocá las rodillas o los pies en la plataforma según el diseño. Flexioná los codos para bajar y empujá para subir."
     },
     {
       "id": "32e22dbe-5731-5372-bb04-806caf1d4dfb",
-      "name_es": "Dominadas asistidas en máquina"
+      "name_es": "Dominadas asistidas en máquina",
+      "name": "Assisted Pull-Up",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Dorsal ancho"
+      ],
+      "muscles_secondary": [
+        "Bíceps",
+        "Trapecio",
+        "Antebrazos"
+      ],
+      "description": "Pull-up with machine counterweight assistance.",
+      "description_es": "Dominada con asistencia de contrapeso.",
+      "instructions": "Set the assistance and use the platform as designed. Pull toward the handles and lower under control.",
+      "instructions_es": "Elegí la asistencia y usá la plataforma según el diseño. Acercate a las manijas y bajá de forma controlada."
     },
     {
       "id": "f7a25561-0b83-5180-9b1c-fe9c9dce9119",
-      "name_es": "Abdominales en máquina"
+      "name_es": "Abdominales en máquina",
+      "name": "Machine Abdominal Crunch",
+      "equipment": "Machine",
+      "difficulty": "Beginner",
+      "muscles_primary": [
+        "Abdominales"
+      ],
+      "muscles_secondary": [
+        "Oblicuos"
+      ],
+      "description": "Trunk flexion against machine resistance.",
+      "description_es": "Flexión del tronco contra la resistencia de la máquina.",
+      "instructions": "Adjust the seat and pads. Bring your ribs toward your pelvis, then return slowly to the starting position.",
+      "instructions_es": "Ajustá el asiento y los apoyos. Acercá las costillas a la pelvis y volvé despacio a la posición inicial."
     }
   ],
   "Poleas": [
