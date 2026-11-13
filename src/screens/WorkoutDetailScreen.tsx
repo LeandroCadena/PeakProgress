@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Text } from "react-native";
@@ -6,7 +5,10 @@ import { FlatList, Text } from "react-native";
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { localizedExerciseName } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getWorkoutSets } from "../services/historyService";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
@@ -27,18 +29,19 @@ export type WorkoutSet = {
 };
 
 export default function WorkoutDetailScreen() {
-    const { locale, t } = useLanguage();
+    const { language, locale, t } = useLanguage();
     const formatNumber = new Intl.NumberFormat(locale);
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "WorkoutDetail">>();
     const { sessionId, routineName } = route.params;
+    const { user } = useAuth();
     const { showToast } = useToast();
     const [sets, setSets] = useState<WorkoutSet[]>([]);
 
     const fetchSets = useCallback(async () => {
         try {
-            const data = await getWorkoutSets(sessionId);
+            const data = await getWorkoutSets(sessionId, user.id);
             setSets(data as WorkoutSet[]);
         } catch (error: any) {
             showToast({
@@ -46,7 +49,7 @@ export default function WorkoutDetailScreen() {
                 message: error instanceof Error ? error.message : t("workoutSetsError"),
             });
         }
-    }, [sessionId, showToast]);
+    }, [sessionId, showToast, t, user.id]);
 
     useEffect(() => {
         fetchSets();
@@ -67,7 +70,11 @@ export default function WorkoutDetailScreen() {
                 renderItem={({ item, index }) => (
                     <Card style={styles.card}>
                         <Text style={sharedStyles.cardTitle}>
-                            {item.exercise_name_snapshot ?? t("exercise")}
+                            {localizedExerciseName(
+                                item.exercise_id,
+                                item.exercise_name_snapshot ?? t("exercise"),
+                                language
+                            )}
                         </Text>
 
                         <Text style={sharedStyles.mutedText}>

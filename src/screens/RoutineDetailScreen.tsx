@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import {
     NavigationAction,
@@ -22,6 +21,7 @@ import RoutineExerciseCard from "../components/routine/RoutineExerciseCard";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import RestTimeEditor from "../components/workout/RestTimeEditor";
 import { useRoutineDetail } from "../hooks/useRoutineDetail";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { spacing, useAppTheme, createThemedStyles } from "../theme";
 import type { RoutineExercise } from "../types/routine";
 

@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text } from "react-native";
@@ -12,7 +11,9 @@ import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { GUEST_USER_ID } from "../database/guestAccount";
 import { getLocalRoutines } from "../database/repositories/routineRepository";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { createRoutine as createRoutineService } from "../services/routineService";
 import { hydrateMissingRemoteRoutines } from "../services/sync/routineInitialHydrationService";
 import { syncRemoteRoutineDeletions } from "../services/sync/routineRemoteDeletionService";
@@ -79,7 +80,7 @@ export default function RoutinesScreen({ navigation }: any) {
     }, [userId, fetchRoutines]);
 
     const hydrateRoutines = useCallback(async () => {
-        if (!userId) return;
+        if (!userId || userId === GUEST_USER_ID) return;
 
         try {
             await syncRemoteRoutineDeletions(userId);

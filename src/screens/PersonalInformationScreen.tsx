@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Text, View } from "react-native";
@@ -11,6 +10,7 @@ import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useProfile } from "../hooks/useProfile";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { supabase } from "../services/supabase";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
@@ -19,7 +19,8 @@ export default function PersonalInformationScreen() {
     const { t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
-    const { user } = useAuth();
+    const { session } = useAuth();
+    const user = session?.user;
     const { showToast } = useToast();
 
     const [newPassword, setNewPassword] = useState("");
@@ -42,8 +43,8 @@ export default function PersonalInformationScreen() {
                 setCurrentEmail(data.user?.email ?? "");
             }
 
-            refreshUserEmail();
-        }, [])
+            if (user) void refreshUserEmail();
+        }, [user])
     );
 
     async function handleChangePassword() {
@@ -172,96 +173,100 @@ export default function PersonalInformationScreen() {
                 ) : null}
             </Card>
 
-            <Card style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <View>
-                        <Text style={sharedStyles.screenTitle}>{t("email")}</Text>
-                        <Text style={styles.valueText}>{currentEmail}</Text>
-                    </View>
+            {session && (
+                <>
+                    <Card style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <View>
+                                <Text style={sharedStyles.screenTitle}>{t("email")}</Text>
+                                <Text style={styles.valueText}>{currentEmail}</Text>
+                            </View>
 
-                    {editingSection !== "email" ? (
-                        <IconButton
-                            icon="✎"
-                            variant="primary"
-                            onPress={() => setEditingSection("email")}
-                        />
-                    ) : null}
-                </View>
+                            {editingSection !== "email" ? (
+                                <IconButton
+                                    icon="✎"
+                                    variant="primary"
+                                    onPress={() => setEditingSection("email")}
+                                />
+                            ) : null}
+                        </View>
 
-                {editingSection === "email" ? (
-                    <>
-                        <AppInput
-                            style={styles.input}
-                            value={newEmail}
-                            onChangeText={setNewEmail}
-                            placeholder={t("enterNewEmail")}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                        />
+                        {editingSection === "email" ? (
+                            <>
+                                <AppInput
+                                    style={styles.input}
+                                    value={newEmail}
+                                    onChangeText={setNewEmail}
+                                    placeholder={t("enterNewEmail")}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
 
-                        <AppButton
-                            title={t("updateEmail")}
-                            variant="success"
-                            onPress={handleChangeEmail}
-                        />
+                                <AppButton
+                                    title={t("updateEmail")}
+                                    variant="success"
+                                    onPress={handleChangeEmail}
+                                />
 
-                        <AppButton
-                            title={t("cancel")}
-                            variant="secondary"
-                            onPress={() => setEditingSection(null)}
-                        />
-                    </>
-                ) : null}
-            </Card>
+                                <AppButton
+                                    title={t("cancel")}
+                                    variant="secondary"
+                                    onPress={() => setEditingSection(null)}
+                                />
+                            </>
+                        ) : null}
+                    </Card>
 
-            <Card style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <View>
-                        <Text style={sharedStyles.screenTitle}>{t("password")}</Text>
-                        <Text style={styles.valueText}>••••••••</Text>
-                    </View>
+                    <Card style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <View>
+                                <Text style={sharedStyles.screenTitle}>{t("password")}</Text>
+                                <Text style={styles.valueText}>••••••••</Text>
+                            </View>
 
-                    {editingSection !== "password" ? (
-                        <IconButton
-                            icon="✎"
-                            variant="primary"
-                            onPress={() => setEditingSection("password")}
-                        />
-                    ) : null}
-                </View>
+                            {editingSection !== "password" ? (
+                                <IconButton
+                                    icon="✎"
+                                    variant="primary"
+                                    onPress={() => setEditingSection("password")}
+                                />
+                            ) : null}
+                        </View>
 
-                {editingSection === "password" ? (
-                    <>
-                        <AppInput
-                            style={styles.input}
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                            placeholder={t("enterNewPassword")}
-                            secureTextEntry
-                        />
+                        {editingSection === "password" ? (
+                            <>
+                                <AppInput
+                                    style={styles.input}
+                                    value={newPassword}
+                                    onChangeText={setNewPassword}
+                                    placeholder={t("enterNewPassword")}
+                                    secureTextEntry
+                                />
 
-                        <AppInput
-                            style={styles.input}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            placeholder={t("confirmNewPassword")}
-                            secureTextEntry
-                        />
+                                <AppInput
+                                    style={styles.input}
+                                    value={confirmPassword}
+                                    onChangeText={setConfirmPassword}
+                                    placeholder={t("confirmNewPassword")}
+                                    secureTextEntry
+                                />
 
-                        <AppButton
-                            title={t("updatePassword")}
-                            variant="success"
-                            onPress={handleChangePassword}
-                        />
+                                <AppButton
+                                    title={t("updatePassword")}
+                                    variant="success"
+                                    onPress={handleChangePassword}
+                                />
 
-                        <AppButton
-                            title={t("cancel")}
-                            variant="secondary"
-                            onPress={() => setEditingSection(null)}
-                        />
-                    </>
-                ) : null}
-            </Card>
+                                <AppButton
+                                    title={t("cancel")}
+                                    variant="secondary"
+                                    onPress={() => setEditingSection(null)}
+                                />
+                            </>
+                        ) : null}
+                    </Card>
+                </>
+            )}
         </ScreenContainer>
     );
 }

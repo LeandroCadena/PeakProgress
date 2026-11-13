@@ -1,8 +1,8 @@
-import { useLanguage } from "../../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { Clock3, Hourglass } from "lucide-react-native"; //remove later
 import { Pressable, Text, View } from "react-native";
 
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { spacing, typography, componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 import Card from "../common/Card";
 

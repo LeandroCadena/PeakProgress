@@ -1,4 +1,5 @@
 import { getDatabase } from "./database";
+import { DATABASE_VERSION } from "./migrations";
 
 export async function verifyDatabase(): Promise<void> {
     const db = await getDatabase();
@@ -30,7 +31,7 @@ export async function verifyDatabase(): Promise<void> {
         syncOperationsColumns.map((column) => column.name)
     );
 
-    if (version?.user_version !== 10) {
+    if (version?.user_version !== DATABASE_VERSION) {
         throw new Error("Unexpected SQLite database version.");
     }
 
@@ -39,6 +40,9 @@ export async function verifyDatabase(): Promise<void> {
         "local_routines",
         "local_routine_exercises",
         "local_routine_exercise_sets",
+        "local_workouts",
+        "local_user_preferences",
+        "catalog_exercises",
     ];
 
     for (const tableName of requiredTables) {

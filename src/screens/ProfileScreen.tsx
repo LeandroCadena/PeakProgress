@@ -1,28 +1,45 @@
 import { Text, Pressable } from "react-native";
 
-import { useLanguage } from "../i18n/LanguageProvider";
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function ProfileScreen({ navigation }: any) {
     const { t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
-    const { signOut } = useAuth();
+    const { showToast } = useToast();
+    const { session, signOut } = useAuth();
 
     return (
         <ScreenContainer>
             <Text style={styles.title}>{t("profile")}</Text>
 
             <Card style={styles.profileCard}>
-                <Text style={sharedStyles.screenSubtitle}>{t("athlete")}</Text>
-                <Text style={styles.profileSubtitle}>{t("profileDescription")}</Text>
+                <Text style={sharedStyles.screenSubtitle}>
+                    {t(session ? "athlete" : "guestMode")}
+                </Text>
+                <Text style={styles.profileSubtitle}>
+                    {t(session ? "profileDescription" : "guestDescription")}
+                </Text>
             </Card>
 
             <Text style={sharedStyles.screenTitle}>{t("account")}</Text>
+            {!session && (
+                <Card style={styles.menuItem}>
+                    <Pressable
+                        style={styles.menuContent}
+                        onPress={() => navigation.navigate("Login")}
+                    >
+                        <Text style={styles.menuTitle}>{t("login")}</Text>
+                        <Text style={styles.chevron}>›</Text>
+                    </Pressable>
+                </Card>
+            )}
 
             <Card style={styles.menuItem}>
                 <Pressable
@@ -60,12 +77,18 @@ export default function ProfileScreen({ navigation }: any) {
                 <Text style={styles.menuSubtitle}>{t("appPreferences")}</Text>
             </Card>
 
-            <AppButton
-                title={t("logout")}
-                variant="danger"
-                onPress={signOut}
-                style={styles.logoutButton}
-            />
+            {session && (
+                <AppButton
+                    title={t("logout")}
+                    variant="danger"
+                    onPress={() =>
+                        signOut().catch(() =>
+                            showToast({ type: "error", message: t("logoutError") })
+                        )
+                    }
+                    style={styles.logoutButton}
+                />
+            )}
         </ScreenContainer>
     );
 }

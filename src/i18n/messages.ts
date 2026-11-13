@@ -1,4 +1,26 @@
 const en = {
+    confirmationCode: "Confirmation code",
+    confirmationCodeRequired: "Enter your email and confirmation code.",
+    confirmEmail: "Confirm email",
+    useConfirmationCode: "Enter a confirmation code",
+    confirmationResent: "Check your email for a new confirmation code.",
+    startupPreparing: "Preparing Gym Time…",
+    startupDatabase: "Preparing local storage…",
+    startupDatabaseError: "Unable to prepare local storage.",
+    startupAccount: "Restoring your session…",
+    startupAccountError: "Unable to restore your account session.",
+    startupLinkError: "Unable to move your local data to your account.",
+    startupRetry: "Retry",
+    continueOffline: "Continue offline",
+    guestMode: "Guest mode",
+    guestDescription:
+        "Your data is saved on this device. You can create an account later and keep your data here.",
+    guestAccountConfirmation: "Signing in will link the guest data on this device to your account.",
+    emailConfirmationError:
+        "Unable to confirm your email. Request a new confirmation email if the link expired.",
+    logoutError: "Unable to sign out.",
+    resendConfirmation: "Resend confirmation email",
+    resendConfirmationError: "Unable to resend the confirmation email.",
     name: "Name",
     enterName: "Enter your name",
     saveName: "Save Name",
@@ -260,6 +282,29 @@ const en = {
 export type MessageKey = keyof typeof en;
 
 const es: Record<MessageKey, string> = {
+    confirmationCode: "Código de confirmación",
+    confirmationCodeRequired: "Ingresá tu correo y el código de confirmación.",
+    confirmEmail: "Confirmar correo",
+    useConfirmationCode: "Ingresar código de confirmación",
+    confirmationResent: "Revisá tu correo para ver el nuevo código de confirmación.",
+    startupPreparing: "Preparando Gym Time…",
+    startupDatabase: "Preparando el almacenamiento local…",
+    startupDatabaseError: "No se pudo preparar el almacenamiento local.",
+    startupAccount: "Restaurando tu sesión…",
+    startupAccountError: "No se pudo restaurar la sesión de tu cuenta.",
+    startupLinkError: "No se pudieron vincular tus datos locales a tu cuenta.",
+    startupRetry: "Reintentar",
+    continueOffline: "Continuar sin conexión",
+    guestMode: "Modo invitado",
+    guestDescription:
+        "Tus datos se guardan en este dispositivo. Podés crear una cuenta más adelante y conservar tus datos acá.",
+    guestAccountConfirmation:
+        "Al iniciar sesión, los datos de invitado de este dispositivo se vincularán a tu cuenta.",
+    emailConfirmationError:
+        "No se pudo confirmar tu correo. Si el enlace venció, solicitá uno nuevo.",
+    logoutError: "No se pudo cerrar sesión.",
+    resendConfirmation: "Reenviar correo de confirmación",
+    resendConfirmationError: "No se pudo reenviar el correo de confirmación.",
     name: "Nombre",
     enterName: "Ingresá tu nombre",
     saveName: "Guardar nombre",

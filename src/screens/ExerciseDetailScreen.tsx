@@ -1,5 +1,3 @@
-import { localizedExerciseText } from "../i18n/exerciseText";
-import { useLanguage } from "../i18n/LanguageProvider";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { Image, Text, View } from "react-native";
@@ -8,6 +6,8 @@ import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { localizedExerciseText, localizedCatalogLabel } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getExerciseDetail } from "../services/exerciseService";
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
@@ -71,7 +71,7 @@ export default function ExerciseDetailScreen() {
 
     const muscles =
         exercise.exercise_muscles
-            ?.map((item: any) => item.muscles?.name)
+            ?.map((item) => localizedCatalogLabel(item.muscles?.name ?? null, language))
             .filter(Boolean)
             .join(", ") || t("noMusclesListed");
 
@@ -93,8 +93,8 @@ export default function ExerciseDetailScreen() {
             <Text style={styles.title}>{name}</Text>
 
             <Text style={styles.meta}>
-                {exercise.equipment ?? t("noEquipment")} ·{" "}
-                {exercise.difficulty ?? t("noDifficulty")}
+                {localizedCatalogLabel(exercise.equipment, language) ?? t("noEquipment")} ·{" "}
+                {localizedCatalogLabel(exercise.difficulty, language) ?? t("noDifficulty")}
             </Text>
 
             <Card style={styles.infoCard}>

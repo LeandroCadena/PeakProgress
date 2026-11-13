@@ -1,7 +1,7 @@
-import { localizedExerciseText } from "../../i18n/exerciseText";
-import { useLanguage } from "../../i18n/LanguageProvider";
 import { Image, Pressable, Text, View } from "react-native";
 
+import { localizedExerciseText, localizedCatalogLabel } from "../../i18n/exerciseText";
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { Exercise } from "../../types/exercise";
 import AppButton from "../common/AppButton";
@@ -53,8 +53,8 @@ export default function ExerciseListCard({
                     </Text>
 
                     <Text style={styles.text}>
-                        {exercise.equipment ?? t("noEquipment")} ·{" "}
-                        {exercise.difficulty ?? t("noDifficulty")}
+                        {localizedCatalogLabel(exercise.equipment, language) ?? t("noEquipment")} ·{" "}
+                        {localizedCatalogLabel(exercise.difficulty, language) ?? t("noDifficulty")}
                     </Text>
 
                     {alreadyAdded ? (
@@ -144,6 +144,8 @@ const getStyles = createThemedStyles((colors) => ({
         fontSize: typography.small,
     },
     info: {
+        flex: 1,
+        minWidth: 0,
         justifyContent: "flex-start",
     },
     text: {

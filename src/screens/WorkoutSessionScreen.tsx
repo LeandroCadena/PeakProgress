@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useState } from "react";
@@ -16,6 +15,7 @@ import RestTimeEditor from "../components/workout/RestTimeEditor";
 import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { spacing, useAppTheme, createThemedStyles } from "../theme";
 import { WorkoutSessionExercise, WorkoutSessionRouteParams } from "../types/workout";
 

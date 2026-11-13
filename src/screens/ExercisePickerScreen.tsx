@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { FlatList, Pressable, Text, View } from "react-native";
 
@@ -8,6 +7,7 @@ import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { useExercisePicker } from "../hooks/useExercisePicker";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {

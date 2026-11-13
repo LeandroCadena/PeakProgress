@@ -1,7 +1,4 @@
-
-import NetInfo, {
-    type NetInfoState,
-} from "@react-native-community/netinfo";
+import NetInfo, { type NetInfoState } from "@react-native-community/netinfo";
 import { useEffect } from "react";
 import { AppState } from "react-native";
 
@@ -20,8 +17,8 @@ import {
 } from "./syncPolicy";
 
 export default function SyncCoordinator() {
-    const { user } = useAuth();
-    const userId = user?.id;
+    const { session } = useAuth();
+    const userId = session?.user.id;
 
     useEffect(() => {
         if (!userId) return;
@@ -50,10 +47,7 @@ export default function SyncCoordinator() {
 
             const now = Date.now();
 
-            if (
-                now - lastRoutineAttempt <
-                ROUTINE_SYNC_INTERVAL_MS
-            ) {
+            if (now - lastRoutineAttempt < ROUTINE_SYNC_INTERVAL_MS) {
                 return;
             }
 
@@ -72,10 +66,7 @@ export default function SyncCoordinator() {
                 await hydrateMissingRemoteRoutines(userId);
             })()
                 .catch((error: unknown) => {
-                    console.warn(
-                        "[Sync] Routine synchronization failed:",
-                        error
-                    );
+                    console.warn("[Sync] Routine synchronization failed:", error);
                 })
                 .finally(() => {
                     routineRunning = false;
@@ -94,13 +85,9 @@ export default function SyncCoordinator() {
             }
 
             const now = Date.now();
-            const interval =
-                catalogRetryDelay || CATALOG_SYNC_INTERVAL_MS;
+            const interval = catalogRetryDelay || CATALOG_SYNC_INTERVAL_MS;
 
-            if (
-                lastCatalogAttempt !== 0 &&
-                now - lastCatalogAttempt < interval
-            ) {
+            if (lastCatalogAttempt !== 0 && now - lastCatalogAttempt < interval) {
                 return;
             }
 
@@ -114,10 +101,7 @@ export default function SyncCoordinator() {
                 .catch((error: unknown) => {
                     catalogRetryDelay = CATALOG_RETRY_INTERVAL_MS;
 
-                    console.warn(
-                        "[Sync] Catalog synchronization failed:",
-                        error
-                    );
+                    console.warn("[Sync] Catalog synchronization failed:", error);
                 })
                 .finally(() => {
                     catalogRunning = false;
@@ -129,24 +113,17 @@ export default function SyncCoordinator() {
             runCatalog();
         };
 
-        const networkSubscription =
-            NetInfo.addEventListener((state) => {
-                network = state;
-                run();
-            });
+        const networkSubscription = NetInfo.addEventListener((state) => {
+            network = state;
+            run();
+        });
 
-        const appSubscription = AppState.addEventListener(
-            "change",
-            (state) => {
-                foreground = state === "active";
-                run();
-            }
-        );
+        const appSubscription = AppState.addEventListener("change", (state) => {
+            foreground = state === "active";
+            run();
+        });
 
-        const interval = setInterval(
-            run,
-            ROUTINE_SYNC_INTERVAL_MS
-        );
+        const interval = setInterval(run, ROUTINE_SYNC_INTERVAL_MS);
 
         void NetInfo.fetch()
             .then((state) => {

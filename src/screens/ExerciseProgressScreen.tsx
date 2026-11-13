@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { Dimensions, Text } from "react-native";
@@ -7,7 +6,10 @@ import { LineChart } from "react-native-chart-kit";
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { localizedExerciseName } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getExerciseProgressPoints } from "../services/progressService";
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
@@ -25,9 +27,10 @@ type ProgressPoint = {
 };
 
 export default function ExerciseProgressScreen() {
-    const { locale, t } = useLanguage();
+    const { language, locale, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
+    const { user } = useAuth();
     const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "ExerciseProgress">>();
     const { exerciseId, exerciseName } = route.params;
@@ -36,7 +39,7 @@ export default function ExerciseProgressScreen() {
 
     const fetchExerciseProgress = useCallback(async () => {
         try {
-            const data = await getExerciseProgressPoints(exerciseId);
+            const data = await getExerciseProgressPoints(exerciseId, user.id);
             setPoints(data);
         } catch (error: any) {
             showToast({
@@ -44,7 +47,7 @@ export default function ExerciseProgressScreen() {
                 message: error instanceof Error ? error.message : t("exerciseProgressError"),
             });
         }
-    }, [exerciseId, showToast, t]);
+    }, [exerciseId, showToast, t, user.id]);
 
     useEffect(() => {
         fetchExerciseProgress();
@@ -66,7 +69,9 @@ export default function ExerciseProgressScreen() {
 
     return (
         <ScreenContainer>
-            <Text style={styles.title}>{exerciseName}</Text>
+            <Text style={styles.title}>
+                {localizedExerciseName(exerciseId, exerciseName, language)}
+            </Text>
 
             <Text style={sharedStyles.screenSubtitle}>{t("strengthProgress")}</Text>
 

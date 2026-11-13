@@ -1,7 +1,8 @@
 {
     "expo": {
-        "name": "PeakProgress",
+        "name": "Gym Time",
         "slug": "PeakProgress",
+        "scheme": "gymtime",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
@@ -11,13 +12,12 @@
         },
         "android": {
             "adaptiveIcon": {
-                "backgroundColor": "#E6F4FE",
+                "backgroundColor": "#171717",
                 "foregroundImage": "./assets/android-icon-foreground.png",
-                "backgroundImage": "./assets/android-icon-background.png",
                 "monochromeImage": "./assets/android-icon-monochrome.png"
             },
             "predictiveBackGestureEnabled": false,
-            "package": "com.leandrocadena.PeakProgress"
+            "package": "com.leandrocadena.gymtime"
         },
         "web": {
             "favicon": "./assets/favicon.png"

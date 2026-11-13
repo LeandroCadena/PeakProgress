@@ -1,6 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useColorScheme } from "react-native";
+
+import StartupScreen from "../components/common/StartupScreen";
+import { useLanguage } from "../i18n/LanguageProvider";
 
 import { darkTheme } from "./dark";
 import { lightTheme } from "./light";
@@ -21,9 +24,11 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+    const { t } = useLanguage();
     const systemScheme = useColorScheme();
     const [preference, setPreference] = useState<ThemePreference>("dark");
     const [ready, setReady] = useState(false);
+    const pendingWrite = useRef(Promise.resolve());
 
     useEffect(() => {
         let active = true;
@@ -42,12 +47,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    async function persistPreference(value: ThemePreference) {
-        await AsyncStorage.setItem(storageKey, value);
-        setPreference(value);
+    function persistPreference(value: ThemePreference): Promise<void> {
+        const operation = pendingWrite.current.then(async () => {
+            await AsyncStorage.setItem(storageKey, value);
+            setPreference(value);
+        });
+        pendingWrite.current = operation.catch(() => {});
+        return operation;
     }
 
-    if (!ready) return null;
+    if (!ready) return <StartupScreen message={t("startupPreparing")} />;
 
     const isDark = preference === "system" ? systemScheme !== "light" : preference === "dark";
     const colors = isDark ? darkTheme.colors : lightTheme.colors;

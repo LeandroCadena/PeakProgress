@@ -87,6 +87,38 @@ export async function updateWorkoutStreakAfterFinish(userId: string) {
     if (error) throw error;
 }
 
+export function getLocalWorkoutStreak(
+    userId: string,
+    workouts: { completed_at: string | null }[]
+): WorkoutStreak | null {
+    const dates = workouts
+        .flatMap(({ completed_at }) => (completed_at ? [completed_at] : []))
+        .sort();
+    const latest = dates.at(-1);
+    if (!latest) return null;
+
+    const weeks = dates.map((date) => toDateString(getWeekEndDate(new Date(date))));
+    const counts = new Map<string, number>();
+    for (const week of weeks) counts.set(week, (counts.get(week) ?? 0) + 1);
+
+    let weekEnd = getWeekEndDate(new Date(latest));
+    let streakWeeks = 0;
+    let totalWorkouts = 0;
+    while (counts.has(toDateString(weekEnd))) {
+        totalWorkouts += counts.get(toDateString(weekEnd)) ?? 0;
+        streakWeeks += 1;
+        weekEnd = getPreviousWeekEndDate(weekEnd);
+    }
+
+    return {
+        user_id: userId,
+        streak_weeks: streakWeeks,
+        total_workouts: totalWorkouts,
+        last_trained_week_end: weeks.at(-1) ?? null,
+        updated_at: latest,
+    };
+}
+
 export function getWorkoutStreakStatus(streak: WorkoutStreak | null) {
     if (!streak || !streak.last_trained_week_end) {
         return {

@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -8,7 +7,9 @@ import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import StatCard from "../components/common/StatCard";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getWorkoutSummary } from "../services/historyService";
 import { updateRoutineFromCompletedWorkout } from "../services/workoutSyncService";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
@@ -33,6 +34,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
     const formatNumber = new Intl.NumberFormat(locale);
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
+    const { user } = useAuth();
     const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "WorkoutSummary">>();
     const { sessionId, routineId, routineName, updateRoutineAfterWorkout } = route.params;
@@ -46,7 +48,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
 
     const fetchSummary = useCallback(async () => {
         try {
-            const data = await getWorkoutSummary(sessionId);
+            const data = await getWorkoutSummary(sessionId, user.id);
             setSummary(data);
         } catch (error: any) {
             showToast({
@@ -54,7 +56,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
                 message: error instanceof Error ? error.message : t("workoutSummaryError"),
             });
         }
-    }, [sessionId, showToast]);
+    }, [sessionId, showToast, t, user.id]);
 
     useEffect(() => {
         fetchSummary();
@@ -74,6 +76,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
                 await updateRoutineFromCompletedWorkout({
                     sessionId,
                     routineId,
+                    userId: user.id,
                 });
 
                 setRoutineUpdateStatus("success");
@@ -85,7 +88,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
         }
 
         updateRoutine();
-    }, [routineId, sessionId, summary, updateRoutineAfterWorkout]);
+    }, [routineId, sessionId, summary, updateRoutineAfterWorkout, user.id]);
 
     return (
         <ScreenContainer>

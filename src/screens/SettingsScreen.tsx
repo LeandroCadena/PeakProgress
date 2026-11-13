@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, Switch, Text, View } from "react-native";
 
-import { useLanguage } from "../i18n/LanguageProvider";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
 import { useSettingsStore } from "../store/settingsStore";
 import { spacing, useAppTheme, createThemedStyles } from "../theme";
@@ -30,13 +30,13 @@ export default function SettingsScreen() {
     const userIdRef = useRef<string | null>(null);
     const settingsRevisionRef = useRef(0);
 
-    function applySettings(nextSettings: UserSettings, ownerId: string) {
+    const applySettings = useCallback((nextSettings: UserSettings, ownerId: string) => {
         if (userIdRef.current !== ownerId) return;
 
         settingsRef.current = nextSettings;
         setSettings(nextSettings);
         setGlobalTimers(ownerId, nextSettings);
-    }
+    }, [setGlobalTimers]);
 
     const fetchSettings = useCallback(async () => {
         if (!user?.id) return;
@@ -64,7 +64,7 @@ export default function SettingsScreen() {
                 message: error instanceof Error ? error.message : t("settingsLoadError"),
             });
         }
-    }, [user, showToast, t]);
+    }, [applySettings, user, showToast, t]);
 
     useEffect(() => {
         const ownerId = user?.id ?? null;

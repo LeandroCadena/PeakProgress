@@ -1,6 +1,6 @@
-# PeakProgress
+# Gym Time
 
-PeakProgress is a mobile fitness application focused on workout tracking, personal records, progress monitoring, and habit building.
+Gym Time is a mobile fitness application focused on workout tracking, personal records, progress monitoring, and habit building.
 
 The app allows users to create routines, track workouts, monitor personal records, manage exercise libraries, and build long-term training consistency through weekly workout streaks.
 
@@ -55,7 +55,7 @@ The app allows users to create routines, track workouts, monitor personal record
 
 ## Weekly Workout Streaks
 
-PeakProgress tracks consistency using a weekly streak system.
+Gym Time tracks consistency using a weekly streak system.
 
 A streak remains active as long as at least one workout is completed every week.
 
@@ -187,7 +187,7 @@ Private project.
 
 ## Development Build
 
-PeakProgress uses an Expo Development Build instead of Expo Go because it relies on native modules.
+Gym Time uses an Expo Development Build instead of Expo Go because it relies on native modules.
 
 ### Create a new development build
 
@@ -222,3 +222,11 @@ The following packages require creating a new Development Build after installati
 - Any Expo native module (expo-\* packages)
 
 Simply restarting Metro is **not** enough after installing native dependencies.
+
+### Account confirmation in Supabase
+
+In **Authentication → URL Configuration**, add `gymtime://auth/confirm` to **Redirect URLs**. Set **Site URL** to `gymtime://auth/confirm` for the mobile-only deployment, or use the public Gym Time site if one is deployed. The app sends the exact mobile redirect explicitly when signing up.
+
+In **Authentication → Email Templates → Confirm signup**, set the subject to `Gym Time | Confirmá tu correo / Confirm your email` and paste [the confirmation template](supabase/templates/confirmation.html). Send a new confirmation email after saving. Open the link on the device where you registered, with a native build that includes the `gymtime` scheme. You can also enter the one-time code in Gym Time on the sign-in screen.
+
+Guest workouts and other guest data are stored on the device. On sign-in, the app attaches them to the account on that device. Guest routines enter the existing routine sync queue. Guest workout history, progress and preferences remain on that device.

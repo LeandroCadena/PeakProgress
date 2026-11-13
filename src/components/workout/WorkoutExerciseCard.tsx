@@ -1,8 +1,9 @@
-import { useLanguage } from "../../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { localizedExerciseName } from "../../i18n/exerciseText";
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../../types/workout";
 import ActionMenu from "../common/ActionMenu";
@@ -56,12 +57,16 @@ export default function WorkoutExerciseCard({
     currentExerciseRecord,
     effectiveSetRestSeconds,
 }: WorkoutExerciseCardProps) {
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
-    const exerciseName = exercise.exercise_name_snapshot ?? t("exercise");
+    const exerciseName = localizedExerciseName(
+        exercise.exercise_id,
+        exercise.exercise_name_snapshot || t("exercise"),
+        language
+    );
 
     return (
         <Card style={[styles.card, isDragging && styles.cardDragging]}>

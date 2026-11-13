@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { FlatList, Pressable, Text } from "react-native";
@@ -8,12 +7,14 @@ import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { localizedExerciseName } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getExerciseProgress } from "../services/progressService";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { ExerciseProgress } from "../types/progress";
 
 export default function ProgressScreen({ navigation }: any) {
-    const { locale, t } = useLanguage();
+    const { language, locale, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
     const { user } = useAuth();
@@ -65,7 +66,13 @@ export default function ProgressScreen({ navigation }: any) {
                         }
                     >
                         <Card>
-                            <Text style={sharedStyles.screenTitle}>{item.exerciseName}</Text>
+                            <Text style={sharedStyles.screenTitle}>
+                                {localizedExerciseName(
+                                    item.exerciseId,
+                                    item.exerciseName,
+                                    language
+                                )}
+                            </Text>
 
                             <Text style={styles.prValue}>
                                 {item.bestWeight.toLocaleString(locale)} kg ×{" "}

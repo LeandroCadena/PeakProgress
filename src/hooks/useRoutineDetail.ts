@@ -1,10 +1,10 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { GUEST_USER_ID } from "../database/guestAccount";
 import {
     getLocalRoutineSyncMetadata,
     getVersionedLocalRoutine,
@@ -12,6 +12,7 @@ import {
     saveLocalRoutine,
     RoutineVersionConflictError,
 } from "../database/repositories/routineRepository";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { deleteRoutineById } from "../services/routineService";
 import { getVersionedRemoteRoutineSnapshot } from "../services/sync/remoteRoutineSnapshotService";
 import {
@@ -123,7 +124,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 userId: user.id,
                 routineId,
             });
-            if (localMetadata) {
+            if (localMetadata || user.id === GUEST_USER_ID) {
                 throw new Error("This routine is unavailable locally or was deleted.");
             }
 

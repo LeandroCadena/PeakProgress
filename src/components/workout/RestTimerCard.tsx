@@ -1,7 +1,7 @@
-import { useLanguage } from "../../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 
 type Props = {

@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -6,6 +5,7 @@ import { AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getUserExerciseRecords } from "../services/progressService";
 import { getUserSettings } from "../services/settingsService";
 import { loadWorkoutSessionSnapshot } from "../services/workoutService";

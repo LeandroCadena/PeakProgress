@@ -1,6 +1,6 @@
 import type * as SQLite from "expo-sqlite";
 
-const DATABASE_VERSION = 11;
+export const DATABASE_VERSION = 12;
 
 export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
     await db.execAsync("PRAGMA foreign_keys = ON;");
@@ -365,6 +365,34 @@ export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
                 ALTER TABLE catalog_exercises ADD COLUMN description_es TEXT;
                 ALTER TABLE catalog_exercises ADD COLUMN instructions_es TEXT;
                 ALTER TABLE catalog_exercises ADD COLUMN tips_es TEXT;
+            `);
+        }
+
+        if (currentVersion < 12) {
+            await tx.execAsync(`
+                CREATE TABLE local_workouts (
+                    id TEXT PRIMARY KEY NOT NULL,
+                    user_id TEXT NOT NULL,
+                    routine_id TEXT NOT NULL,
+                    routine_name_snapshot TEXT NOT NULL,
+                    started_at TEXT NOT NULL,
+                    completed_at TEXT,
+                    total_sets INTEGER NOT NULL DEFAULT 0,
+                    total_volume REAL NOT NULL DEFAULT 0,
+                    duration_minutes INTEGER NOT NULL DEFAULT 0,
+                    exercises TEXT,
+                    sets TEXT
+                );
+                CREATE UNIQUE INDEX idx_local_active_workout
+                    ON local_workouts (user_id) WHERE completed_at IS NULL AND user_id = 'local-guest';
+                CREATE INDEX idx_local_workout_history
+                    ON local_workouts (user_id, completed_at);
+                CREATE TABLE local_user_preferences (
+                    user_id TEXT NOT NULL,
+                    kind TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    PRIMARY KEY (user_id, kind)
+                );
             `);
         }
 

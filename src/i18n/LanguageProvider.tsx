@@ -9,6 +9,9 @@ import {
     type ReactNode,
 } from "react";
 
+import StartupScreen from "../components/common/StartupScreen";
+
+import { getDeviceLanguage } from "./deviceLanguage";
 import { messages, type Language, type MessageKey } from "./messages";
 
 const storageKey = "peakprogress.language";
@@ -23,7 +26,7 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [language, setLanguage] = useState<Language>("en");
+    const [language, setLanguage] = useState<Language>(getDeviceLanguage);
     const [ready, setReady] = useState(false);
     const pendingWrite = useRef(Promise.resolve());
 
@@ -55,7 +58,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     const t = useCallback((key: MessageKey) => messages[language][key], [language]);
 
-    if (!ready) return null;
+    if (!ready) return <StartupScreen message={messages[language].startupPreparing} />;
 
     return (
         <LanguageContext.Provider

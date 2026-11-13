@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { useLanguage } from "../i18n/LanguageProvider";
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { componentStyles, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function RegisterScreen({ navigation }: any) {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     const { signUp } = useAuth();
@@ -22,7 +22,8 @@ export default function RegisterScreen({ navigation }: any) {
 
     async function handleRegister() {
         try {
-            await signUp(email.trim(), password);
+            const signedIn = await signUp(email.trim(), password, language);
+            if (signedIn) return;
             showToast({
                 type: "success",
                 message: t("accountCreated"),

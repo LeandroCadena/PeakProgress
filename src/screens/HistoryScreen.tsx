@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { FlatList, Pressable, Text } from "react-native";
@@ -6,7 +5,9 @@ import { FlatList, Pressable, Text } from "react-native";
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getCompletedWorkoutSessions } from "../services/historyService";
 import { spacing, useAppTheme, createThemedStyles } from "../theme";
 
@@ -17,7 +18,7 @@ type WorkoutSession = {
     completed_at: string | null;
     total_volume: number;
     total_sets: number;
-    routines: {
+    routines?: {
         name: string;
     }[];
 };
@@ -26,12 +27,13 @@ export default function HistoryScreen({ navigation }: any) {
     const { locale, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
+    const { user } = useAuth();
     const { showToast } = useToast();
     const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
     const fetchSessions = useCallback(async () => {
         try {
-            const data = await getCompletedWorkoutSessions();
+            const data = await getCompletedWorkoutSessions(user.id);
             setSessions(data as WorkoutSession[]);
         } catch (error: any) {
             showToast({
@@ -39,7 +41,7 @@ export default function HistoryScreen({ navigation }: any) {
                 message: error instanceof Error ? error.message : t("workoutHistoryError"),
             });
         }
-    }, [showToast, t]);
+    }, [showToast, t, user.id]);
 
     useFocusEffect(
         useCallback(() => {

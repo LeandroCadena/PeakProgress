@@ -1,6 +1,6 @@
-import { useLanguage } from "../../i18n/LanguageProvider";
 import { Modal, Text, View } from "react-native";
 
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { spacing, useAppTheme, createThemedStyles } from "../../theme";
 import AppButton from "../common/AppButton";
 

@@ -1,8 +1,9 @@
-import { useLanguage } from "../../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { localizedExerciseName } from "../../i18n/exerciseText";
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { RoutineExercise, RoutineExerciseSet } from "../../types/routine";
 import ActionMenu from "../common/ActionMenu";
@@ -47,7 +48,7 @@ export default function RoutineExerciseCard({
     isActionsMenuOpen,
     onActionsMenuOpenChange,
 }: Props) {
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -65,7 +66,11 @@ export default function RoutineExerciseCard({
             >
                 <ExerciseCardHeader
                     imageUrl={item.exercise?.image_url}
-                    title={item.exercise?.name ?? t("exercise")}
+                    title={localizedExerciseName(
+                        item.exercise_id,
+                        item.exercise?.name ?? t("exercise"),
+                        language
+                    )}
                     rightContent={
                         <View style={styles.headerActions}>
                             <ActionMenu

@@ -1,5 +1,3 @@
-import { matchesExerciseName } from "../i18n/exerciseText";
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 
@@ -8,12 +6,14 @@ import AppInput from "../components/common/AppInput";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useCatalogNetworkStatus } from "../hooks/useCatalogNetworkStatus";
 import { useCatalogRevision } from "../hooks/useCatalogRevision";
+import { matchesExerciseName, localizedCatalogLabel } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { syncCatalog } from "../services/catalogSyncService";
 import {
-    CatalogNotDownloadedError,
     getCatalogAvailability,
     getExercisesByFilter,
     getMuscleRegions,
@@ -23,6 +23,7 @@ import { componentStyles, spacing, typography, useAppTheme, createThemedStyles }
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
+    const { session } = useAuth();
     const { language, t } = useLanguage();
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
@@ -34,6 +35,7 @@ export default function ExercisesScreen({ navigation }: any) {
     const [regions, setRegions] = useState<MuscleRegion[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const catalogRevision = useCatalogRevision();
+    const [catalogDownloaded, setCatalogDownloaded] = useState(false);
     const [catalogPending, setCatalogPending] = useState(true);
     const networkStatus = useCatalogNetworkStatus();
     const [manualSyncing, setManualSyncing] = useState(false);
@@ -85,34 +87,20 @@ export default function ExercisesScreen({ navigation }: any) {
 
         async function loadFilters() {
             try {
-                const availability = await getCatalogAvailability();
-
-                if (cancelled) return;
-
-                if (availability === "pending") {
-                    setCatalogPending(true);
-                    setMuscles([]);
-                    setRegions([]);
-                    return;
-                }
-
-                const [musclesData, regionsData] = await Promise.all([
+                const [musclesData, regionsData, availability] = await Promise.all([
                     getMuscles(),
                     getMuscleRegions(),
+                    getCatalogAvailability(),
                 ]);
 
                 if (cancelled) return;
 
+                setCatalogDownloaded(availability === "available");
                 setMuscles(musclesData);
                 setRegions(regionsData);
                 setCatalogPending(false);
             } catch (error: unknown) {
                 if (cancelled) return;
-
-                if (error instanceof CatalogNotDownloadedError) {
-                    setCatalogPending(true);
-                    return;
-                }
 
                 showToast({
                     type: "error",
@@ -144,12 +132,6 @@ export default function ExercisesScreen({ navigation }: any) {
                 setCatalogPending(false);
             } catch (error: unknown) {
                 if (cancelled) return;
-
-                if (error instanceof CatalogNotDownloadedError) {
-                    setCatalogPending(true);
-                    setExercises([]);
-                    return;
-                }
 
                 showToast({
                     type: "error",
@@ -197,7 +179,7 @@ export default function ExercisesScreen({ navigation }: any) {
         <ScreenContainer contentStyle={styles.screenContent}>
             <Text style={sharedStyles.screenTitle}>{t("exercises")}</Text>
 
-            {catalogPending && (
+            {session && !catalogDownloaded && (
                 <Pressable
                     style={styles.downloadButton}
                     onPress={requestCatalogDownload}
@@ -248,7 +230,7 @@ export default function ExercisesScreen({ navigation }: any) {
                                         isSelected && styles.filterTextActive,
                                     ]}
                                 >
-                                    {item.name}
+                                    {localizedCatalogLabel(item.name, language)}
                                 </Text>
                             </Pressable>
                         );

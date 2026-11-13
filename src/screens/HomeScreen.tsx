@@ -1,4 +1,3 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +11,7 @@ import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useProfile } from "../hooks/useProfile";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getDashboardStats, getRecentWorkouts } from "../services/dashboardService";
 import { getActiveWorkoutSession } from "../services/workoutService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";

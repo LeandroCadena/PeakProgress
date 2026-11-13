@@ -1,8 +1,8 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import {
     createWeightLog,
     getProfile,
@@ -15,6 +15,7 @@ import { WeightLog } from "../types/profile";
 export function useProfile() {
     const { t } = useLanguage();
     const { user } = useAuth();
+    const userId = user.id;
     const { showToast } = useToast();
 
     const [fullName, setFullName] = useState("");
@@ -26,10 +27,8 @@ export function useProfile() {
     const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
 
     const fetchProfile = useCallback(async () => {
-        if (!user?.id) return;
-
         try {
-            const profile = await getProfile(user.id);
+            const profile = await getProfile(userId);
 
             if (!profile) return;
 
@@ -44,19 +43,12 @@ export function useProfile() {
                 message: error instanceof Error ? error.message : t("profileLoadError"),
             });
         }
-    }, [user?.id, showToast, t]);
-
-    useEffect(() => {
-        fetchProfile();
-        fetchWeightLogs();
-    }, [fetchProfile, user?.id]);
+    }, [userId, showToast, t]);
 
     async function saveProfile() {
-        if (!user?.id) return;
-
         try {
             await upsertProfile({
-                userId: user.id,
+                userId,
                 fullName,
                 goal,
                 experienceLevel,
@@ -76,9 +68,9 @@ export function useProfile() {
         }
     }
 
-    async function fetchWeightLogs() {
+    const fetchWeightLogs = useCallback(async () => {
         try {
-            const data = await getWeightLogs();
+            const data = await getWeightLogs(userId);
             setWeightLogs(data);
         } catch (error: any) {
             showToast({
@@ -86,14 +78,19 @@ export function useProfile() {
                 message: error instanceof Error ? error.message : t("weightLogsLoadError"),
             });
         }
-    }
+    }, [userId, showToast, t]);
+
+    useEffect(() => {
+        void fetchProfile();
+        void fetchWeightLogs();
+    }, [fetchProfile, fetchWeightLogs]);
 
     async function addWeightLog() {
-        if (!user?.id || !newWeight.trim()) return;
+        if (!newWeight.trim()) return;
 
         try {
             await createWeightLog({
-                userId: user.id,
+                userId,
                 weightKg: Number(newWeight),
             });
 
@@ -110,7 +107,7 @@ export function useProfile() {
 
     async function deleteWeightLog(id: string) {
         try {
-            await removeWeightLog(id);
+            await removeWeightLog(id, userId);
 
             await fetchWeightLogs();
         } catch (error: any) {
