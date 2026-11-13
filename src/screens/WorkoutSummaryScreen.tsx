@@ -1,16 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import StatCard from "../components/common/StatCard";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getWorkoutSummary } from "../services/historyService";
 import { updateRoutineFromCompletedWorkout } from "../services/workoutSyncService";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     WorkoutSummary: {
@@ -28,6 +30,11 @@ type Summary = {
 };
 
 export default function WorkoutSummaryScreen({ navigation }: any) {
+    const { locale, t } = useLanguage();
+    const formatNumber = new Intl.NumberFormat(locale);
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
+    const { user } = useAuth();
     const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "WorkoutSummary">>();
     const { sessionId, routineId, routineName, updateRoutineAfterWorkout } = route.params;
@@ -41,15 +48,15 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
 
     const fetchSummary = useCallback(async () => {
         try {
-            const data = await getWorkoutSummary(sessionId);
+            const data = await getWorkoutSummary(sessionId, user.id);
             setSummary(data);
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching workout summary",
+                message: error instanceof Error ? error.message : t("workoutSummaryError"),
             });
         }
-    }, [sessionId, showToast]);
+    }, [sessionId, showToast, t, user.id]);
 
     useEffect(() => {
         fetchSummary();
@@ -69,6 +76,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
                 await updateRoutineFromCompletedWorkout({
                     sessionId,
                     routineId,
+                    userId: user.id,
                 });
 
                 setRoutineUpdateStatus("success");
@@ -80,42 +88,42 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
         }
 
         updateRoutine();
-    }, [routineId, sessionId, summary, updateRoutineAfterWorkout]);
+    }, [routineId, sessionId, summary, updateRoutineAfterWorkout, user.id]);
 
     return (
         <ScreenContainer>
-            <Text style={styles.title}>Workout Complete 🎉</Text>
+            <Text style={styles.title}>{t("workoutComplete")}</Text>
 
             <Text style={sharedStyles.screenTitle}>{routineName}</Text>
 
             <Card style={styles.heroCard}>
-                <Text style={styles.heroValue}>{summary?.totalVolume ?? 0} kg</Text>
+                <Text style={styles.heroValue}>
+                    {formatNumber.format(summary?.totalVolume ?? 0)} kg
+                </Text>
 
-                <Text style={styles.heroLabel}>Total Volume</Text>
+                <Text style={styles.heroLabel}>{t("totalVolume")}</Text>
             </Card>
 
             <View style={styles.statsRow}>
-                <StatCard label="Duration" value={`${summary?.durationMinutes ?? 0} min`} />
+                <StatCard label={t("duration")} value={`${summary?.durationMinutes ?? 0} min`} />
 
-                <StatCard label="Sets" value={summary?.totalSets ?? 0} />
+                <StatCard label={t("sets")} value={summary?.totalSets ?? 0} />
             </View>
 
             {routineUpdateStatus === "updating" ? (
-                <Text style={styles.syncText}>Updating routine...</Text>
+                <Text style={styles.syncText}>{t("updatingRoutine")}</Text>
             ) : null}
 
             {routineUpdateStatus === "success" ? (
-                <Text style={styles.syncText}>Routine updated</Text>
+                <Text style={styles.syncText}>{t("routineUpdated")}</Text>
             ) : null}
 
             {routineUpdateStatus === "error" ? (
-                <Text style={styles.syncErrorText}>
-                    Workout saved, but the routine could not be updated.
-                </Text>
+                <Text style={styles.syncErrorText}>{t("routineUpdateError")}</Text>
             ) : null}
 
             <AppButton
-                title="Back to Home"
+                title={t("backToHome")}
                 variant="primary"
                 onPress={() => navigation.navigate("Main")}
                 iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
@@ -125,7 +133,7 @@ export default function WorkoutSummaryScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: 30,
@@ -159,4 +167,4 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginTop: 8,
     },
-});
+}));

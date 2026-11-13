@@ -1,13 +1,16 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text } from "react-native";
+import { FlatList, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { localizedExerciseName } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getWorkoutSets } from "../services/historyService";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     WorkoutDetail: {
@@ -26,22 +29,27 @@ export type WorkoutSet = {
 };
 
 export default function WorkoutDetailScreen() {
+    const { language, locale, t } = useLanguage();
+    const formatNumber = new Intl.NumberFormat(locale);
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "WorkoutDetail">>();
     const { sessionId, routineName } = route.params;
+    const { user } = useAuth();
     const { showToast } = useToast();
     const [sets, setSets] = useState<WorkoutSet[]>([]);
 
     const fetchSets = useCallback(async () => {
         try {
-            const data = await getWorkoutSets(sessionId);
+            const data = await getWorkoutSets(sessionId, user.id);
             setSets(data as WorkoutSet[]);
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching workout sets",
+                message: error instanceof Error ? error.message : t("workoutSetsError"),
             });
         }
-    }, [sessionId, showToast]);
+    }, [sessionId, showToast, t, user.id]);
 
     useEffect(() => {
         fetchSets();
@@ -50,26 +58,28 @@ export default function WorkoutDetailScreen() {
     return (
         <ScreenContainer style={styles.container}>
             <Text style={sharedStyles.screenTitle}>{routineName}</Text>
-            <Text style={sharedStyles.screenSubtitle}>Workout Details</Text>
+            <Text style={sharedStyles.screenSubtitle}>{t("workoutDetails")}</Text>
 
             <FlatList
                 data={sets}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
-                    <EmptyStateCard
-                        title="No sets saved"
-                        message="This workout does not have saved sets."
-                    />
+                    <EmptyStateCard title={t("noSavedSets")} message={t("workoutHasNoSets")} />
                 }
                 renderItem={({ item, index }) => (
                     <Card style={styles.card}>
                         <Text style={sharedStyles.cardTitle}>
-                            {item.exercise_name_snapshot ?? "Exercise"}
+                            {localizedExerciseName(
+                                item.exercise_id,
+                                item.exercise_name_snapshot ?? t("exercise"),
+                                language
+                            )}
                         </Text>
 
                         <Text style={sharedStyles.mutedText}>
-                            Set {index + 1}: {item.weight ?? 0} kg × {item.reps ?? 0} reps
+                            {t("set")} {index + 1}: {formatNumber.format(item.weight ?? 0)} kg ×{" "}
+                            {item.reps ?? 0} {t("reps").toLowerCase()}
                         </Text>
 
                         <Text
@@ -78,7 +88,7 @@ export default function WorkoutDetailScreen() {
                                 item.is_completed ? styles.completedText : styles.skippedText,
                             ]}
                         >
-                            {item.is_completed ? "Completed" : "Skipped"}
+                            {item.is_completed ? t("completed") : t("skipped")}
                         </Text>
                     </Card>
                 )}
@@ -87,7 +97,7 @@ export default function WorkoutDetailScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         paddingBottom: 0,
     },
@@ -108,4 +118,4 @@ const styles = StyleSheet.create({
     skippedText: {
         color: colors.warning,
     },
-});
+}));

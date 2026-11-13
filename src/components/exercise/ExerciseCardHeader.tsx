@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
-import { colors, componentStyles, sharedStyles, spacing } from "../../theme";
+import { componentStyles, spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 type Props = {
     imageUrl?: string | null;
@@ -16,6 +16,8 @@ export default function ExerciseCardHeader({
     exerciseRecord,
     rightContent,
 }: Props) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <View style={styles.header}>
             {imageUrl ? <Image source={{ uri: imageUrl }} style={styles.image} /> : null}
@@ -33,7 +35,7 @@ export default function ExerciseCardHeader({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     header: {
         flexDirection: "row",
         gap: spacing.md,
@@ -51,4 +53,4 @@ const styles = StyleSheet.create({
     rightContent: {
         height: 86,
     },
-});
+}));

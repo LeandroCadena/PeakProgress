@@ -1,14 +1,17 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text } from "react-native";
+import { Dimensions, Text } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { localizedExerciseName } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getExerciseProgressPoints } from "../services/progressService";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     ExerciseProgress: {
@@ -24,6 +27,10 @@ type ProgressPoint = {
 };
 
 export default function ExerciseProgressScreen() {
+    const { language, locale, t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
+    const { user } = useAuth();
     const { showToast } = useToast();
     const route = useRoute<RouteProp<RouteParams, "ExerciseProgress">>();
     const { exerciseId, exerciseName } = route.params;
@@ -32,15 +39,15 @@ export default function ExerciseProgressScreen() {
 
     const fetchExerciseProgress = useCallback(async () => {
         try {
-            const data = await getExerciseProgressPoints(exerciseId);
+            const data = await getExerciseProgressPoints(exerciseId, user.id);
             setPoints(data);
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to load exercise progress.",
+                message: error instanceof Error ? error.message : t("exerciseProgressError"),
             });
         }
-    }, [exerciseId, showToast]);
+    }, [exerciseId, showToast, t, user.id]);
 
     useEffect(() => {
         fetchExerciseProgress();
@@ -48,45 +55,45 @@ export default function ExerciseProgressScreen() {
 
     const chartData = points.length
         ? {
-            labels: points.map((_, index) => `${index + 1}`),
-            datasets: [
-                {
-                    data: points.map((point) => Number(point.weight ?? 0)),
-                },
-            ],
-        }
+              labels: points.map((_, index) => (index + 1).toLocaleString(locale)),
+              datasets: [
+                  {
+                      data: points.map((point) => Number(point.weight ?? 0)),
+                  },
+              ],
+          }
         : {
-            labels: ["0"],
-            datasets: [{ data: [0] }],
-        };
+              labels: ["0"],
+              datasets: [{ data: [0] }],
+          };
 
     return (
         <ScreenContainer>
-            <Text style={styles.title}>{exerciseName}</Text>
+            <Text style={styles.title}>
+                {localizedExerciseName(exerciseId, exerciseName, language)}
+            </Text>
 
-            <Text style={sharedStyles.screenSubtitle}>Track your strength progression.</Text>
+            <Text style={sharedStyles.screenSubtitle}>{t("strengthProgress")}</Text>
 
-            <Text style={sharedStyles.screenTitle}>Weight Progression</Text>
+            <Text style={sharedStyles.screenTitle}>{t("weightProgression")}</Text>
 
             {points.length === 0 ? (
-                <EmptyStateCard
-                    title="No progress yet"
-                    message="Complete a workout with this exercise to start tracking progress."
-                />
+                <EmptyStateCard title={t("noProgress")} message={t("firstExerciseProgress")} />
             ) : (
                 <Card>
                     <LineChart
                         data={chartData}
                         width={Dimensions.get("window").width - 48}
                         height={240}
-                        yAxisSuffix="kg"
+                        yAxisSuffix=" kg"
+                        formatYLabel={(value) => Number(value).toLocaleString(locale)}
                         chartConfig={{
-                            backgroundColor: "#161B22",
-                            backgroundGradientFrom: "#161B22",
-                            backgroundGradientTo: "#161B22",
+                            backgroundColor: colors.card,
+                            backgroundGradientFrom: colors.card,
+                            backgroundGradientTo: colors.card,
                             decimalPlaces: 0,
-                            color: () => "#4CAF50",
-                            labelColor: () => "#9CA3AF",
+                            color: () => colors.success,
+                            labelColor: () => colors.textSecondary,
                         }}
                         bezier
                         style={styles.chart}
@@ -94,12 +101,12 @@ export default function ExerciseProgressScreen() {
                 </Card>
             )}
 
-            <Text style={styles.info}>Each point represents one completed set.</Text>
+            <Text style={styles.info}>{t("chartPointDescription")}</Text>
         </ScreenContainer>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: typography.title,
@@ -112,4 +119,4 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         marginTop: spacing.md,
     },
-});
+}));

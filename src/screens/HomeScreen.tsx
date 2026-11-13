@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import ScreenContainer from "../components/common/ScreenContainer";
@@ -11,13 +11,17 @@ import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useProfile } from "../hooks/useProfile";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getDashboardStats, getRecentWorkouts } from "../services/dashboardService";
 import { getActiveWorkoutSession } from "../services/workoutService";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { DashboardStats, RecentWorkout } from "../types/dashboard";
 
 export default function HomeScreen({ navigation }: any) {
+    const { locale, t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { user } = useAuth();
     const { showToast } = useToast();
     const { fullName } = useProfile();
@@ -110,7 +114,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     function formatWorkoutDate(date: string) {
-        return new Date(date).toLocaleDateString(undefined, {
+        return new Date(date).toLocaleDateString(locale, {
             month: "short",
             day: "numeric",
         });
@@ -132,38 +136,43 @@ export default function HomeScreen({ navigation }: any) {
 
         const duration = getWorkoutDuration(startedAt, completedAt);
 
-        return `${date} · ${duration} · ${count} exercises`;
+        const exerciseCount = t(count === 1 ? "oneExerciseCount" : "manyExerciseCount").replace(
+            "{count}",
+            String(count)
+        );
+        return `${date} · ${duration} · ${exerciseCount}`;
     }
 
     return (
         <ScreenContainer scroll>
-            <Text style={sharedStyles.screenTitle}>Home</Text>
+            <Text style={sharedStyles.screenTitle}>{t("home")}</Text>
 
             {activeSession ? (
                 <ActiveWorkoutBanner
-                    routineName={activeSession.routines?.name ?? "Workout"}
+                    routineName={activeSession.routines?.name ?? t("workout")}
                     elapsedText={getElapsedText(activeSession.started_at)}
                     restRemainingText={getRestRemainingText(activeRestTimerEndAt)}
                     onPress={() =>
                         navigation.navigate("WorkoutSession", {
                             sessionId: activeSession.id,
                             routineId: activeSession.routine_id,
-                            routineName: activeSession.routines?.name ?? "Workout",
+                            routineName: activeSession.routines?.name ?? t("workout"),
                         })
                     }
                 />
             ) : null}
-            <Text style={sharedStyles.mutedText}>Good to see you,</Text>
+            <Text style={sharedStyles.mutedText}>{t("homeGreeting")}</Text>
 
             <Text style={sharedStyles.sectionTitle}>
-                {fullName?.trim() ? `${fullName.trim()} 👋` : "Athlete 👋"}
+                {fullName?.trim() ? `${fullName.trim()} 👋` : `${t("athlete")} 👋`}
             </Text>
 
             <View style={styles.heroSection}>
                 <Text style={styles.heroText}>
-                    Let&apos;s get{"\n"}
-                    <Text style={styles.heroHighlight}>stronger</Text>
-                    <Text> today.</Text>
+                    {t("homeHeroLead")}
+                    {"\n"}
+                    <Text style={styles.heroHighlight}>{t("homeHeroAccent")}</Text>
+                    <Text>{t("homeHeroTail")}</Text>
                 </Text>
 
                 <Image
@@ -174,25 +183,32 @@ export default function HomeScreen({ navigation }: any) {
             </View>
 
             <View style={styles.statsRow}>
-                <StatCard value={stats.completedWorkouts} label="Workouts" helper="Completed" />
+                <StatCard
+                    value={stats.completedWorkouts}
+                    label={t("workouts")}
+                    helper={t("workoutsCompleted")}
+                />
 
                 <StatCard
                     value={stats.streakWorkouts}
-                    label="Last 14 Days"
+                    label={t("last14Days")}
                     helper={
                         stats.streakStatus === "empty"
-                            ? "Start today"
+                            ? t("startToday")
                             : stats.streakStatus === "warning"
-                                ? "Keep it up"
-                                : stats.streakStatus === "expired"
-                                    ? "Start again"
-                                    : `${stats.streakWeeks} active weeks`
+                              ? t("keepItUp")
+                              : stats.streakStatus === "expired"
+                                ? t("startAgain")
+                                : t(stats.streakWeeks === 1 ? "activeWeek" : "activeWeeks").replace(
+                                      "{count}",
+                                      String(stats.streakWeeks)
+                                  )
                     }
                 />
             </View>
 
             <AppButton
-                title="Start Workout"
+                title={t("startWorkout")}
                 variant="primary"
                 onPress={() => navigation.navigate("Routines")}
                 iconLeft={<Ionicons name="barbell-outline" size={22} color={colors.text} />}
@@ -202,10 +218,10 @@ export default function HomeScreen({ navigation }: any) {
             {recentWorkouts.length > 0 ? (
                 <View style={styles.recentSection}>
                     <View style={styles.sectionHeader}>
-                        <Text style={sharedStyles.sectionTitle}>Recent Workouts</Text>
+                        <Text style={sharedStyles.sectionTitle}>{t("recentWorkouts")}</Text>
                         <View style={styles.sectionButton}>
                             <Pressable onPress={() => navigation.navigate("History")}>
-                                <Text style={styles.sectionAction}>View All</Text>
+                                <Text style={styles.sectionAction}>{t("viewAll")}</Text>
                             </Pressable>
                             <Ionicons name="chevron-forward" size={16} color={colors.primary} />
                         </View>
@@ -214,13 +230,13 @@ export default function HomeScreen({ navigation }: any) {
                     {recentWorkouts.map((workout) => (
                         <RoutineCard
                             key={workout.id}
-                            title={workout.routine_name_snapshot ?? "Workout"}
+                            title={workout.routine_name_snapshot ?? t("workout")}
                             subtitle={getWorkoutSubtitle(
                                 workout.started_at,
                                 workout.completed_at,
                                 workout.workout_session_exercises?.length ?? 0
                             )}
-                            onPress={() => { }}
+                            onPress={() => {}}
                         />
                     ))}
                 </View>
@@ -229,7 +245,7 @@ export default function HomeScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     heroText: {
         color: colors.text,
         fontSize: 30,
@@ -278,4 +294,4 @@ const styles = StyleSheet.create({
         position: "absolute",
         right: spacing.md,
     },
-});
+}));

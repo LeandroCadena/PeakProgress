@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -15,7 +15,8 @@ import RestTimeEditor from "../components/workout/RestTimeEditor";
 import RestTimerCard from "../components/workout/RestTimerCard";
 import WorkoutExerciseCard from "../components/workout/WorkoutExerciseCard";
 import { useWorkoutSession } from "../hooks/useWorkoutSession";
-import { colors, sharedStyles, spacing } from "../theme";
+import { useLanguage } from "../i18n/LanguageProvider";
+import { spacing, useAppTheme, createThemedStyles } from "../theme";
 import { WorkoutSessionExercise, WorkoutSessionRouteParams } from "../types/workout";
 
 type WorkoutDialogState =
@@ -24,6 +25,9 @@ type WorkoutDialogState =
     | null;
 
 export default function WorkoutSessionScreen({ navigation }: any) {
+    const { t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const route = useRoute<RouteProp<WorkoutSessionRouteParams, "WorkoutSession">>();
     const { sessionId, routineId, routineName } = route.params;
     const [openExerciseMenuId, setOpenExerciseMenuId] = useState<string | null>(null);
@@ -101,11 +105,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 await finishWorkout();
                 setDialog(null);
             } catch (error: unknown) {
-                setDialogError(
-                    error instanceof Error
-                        ? error.message
-                        : "Unable to finish workout. Please try again."
-                );
+                setDialogError(error instanceof Error ? error.message : t("finishWorkoutError"));
             }
         }
     }
@@ -127,7 +127,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                         items={[
                             {
                                 key: "Settings",
-                                label: "Settings",
+                                label: t("settings"),
                                 icon: "settings-outline",
                                 onPress: () => {
                                     setIsRoutineMenuOpen(false);
@@ -150,7 +150,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 </View>
 
                 <AppButton
-                    title={isFinishingWorkout ? "Finishing..." : "Finish"}
+                    title={isFinishingWorkout ? t("finishing") : t("finish")}
                     variant="primary"
                     disabled={isFinishingWorkout || isInitializingSession || !!initializationError}
                     onPress={handleFinishWorkout}
@@ -180,20 +180,20 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                     ) : initializationError ? (
                         <View style={styles.initializationErrorContainer}>
                             <EmptyStateCard
-                                title="Unable to load workout"
+                                title={t("workoutLoadError")}
                                 message={initializationError}
                             />
 
                             <AppButton
-                                title="Retry"
+                                title={t("retry")}
                                 variant="primary"
                                 onPress={retryInitializeSession}
                             />
                         </View>
                     ) : (
                         <EmptyStateCard
-                            title="No exercises yet"
-                            message="Add your first exercise to this workout."
+                            title={t("noWorkoutExercises")}
+                            message={t("addFirstWorkoutExercise")}
                         />
                     )
                 }
@@ -239,7 +239,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
 
                             {index < sessionExercises.length - 1 ? (
                                 <RestTimeEditor
-                                    label="Rest before next exercise"
+                                    label={t("restBeforeExercise")}
                                     value={effectiveExerciseRestSeconds}
                                     editable={!useGlobalTimers}
                                     onChange={(value) => updateWorkoutExerciseRest(item.id, value)}
@@ -250,9 +250,11 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 }}
                 ListFooterComponent={
                     <AppButton
-                        title="+ Add Exercise"
+                        title={t("addExercise")}
                         variant="success"
-                        disabled={isInitializingSession || !!initializationError || isFinishingWorkout}
+                        disabled={
+                            isInitializingSession || !!initializationError || isFinishingWorkout
+                        }
                         onPress={() =>
                             navigation.navigate("ExercisePicker", {
                                 mode: "session",
@@ -260,8 +262,8 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 currentCount:
                                     sessionExercises.length > 0
                                         ? Math.max(
-                                            ...sessionExercises.map((item) => item.position ?? 0)
-                                        ) + 1
+                                              ...sessionExercises.map((item) => item.position ?? 0)
+                                          ) + 1
                                         : 0,
                                 currentExerciseIds: sessionExercises.map(
                                     (item) => item.exercise_id
@@ -286,17 +288,17 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                 visible={dialog !== null}
                 title={
                     dialog?.type === "finishWorkout"
-                        ? "Finish workout?"
-                        : "Delete exercise?"
+                        ? t("finishWorkoutQuestion")
+                        : t("deleteExerciseQuestion")
                 }
                 message={
                     dialog?.type === "finishWorkout"
-                        ? "Are you sure you want to finish this workout?"
-                        : "The exercise and its sets will be removed from this workout."
+                        ? t("finishWorkoutConfirm")
+                        : t("removeWorkoutExercise")
                 }
                 errorMessage={dialogError}
-                confirmLabel={dialog?.type === "finishWorkout" ? "Finish" : "Delete"}
-                cancelLabel="Cancel"
+                confirmLabel={dialog?.type === "finishWorkout" ? t("finish") : t("delete")}
+                cancelLabel={t("cancel")}
                 variant={dialog?.type === "finishWorkout" ? "primary" : "danger"}
                 onConfirm={confirmDialog}
                 onCancel={() => {
@@ -308,7 +310,7 @@ export default function WorkoutSessionScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     screenContent: {
         flex: 1,
         paddingBottom: 0,
@@ -378,4 +380,4 @@ const styles = StyleSheet.create({
     initializationErrorContainer: {
         gap: spacing.md,
     },
-});
+}));

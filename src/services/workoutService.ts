@@ -1,8 +1,18 @@
+import { GUEST_USER_ID } from "../database/guestAccount";
+import {
+    createLocalWorkout,
+    getLocalActiveWorkout,
+    getLocalWorkout,
+    readLocalWorkoutSnapshot,
+} from "../database/repositories/localWorkoutRepository";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 
 import { supabase } from "./supabase";
 
 export async function getActiveWorkoutSession(userId: string) {
+    const local = await getLocalActiveWorkout(userId);
+    if (local || userId === GUEST_USER_ID) return local;
+
     const { data, error } = await supabase
         .from("workout_sessions")
         .select(
@@ -28,6 +38,10 @@ export async function getActiveWorkoutSession(userId: string) {
 }
 
 export async function createWorkoutSession(params: { userId: string; routineId: string }) {
+    if (params.userId === GUEST_USER_ID) {
+        return createLocalWorkout(params.userId, params.routineId);
+    }
+
     const { data, error } = await supabase
         .from("workout_sessions")
         .insert({
@@ -59,6 +73,13 @@ export async function getOrCreateWorkoutAfterDiscard(params: {
     routineId: string;
     activeSessionId?: string;
 }) {
+    const local = params.activeSessionId
+        ? await getLocalWorkout(params.activeSessionId, params.userId)
+        : null;
+    if (params.userId === GUEST_USER_ID || local) {
+        return createLocalWorkout(params.userId, params.routineId, params.activeSessionId);
+    }
+
     if (params.activeSessionId) {
         await discardWorkoutSession(params.activeSessionId);
     }
@@ -204,46 +225,6 @@ export async function getWorkoutSessionExercises(
     if (error) throw error;
 
     return data ?? [];
-}
-
-async function getRoutineExercisesWithSets(routineId: string) {
-    const { data, error } = await supabase
-        .from("routine_exercises")
-        .select(
-            `
-            id,
-            exercise_id,
-            position,
-            rest_seconds,
-            exercise_rest_seconds,
-            exercise:exercises (
-                name,
-                image_url
-            ),
-            routine_exercise_sets (
-                id,
-                routine_exercise_id,
-                reps,
-                weight,
-                is_pr,
-                created_at
-            )
-        `
-        )
-        .eq("routine_id", routineId)
-        .order("position", { ascending: true })
-        .order("created_at", {
-            ascending: true,
-            referencedTable: "routine_exercise_sets",
-        });
-
-    if (error) throw error;
-
-    return (data ?? []).map((item: any) => ({
-        ...item,
-        exercise: Array.isArray(item.exercise) ? item.exercise[0] : item.exercise,
-        routine_exercise_sets: item.routine_exercise_sets ?? [],
-    }));
 }
 
 export async function deleteRoutineExerciseSetsByRoutineExerciseId(routineExerciseId: string) {
@@ -404,6 +385,10 @@ export async function loadWorkoutSessionSnapshot(params: {
     routineId: string;
     userId: string;
 }) {
+    const local = await getLocalWorkout(params.sessionId, params.userId);
+    if (local) return readLocalWorkoutSnapshot(local);
+    if (params.userId === GUEST_USER_ID) throw new Error("Workout not found on this device.");
+
     const { error } = await supabase.rpc("initialize_workout_session", {
         p_session_id: params.sessionId,
     });

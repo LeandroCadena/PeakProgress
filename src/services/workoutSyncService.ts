@@ -1,3 +1,12 @@
+import { randomUUID } from "expo-crypto";
+
+import { GUEST_USER_ID } from "../database/guestAccount";
+import {
+    completeLocalWorkout,
+    getLocalWorkout,
+    readLocalWorkoutSnapshot,
+} from "../database/repositories/localWorkoutRepository";
+import { getLocalRoutine, saveLocalRoutine } from "../database/repositories/routineRepository";
 import { ExerciseRecordCandidatesById } from "../types/progress";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../types/workout";
 
@@ -28,6 +37,7 @@ type WorkoutSummary = {
 };
 
 type UpdateRoutineFromWorkoutInput = {
+    userId: string;
     sessionId: string;
     routineId: string;
 };
@@ -35,7 +45,46 @@ type UpdateRoutineFromWorkoutInput = {
 export async function updateRoutineFromCompletedWorkout({
     sessionId,
     routineId,
+    userId,
 }: UpdateRoutineFromWorkoutInput): Promise<void> {
+    const local = await getLocalWorkout(sessionId, userId);
+    if (local) {
+        const { sessionExercises, savedSets } = readLocalWorkoutSnapshot(local);
+        const routine = await getLocalRoutine({ userId, routineId });
+        if (!routine) throw new Error("Routine not found on this device.");
+
+        const exercises = sessionExercises.map((exercise, position) => ({
+            id: randomUUID(),
+            routine_id: routineId,
+            exercise_id: exercise.exercise_id,
+            position,
+            rest_seconds: exercise.rest_seconds,
+            exercise_rest_seconds: exercise.exercise_rest_seconds,
+            exercise: {
+                name: exercise.exercise_name_snapshot,
+                image_url: exercise.exercise_image_url_snapshot,
+            },
+        }));
+        const setsByExerciseId = Object.fromEntries(
+            exercises.map((exercise, index) => [
+                exercise.id,
+                (savedSets[sessionExercises[index].id] ?? []).map((set) => ({
+                    ...set,
+                    id: randomUUID(),
+                    routine_exercise_id: exercise.id,
+                })),
+            ])
+        );
+
+        await saveLocalRoutine({
+            userId,
+            syncOperationId: randomUUID(),
+            snapshot: { ...routine, exercises, setsByExerciseId },
+        });
+        return;
+    }
+    if (userId === GUEST_USER_ID) throw new Error("Workout not found on this device.");
+
     const [sessionExercises, savedSets] = await Promise.all([
         getWorkoutSessionExercises(sessionId),
         getSavedSets(sessionId),
@@ -89,6 +138,19 @@ export async function syncCompletedWorkout({
     exerciseRecordCandidatesById,
 }: SyncWorkoutInput): Promise<void> {
     const { totalSets, totalVolume } = calculateWorkoutSummary(savedSets);
+
+    if (userId && (userId === GUEST_USER_ID || (await getLocalWorkout(sessionId, userId)))) {
+        await completeLocalWorkout({
+            userId,
+            sessionId,
+            routineName,
+            sessionExercises,
+            savedSets,
+            totalSets,
+            totalVolume,
+        });
+        return;
+    }
 
     await saveWorkoutSessionSnapshot({
         sessionId,

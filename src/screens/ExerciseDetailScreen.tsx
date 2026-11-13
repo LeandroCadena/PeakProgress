@@ -1,14 +1,15 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { localizedExerciseText, localizedCatalogLabel } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getExerciseDetail } from "../services/exerciseService";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
-
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     ExerciseDetail: {
@@ -17,10 +18,13 @@ type RouteParams = {
 };
 
 export default function ExerciseDetailScreen() {
+    const { language, t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "ExerciseDetail">>();
     const { exerciseId } = route.params;
 
-    const [exercise, setExercise] = useState<any>(null);
+    const [exercise, setExercise] = useState<Awaited<ReturnType<typeof getExerciseDetail>>>(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -34,16 +38,13 @@ export default function ExerciseDetailScreen() {
         } catch (error: unknown) {
             setExercise(null);
 
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : "Unable to load exercise details.";
+            const message = error instanceof Error ? error.message : t("exerciseDetailLoadError");
 
             setLoadError(message);
         } finally {
             setLoading(false);
         }
-    }, [exerciseId]);
+    }, [exerciseId, t]);
 
     useEffect(() => {
         fetchExerciseDetail();
@@ -61,11 +62,8 @@ export default function ExerciseDetailScreen() {
         return (
             <ScreenContainer>
                 <EmptyStateCard
-                    title="Exercise unavailable"
-                    message={
-                        loadError ??
-                        "This exercise could not be found in the local catalog."
-                    }
+                    title={t("exerciseUnavailable")}
+                    message={loadError ?? t("exerciseMissing")}
                 />
             </ScreenContainer>
         );
@@ -73,9 +71,14 @@ export default function ExerciseDetailScreen() {
 
     const muscles =
         exercise.exercise_muscles
-            ?.map((item: any) => item.muscles?.name)
+            ?.map((item) => localizedCatalogLabel(item.muscles?.name ?? null, language))
             .filter(Boolean)
-            .join(", ") ?? "No muscles listed";
+            .join(", ") || t("noMusclesListed");
+
+    const name = localizedExerciseText(exercise, "name", language);
+    const description = localizedExerciseText(exercise, "description", language);
+    const instructions = localizedExerciseText(exercise, "instructions", language);
+    const tips = localizedExerciseText(exercise, "tips", language);
 
     return (
         <ScreenContainer scroll>
@@ -83,45 +86,46 @@ export default function ExerciseDetailScreen() {
                 <Image source={{ uri: exercise.image_url }} style={styles.image} />
             ) : (
                 <View style={styles.imagePlaceholder}>
-                    <Text style={styles.placeholderText}>No image available</Text>
+                    <Text style={styles.placeholderText}>{t("noExerciseImage")}</Text>
                 </View>
             )}
 
-            <Text style={styles.title}>{exercise.name}</Text>
+            <Text style={styles.title}>{name}</Text>
 
             <Text style={styles.meta}>
-                {exercise.equipment ?? "No equipment"} · {exercise.difficulty ?? "No difficulty"}
+                {localizedCatalogLabel(exercise.equipment, language) ?? t("noEquipment")} ·{" "}
+                {localizedCatalogLabel(exercise.difficulty, language) ?? t("noDifficulty")}
             </Text>
 
             <Card style={styles.infoCard}>
-                <Text style={sharedStyles.screenTitle}>Muscles</Text>
+                <Text style={sharedStyles.screenTitle}>{t("muscles")}</Text>
                 <Text style={styles.text}>{muscles}</Text>
             </Card>
 
-            {exercise.description ? (
+            {description ? (
                 <Card style={styles.infoCard}>
-                    <Text style={sharedStyles.screenTitle}>Description</Text>
-                    <Text style={styles.text}>{exercise.description}</Text>
+                    <Text style={sharedStyles.screenTitle}>{t("description")}</Text>
+                    <Text style={styles.text}>{description}</Text>
                 </Card>
             ) : null}
 
-            {exercise.instructions ? (
+            {instructions ? (
                 <Card style={styles.infoCard}>
-                    <Text style={sharedStyles.screenTitle}>Instructions</Text>
-                    <Text style={styles.text}>{exercise.instructions}</Text>
+                    <Text style={sharedStyles.screenTitle}>{t("instructions")}</Text>
+                    <Text style={styles.text}>{instructions}</Text>
                 </Card>
             ) : null}
 
-            {exercise.tips ? (
+            {tips ? (
                 <Card style={styles.infoCard}>
-                    <Text style={sharedStyles.screenTitle}>Tips</Text>
-                    <Text style={styles.text}>{exercise.tips}</Text>
+                    <Text style={sharedStyles.screenTitle}>{t("tips")}</Text>
+                    <Text style={styles.text}>{tips}</Text>
                 </Card>
             ) : null}
 
             {exercise.animation_url ? (
                 <Card style={styles.infoCard}>
-                    <Text style={sharedStyles.screenTitle}>Execution</Text>
+                    <Text style={sharedStyles.screenTitle}>{t("execution")}</Text>
                     <Image source={{ uri: exercise.animation_url }} style={styles.animation} />
                 </Card>
             ) : null}
@@ -129,7 +133,7 @@ export default function ExerciseDetailScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     image: {
         width: "100%",
         height: 220,
@@ -174,4 +178,4 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
         backgroundColor: colors.card,
     },
-});
+}));

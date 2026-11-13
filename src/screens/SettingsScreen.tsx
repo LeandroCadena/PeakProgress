@@ -1,18 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 
 import AppInput from "../components/common/AppInput";
 import Card from "../components/common/Card";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getUserSettings, updateUserSettings, UserSettings } from "../services/settingsService";
 import { useSettingsStore } from "../store/settingsStore";
-import { colors, sharedStyles, spacing } from "../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../theme";
 import { setNotificationsEnabled } from "../utils/notifications";
 import { setSoundsEnabled } from "../utils/sounds";
 
 export default function SettingsScreen() {
+    const { language, setLanguage, t } = useLanguage();
+    const { colors, sharedStyles, preference, setPreference } = useAppTheme();
+    const styles = getStyles(colors);
     const { user } = useAuth();
     const { showToast } = useToast();
     const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -26,13 +30,13 @@ export default function SettingsScreen() {
     const userIdRef = useRef<string | null>(null);
     const settingsRevisionRef = useRef(0);
 
-    function applySettings(nextSettings: UserSettings, ownerId: string) {
+    const applySettings = useCallback((nextSettings: UserSettings, ownerId: string) => {
         if (userIdRef.current !== ownerId) return;
 
         settingsRef.current = nextSettings;
         setSettings(nextSettings);
         setGlobalTimers(ownerId, nextSettings);
-    }
+    }, [setGlobalTimers]);
 
     const fetchSettings = useCallback(async () => {
         if (!user?.id) return;
@@ -43,10 +47,7 @@ export default function SettingsScreen() {
         try {
             const data = await getUserSettings(ownerId);
 
-            if (
-                userIdRef.current !== ownerId ||
-                settingsRevisionRef.current !== revisionAtStart
-            ) {
+            if (userIdRef.current !== ownerId || settingsRevisionRef.current !== revisionAtStart) {
                 return;
             }
 
@@ -60,10 +61,10 @@ export default function SettingsScreen() {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching settings",
+                message: error instanceof Error ? error.message : t("settingsLoadError"),
             });
         }
-    }, [user, showToast]);
+    }, [applySettings, user, showToast, t]);
 
     useEffect(() => {
         const ownerId = user?.id ?? null;
@@ -128,10 +129,7 @@ export default function SettingsScreen() {
 
                 showToast({
                     type: "error",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Error updating settings",
+                    message: error instanceof Error ? error.message : t("settingsSaveError"),
                 });
             }
         });
@@ -172,24 +170,83 @@ export default function SettingsScreen() {
         void updateSetting({ [field]: value });
     }
 
+    const appearance = (
+        <Card style={styles.card}>
+            <Text style={sharedStyles.screenTitle}>{t("appearance")}</Text>
+            <Text style={styles.label}>{t("theme")}</Text>
+            <View style={styles.row}>
+                {(["dark", "light", "system"] as const).map((option) => (
+                    <Pressable
+                        key={option}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: preference === option }}
+                        style={[
+                            styles.optionButton,
+                            preference === option && styles.optionButtonActive,
+                        ]}
+                        onPress={() => {
+                            void setPreference(option).catch(() => {
+                                showToast({ type: "error", message: t("themeSaveError") });
+                            });
+                        }}
+                    >
+                        <Text style={styles.optionText}>{t(option)}</Text>
+                    </Pressable>
+                ))}
+            </View>
+        </Card>
+    );
+
+    const languageSelector = (
+        <Card style={styles.card}>
+            <Text style={sharedStyles.screenTitle}>{t("language")}</Text>
+            <View style={styles.row}>
+                {(["en", "es"] as const).map((option) => (
+                    <Pressable
+                        key={option}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: language === option }}
+                        style={[
+                            styles.optionButton,
+                            language === option && styles.optionButtonActive,
+                        ]}
+                        onPress={() => {
+                            void setLanguage(option).catch(() => {
+                                showToast({ type: "error", message: t("languageSaveError") });
+                            });
+                        }}
+                    >
+                        <Text style={styles.optionText}>
+                            {option === "en" ? "English" : "Español"}
+                        </Text>
+                    </Pressable>
+                ))}
+            </View>
+        </Card>
+    );
+
     if (!settings) {
         return (
             <ScreenContainer>
-                <Text style={sharedStyles.screenTitle}>Settings</Text>
-                <Text style={styles.text}>Loading...</Text>
+                <Text style={sharedStyles.screenTitle}>{t("settings")}</Text>
+                {appearance}
+                {languageSelector}
+                <Text style={styles.text}>{t("loading")}</Text>
             </ScreenContainer>
         );
     }
 
     return (
         <ScreenContainer scroll>
-            <Text style={sharedStyles.screenTitle}>Settings</Text>
+            <Text style={sharedStyles.screenTitle}>{t("settings")}</Text>
+            {appearance}
+            {languageSelector}
 
             <Card style={styles.settingCard}>
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.label}>Sounds</Text>
-                        <Text style={styles.helperText}>Play sounds during workouts</Text>
+                        <Text style={styles.label}>{t("sounds")}</Text>
+                        <Text style={styles.helperText}>{t("workoutSounds")}</Text>
                     </View>
 
                     <Switch
@@ -206,8 +263,8 @@ export default function SettingsScreen() {
             <Card style={styles.settingCard}>
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.label}>Notifications</Text>
-                        <Text style={styles.helperText}>Enable notifications</Text>
+                        <Text style={styles.label}>{t("notifications")}</Text>
+                        <Text style={styles.helperText}>{t("enableNotifications")}</Text>
                     </View>
 
                     <Switch
@@ -224,11 +281,9 @@ export default function SettingsScreen() {
             <Card style={styles.settingCard}>
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.label}>Update Routine After Workout</Text>
+                        <Text style={styles.label}>{t("updateRoutine")}</Text>
 
-                        <Text style={styles.helperText}>
-                            Automatically use your completed workout as the new routine template.
-                        </Text>
+                        <Text style={styles.helperText}>{t("updateRoutineDescription")}</Text>
                     </View>
 
                     <Switch
@@ -245,8 +300,8 @@ export default function SettingsScreen() {
             <Card style={styles.settingCard}>
                 <View style={styles.settingRow}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.label}>Use Global Timers</Text>
-                        <Text style={styles.helperText}>Use Global Timers</Text>
+                        <Text style={styles.label}>{t("globalTimers")}</Text>
+                        <Text style={styles.helperText}>{t("globalTimers")}</Text>
                     </View>
 
                     <Switch
@@ -263,7 +318,7 @@ export default function SettingsScreen() {
             {settings.use_global_timers ? (
                 <>
                     <Card style={styles.card}>
-                        <Text style={styles.label}>Global Rest Between Sets</Text>
+                        <Text style={styles.label}>{t("setRest")}</Text>
                         <AppInput
                             style={styles.input}
                             value={globalSetRestInput}
@@ -274,11 +329,11 @@ export default function SettingsScreen() {
                                 saveGlobalRestInput("global_set_rest_seconds", globalSetRestInput)
                             }
                         />
-                        <Text style={styles.helperText}>Seconds between sets</Text>
+                        <Text style={styles.helperText}>{t("setRestDescription")}</Text>
                     </Card>
 
                     <Card style={styles.card}>
-                        <Text style={styles.label}>Global Rest Between Exercises</Text>
+                        <Text style={styles.label}>{t("exerciseRest")}</Text>
                         <AppInput
                             style={styles.input}
                             value={globalExerciseRestInput}
@@ -286,72 +341,21 @@ export default function SettingsScreen() {
                             placeholder="120"
                             onChangeText={setGlobalExerciseRestInput}
                             onBlur={() =>
-                                saveGlobalRestInput("global_exercise_rest_seconds", globalExerciseRestInput)
+                                saveGlobalRestInput(
+                                    "global_exercise_rest_seconds",
+                                    globalExerciseRestInput
+                                )
                             }
                         />
-                        <Text style={styles.helperText}>Seconds before the next exercise</Text>
+                        <Text style={styles.helperText}>{t("exerciseRestDescription")}</Text>
                     </Card>
                 </>
             ) : null}
-
-            <Card style={styles.card}>
-                <Text style={sharedStyles.screenTitle}>Appearance</Text>
-                <Text style={styles.label}>Theme</Text>
-
-                <View style={styles.row}>
-                    <Pressable
-                        style={[
-                            styles.optionButton,
-                            settings.theme === "dark" && styles.optionButtonActive,
-                        ]}
-                        onPress={() => updateSetting({ theme: "dark" })}
-                    >
-                        <Text style={styles.optionText}>Dark</Text>
-                    </Pressable>
-
-                    <Pressable
-                        style={[
-                            styles.optionButton,
-                            settings.theme === "light" && styles.optionButtonActive,
-                        ]}
-                        onPress={() => updateSetting({ theme: "light" })}
-                    >
-                        <Text style={styles.optionText}>Light</Text>
-                    </Pressable>
-                </View>
-            </Card>
-
-            <Card style={styles.card}>
-                <Text style={sharedStyles.screenTitle}>Language</Text>
-                <Text style={styles.label}>Language</Text>
-
-                <View style={styles.row}>
-                    <Pressable
-                        style={[
-                            styles.optionButton,
-                            settings.language === "en" && styles.optionButtonActive,
-                        ]}
-                        onPress={() => updateSetting({ language: "en" })}
-                    >
-                        <Text style={styles.optionText}>English</Text>
-                    </Pressable>
-
-                    <Pressable
-                        style={[
-                            styles.optionButton,
-                            settings.language === "es" && styles.optionButtonActive,
-                        ]}
-                        onPress={() => updateSetting({ language: "es" })}
-                    >
-                        <Text style={styles.optionText}>Español</Text>
-                    </Pressable>
-                </View>
-            </Card>
         </ScreenContainer>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     text: {
         color: colors.textSecondary,
     },
@@ -410,4 +414,4 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: spacing.md,
     },
-});
+}));

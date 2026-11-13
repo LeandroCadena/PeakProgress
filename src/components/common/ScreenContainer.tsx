@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
-import { ScrollView, StyleSheet, View, ViewStyle } from "react-native";
+import { ScrollView, View, ViewStyle } from "react-native";
 
-import { colors, spacing } from "../../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 type Props = {
     children: ReactNode;
@@ -11,6 +11,8 @@ type Props = {
 };
 
 export default function ScreenContainer({ children, scroll = false, style, contentStyle }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     if (scroll) {
         return (
             <ScrollView
@@ -30,7 +32,7 @@ export default function ScreenContainer({ children, scroll = false, style, conte
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         flex: 1,
         backgroundColor: colors.background,
@@ -41,4 +43,4 @@ const styles = StyleSheet.create({
         paddingTop: spacing.xxl,
         paddingBottom: 120,
     },
-});
+}));

@@ -1,20 +1,32 @@
 import { useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 
 import AppDialog from "../components/common/AppDialog";
 import AppInput from "../components/common/AppInput";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useCatalogNetworkStatus } from "../hooks/useCatalogNetworkStatus";
 import { useCatalogRevision } from "../hooks/useCatalogRevision";
+import { matchesExerciseName, localizedCatalogLabel } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { syncCatalog } from "../services/catalogSyncService";
-import { CatalogNotDownloadedError, getCatalogAvailability, getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
+import {
+    getCatalogAvailability,
+    getExercisesByFilter,
+    getMuscleRegions,
+    getMuscles,
+} from "../services/exerciseService";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
 
 export default function ExercisesScreen({ navigation }: any) {
+    const { session } = useAuth();
+    const { language, t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [filterMode, setFilterMode] = useState<FilterMode>("muscle");
@@ -23,11 +35,11 @@ export default function ExercisesScreen({ navigation }: any) {
     const [regions, setRegions] = useState<MuscleRegion[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const catalogRevision = useCatalogRevision();
+    const [catalogDownloaded, setCatalogDownloaded] = useState(false);
     const [catalogPending, setCatalogPending] = useState(true);
     const networkStatus = useCatalogNetworkStatus();
     const [manualSyncing, setManualSyncing] = useState(false);
     const [showCellularDialog, setShowCellularDialog] = useState(false);
-
 
     async function downloadCatalog() {
         if (manualSyncing) return;
@@ -39,18 +51,12 @@ export default function ExercisesScreen({ navigation }: any) {
 
             showToast({
                 type: "success",
-                message:
-                    result.changesApplied > 0
-                        ? "Exercise catalog updated successfully."
-                        : "Exercise catalog is already up to date.",
+                message: result.changesApplied > 0 ? t("catalogUpdated") : t("catalogUpToDate"),
             });
         } catch (error: unknown) {
             showToast({
                 type: "error",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : "Unable to download the exercise catalog.",
+                message: error instanceof Error ? error.message : t("catalogDownloadError"),
             });
         } finally {
             setManualSyncing(false);
@@ -60,13 +66,10 @@ export default function ExercisesScreen({ navigation }: any) {
     function requestCatalogDownload() {
         if (manualSyncing) return;
 
-        if (
-            networkStatus === "offline" ||
-            networkStatus === "checking"
-        ) {
+        if (networkStatus === "offline" || networkStatus === "checking") {
             showToast({
                 type: "error",
-                message: "An internet connection is required.",
+                message: t("catalogInternetRequired"),
             });
             return;
         }
@@ -79,47 +82,29 @@ export default function ExercisesScreen({ navigation }: any) {
         void downloadCatalog();
     }
 
-
     useEffect(() => {
         let cancelled = false;
 
         async function loadFilters() {
             try {
-                const availability = await getCatalogAvailability();
-
-                if (cancelled) return;
-
-                if (availability === "pending") {
-                    setCatalogPending(true);
-                    setMuscles([]);
-                    setRegions([]);
-                    return;
-                }
-
-                const [musclesData, regionsData] = await Promise.all([
+                const [musclesData, regionsData, availability] = await Promise.all([
                     getMuscles(),
                     getMuscleRegions(),
+                    getCatalogAvailability(),
                 ]);
 
                 if (cancelled) return;
 
+                setCatalogDownloaded(availability === "available");
                 setMuscles(musclesData);
                 setRegions(regionsData);
                 setCatalogPending(false);
             } catch (error: unknown) {
                 if (cancelled) return;
 
-                if (error instanceof CatalogNotDownloadedError) {
-                    setCatalogPending(true);
-                    return;
-                }
-
                 showToast({
                     type: "error",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Unable to load filters.",
+                    message: error instanceof Error ? error.message : t("filtersLoadError"),
                 });
             }
         }
@@ -129,9 +114,7 @@ export default function ExercisesScreen({ navigation }: any) {
         return () => {
             cancelled = true;
         };
-    }, [catalogRevision, showToast]);
-
-
+    }, [catalogRevision, showToast, t]);
 
     useEffect(() => {
         let cancelled = false;
@@ -150,18 +133,9 @@ export default function ExercisesScreen({ navigation }: any) {
             } catch (error: unknown) {
                 if (cancelled) return;
 
-                if (error instanceof CatalogNotDownloadedError) {
-                    setCatalogPending(true);
-                    setExercises([]);
-                    return;
-                }
-
                 showToast({
                     type: "error",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Unable to load exercises.",
+                    message: error instanceof Error ? error.message : t("exercisesLoadError"),
                 });
             }
         }
@@ -171,13 +145,12 @@ export default function ExercisesScreen({ navigation }: any) {
         return () => {
             cancelled = true;
         };
-    }, [filterMode, selectedFilterIds, catalogRevision, showToast]);
-
+    }, [filterMode, selectedFilterIds, catalogRevision, showToast, t]);
 
     const filterOptions = filterMode === "muscle" ? muscles : regions;
 
     const filteredExercises = exercises.filter((exercise) =>
-        exercise.name.toLowerCase().includes(search.toLowerCase())
+        matchesExerciseName(exercise, search, language)
     );
 
     function toggleFilterId(id: string) {
@@ -191,33 +164,29 @@ export default function ExercisesScreen({ navigation }: any) {
         setSelectedFilterIds([]);
     }
 
-
     const catalogPendingMessage =
         networkStatus === "offline"
-            ? "Connect to Wi-Fi to download the exercise catalog for the first time."
+            ? t("catalogConnectWifi")
             : networkStatus === "cellular"
-                ? "The first catalog download is waiting for Wi-Fi. Your mobile data won't be used automatically."
-                : networkStatus === "checking"
-                    ? "Checking your connection before downloading the exercise catalog."
-                    : networkStatus === "other"
-                        ? "The exercise catalog will download when a Wi-Fi connection is available."
-                        : "Waiting for the first catalog download. Keep the app open and connected to Wi-Fi.";
-
+              ? t("catalogWaitingWifi")
+              : networkStatus === "checking"
+                ? t("catalogCheckingConnection")
+                : networkStatus === "other"
+                  ? t("catalogDownloadsOnWifi")
+                  : t("catalogWaitingForDownload");
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
-            <Text style={sharedStyles.screenTitle}>Exercises</Text>
+            <Text style={sharedStyles.screenTitle}>{t("exercises")}</Text>
 
-            {catalogPending && (
+            {session && !catalogDownloaded && (
                 <Pressable
                     style={styles.downloadButton}
                     onPress={requestCatalogDownload}
                     disabled={manualSyncing}
                 >
                     <Text style={styles.downloadButtonText}>
-                        {manualSyncing
-                            ? "Downloading catalog..."
-                            : "Download exercise catalog"}
+                        {manualSyncing ? t("catalogDownloading") : t("downloadCatalog")}
                     </Text>
                 </Pressable>
             )}
@@ -225,7 +194,7 @@ export default function ExercisesScreen({ navigation }: any) {
             <View style={styles.searchRow}>
                 <AppInput
                     style={styles.searchInput}
-                    placeholder="Search exercise"
+                    placeholder={t("searchExercise")}
                     value={search}
                     onChangeText={setSearch}
                 />
@@ -235,7 +204,7 @@ export default function ExercisesScreen({ navigation }: any) {
                     onPress={() => changeFilterMode(filterMode === "muscle" ? "region" : "muscle")}
                 >
                     <Text style={styles.filterModeText}>
-                        {filterMode === "muscle" ? "Muscle" : "Region"}
+                        {filterMode === "muscle" ? t("muscle") : t("region")}
                     </Text>
                 </Pressable>
             </View>
@@ -261,7 +230,7 @@ export default function ExercisesScreen({ navigation }: any) {
                                         isSelected && styles.filterTextActive,
                                     ]}
                                 >
-                                    {item.name}
+                                    {localizedCatalogLabel(item.name, language)}
                                 </Text>
                             </Pressable>
                         );
@@ -276,16 +245,8 @@ export default function ExercisesScreen({ navigation }: any) {
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                     <EmptyStateCard
-                        title={
-                            catalogPending
-                                ? "Preparing exercise catalog"
-                                : "No exercises found"
-                        }
-                        message={
-                            catalogPending
-                                ? catalogPendingMessage
-                                : "Try changing your search or filters."
-                        }
+                        title={catalogPending ? t("catalogPreparing") : t("noExercisesFound")}
+                        message={catalogPending ? catalogPendingMessage : t("changeExerciseSearch")}
                     />
                 }
                 renderItem={({ item }) => (
@@ -302,10 +263,10 @@ export default function ExercisesScreen({ navigation }: any) {
 
             <AppDialog
                 visible={showCellularDialog}
-                title="Use mobile data?"
-                message="Downloading the exercise catalog may consume mobile data. Do you want to continue?"
-                confirmLabel="Download"
-                cancelLabel="Cancel"
+                title={t("useMobileData")}
+                message={t("catalogMobileDataWarning")}
+                confirmLabel={t("download")}
+                cancelLabel={t("cancel")}
                 variant="primary"
                 onCancel={() => setShowCellularDialog(false)}
                 onConfirm={async () => {
@@ -313,12 +274,11 @@ export default function ExercisesScreen({ navigation }: any) {
                     await downloadCatalog();
                 }}
             />
-
         </ScreenContainer>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     screenContent: {
         paddingBottom: spacing.lg,
     },
@@ -384,4 +344,4 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontWeight: typography.weightBold,
     },
-});
+}));

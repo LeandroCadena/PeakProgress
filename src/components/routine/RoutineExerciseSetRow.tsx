@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { colors, componentStyles, spacing, typography } from "../../theme";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { RoutineExerciseSet } from "../../types/routine";
 import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
@@ -24,6 +24,8 @@ export default function RoutineExerciseSetRow({
     onDelete,
     isTemporarySet,
 }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const [weightValue, setWeightValue] = useState(displayZeroAsEmpty(set.weight));
 
     const [repsValue, setRepsValue] = useState(displayZeroAsEmpty(set.reps));
@@ -72,13 +74,12 @@ export default function RoutineExerciseSetRow({
                         onEndEditing={() => onUpdate("reps", repsValue)}
                     />
                 </View>
-
             </View>
         </SwipeableCard>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     row: {
         width: "100%",
         flexDirection: "row",
@@ -100,4 +101,4 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: spacing.md,
     },
-});
+}));

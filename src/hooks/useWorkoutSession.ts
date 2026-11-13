@@ -5,6 +5,7 @@ import { AppState } from "react-native";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getUserExerciseRecords } from "../services/progressService";
 import { getUserSettings } from "../services/settingsService";
 import { loadWorkoutSessionSnapshot } from "../services/workoutService";
@@ -31,6 +32,7 @@ type Params = {
 };
 
 export function useWorkoutSession({ sessionId, routineId, routineName, onFinish }: Params) {
+    const { language, locale, t } = useLanguage();
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -163,8 +165,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 lastTimerDuration: 0,
             });
         } catch (error: unknown) {
-            const message =
-                error instanceof Error ? error.message : "Unable to initialize workout session";
+            const message = error instanceof Error ? error.message : t("workoutInitError");
             setInitializationError(message);
             showToast({
                 type: "error",
@@ -190,6 +191,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
         user?.id,
         restoreLocalRestTimer,
         showToast,
+        t,
     ]);
 
     const retryInitializeSession = useCallback(() => {
@@ -217,12 +219,11 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
             if (isScreenFocusedRef.current) {
                 showToast({
                     type: "error",
-                    message:
-                        error instanceof Error ? error.message : "Unable to load workout settings",
+                    message: error instanceof Error ? error.message : t("workoutSettingsError"),
                 });
             }
         }
-    }, [user?.id, showToast]);
+    }, [user?.id, showToast, t]);
 
     useFocusEffect(
         useCallback(() => {
@@ -414,7 +415,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
 
         if (currentVersion !== timerVersionRef.current) return;
 
-        await scheduleRestFinishedNotification(endAt);
+        await scheduleRestFinishedNotification(endAt, language);
     }
 
     function restartLastTimer() {
@@ -501,8 +502,7 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 updateRoutineAfterWorkout,
             });
         } catch (error: unknown) {
-            const message =
-                error instanceof Error ? error.message : "Unable to synchronize workout";
+            const message = error instanceof Error ? error.message : t("workoutSyncError");
 
             setSessionSyncError(message);
 
@@ -626,9 +626,9 @@ export function useWorkoutSession({ sessionId, routineId, routineName, onFinish 
                 return null;
             }
 
-            return `Current PR: ${currentRecord.bestWeight} kg × ${currentRecord.bestReps}`;
+            return `${t("currentRecord")}: ${currentRecord.bestWeight.toLocaleString(locale)} kg × ${currentRecord.bestReps.toLocaleString(locale)}`;
         },
-        [getCurrentExerciseRecord]
+        [getCurrentExerciseRecord, locale, t]
     );
 
     function getCurrentSetValues(set: WorkoutSessionSet) {

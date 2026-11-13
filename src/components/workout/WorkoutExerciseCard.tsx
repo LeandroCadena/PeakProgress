@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { localizedExerciseName } from "../../i18n/exerciseText";
+import { useLanguage } from "../../i18n/LanguageProvider";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { WorkoutSessionExercise, WorkoutSessionSet } from "../../types/workout";
 import ActionMenu from "../common/ActionMenu";
 import AppButton from "../common/AppButton";
@@ -55,9 +57,16 @@ export default function WorkoutExerciseCard({
     currentExerciseRecord,
     effectiveSetRestSeconds,
 }: WorkoutExerciseCardProps) {
+    const { language, t } = useLanguage();
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
-    const exerciseName = exercise.exercise_name_snapshot ?? "Exercise";
+    const exerciseName = localizedExerciseName(
+        exercise.exercise_id,
+        exercise.exercise_name_snapshot || t("exercise"),
+        language
+    );
 
     return (
         <Card style={[styles.card, isDragging && styles.cardDragging]}>
@@ -83,7 +92,7 @@ export default function WorkoutExerciseCard({
                                 items={[
                                     {
                                         key: "delete",
-                                        label: "Delete exercise",
+                                        label: t("deleteExercise"),
                                         icon: "trash-outline",
                                         destructive: true,
                                         onPress: onDeleteExercise,
@@ -110,7 +119,7 @@ export default function WorkoutExerciseCard({
             {!isCollapsed ? (
                 <>
                     <RestTimeEditor
-                        label="Rest between sets"
+                        label={t("restBetweenSets")}
                         value={effectiveSetRestSeconds}
                         editable={!useGlobalTimers}
                         onChange={(value) => updateWorkoutSetRest(exercise.id, value)}
@@ -119,10 +128,10 @@ export default function WorkoutExerciseCard({
                     <View style={styles.divider} />
 
                     <View style={styles.setTableHeader}>
-                        <Text style={styles.setNumberHeader}>Set</Text>
-                        <Text style={styles.setHeaderText}>Weight</Text>
-                        <Text style={styles.setHeaderText}>Reps</Text>
-                        <Text style={styles.doneHeader}>Done</Text>
+                        <Text style={styles.setNumberHeader}>{t("set")}</Text>
+                        <Text style={styles.setHeaderText}>{t("weight")}</Text>
+                        <Text style={styles.setHeaderText}>{t("reps")}</Text>
+                        <Text style={styles.doneHeader}>{t("done")}</Text>
                     </View>
 
                     {savedSets.map((set, index) => {
@@ -152,7 +161,7 @@ export default function WorkoutExerciseCard({
                     })}
 
                     <AppButton
-                        title="+ Add Set"
+                        title={t("addSet")}
                         variant="success"
                         onPress={() => addEmptySet(exercise.id)}
                         style={styles.addSetButton}
@@ -163,7 +172,7 @@ export default function WorkoutExerciseCard({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     card: {
         gap: spacing.md,
     },
@@ -210,4 +219,4 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         gap: spacing.sm,
     },
-});
+}));

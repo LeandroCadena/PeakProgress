@@ -20,7 +20,11 @@ export function getDatabase(): Promise<SQLite.SQLiteDatabase> {
 async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
     const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
 
-    await runMigrations(db);
-
-    return db;
+    try {
+        await runMigrations(db);
+        return db;
+    } catch (error) {
+        await db.closeAsync();
+        throw error;
+    }
 }

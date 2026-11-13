@@ -1,3 +1,9 @@
+import { GUEST_USER_ID } from "../database/guestAccount";
+import {
+    getLocalPreference,
+    updateLocalPreference,
+} from "../database/repositories/localPreferencesRepository";
+
 import { supabase } from "./supabase";
 
 export type UserSettings = {
@@ -11,7 +17,21 @@ export type UserSettings = {
     language: "en" | "es";
 };
 
+const defaults: UserSettings = {
+    sounds_enabled: true,
+    notifications_enabled: true,
+    update_routine_after_workout: true,
+    use_global_timers: false,
+    global_set_rest_seconds: 90,
+    global_exercise_rest_seconds: 120,
+    theme: "dark",
+    language: "en",
+};
+
 export async function getUserSettings(userId: string): Promise<UserSettings> {
+    const local = await getLocalPreference<UserSettings>(userId, "settings");
+    if (local || userId === GUEST_USER_ID) return local ?? defaults;
+
     const { data, error } = await supabase
         .from("user_settings")
         .select("*")
@@ -39,6 +59,13 @@ export async function updateUserSettings(params: {
     userId: string;
     updates: Partial<Omit<UserSettings, "user_id" | "updated_at">>;
 }) {
+    if (params.userId === GUEST_USER_ID || (await getLocalPreference(params.userId, "settings"))) {
+        return updateLocalPreference<UserSettings>(params.userId, "settings", (current) => ({
+            ...(current ?? defaults),
+            ...params.updates,
+        }));
+    }
+
     const { data, error } = await supabase
         .from("user_settings")
         .update({

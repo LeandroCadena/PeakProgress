@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
@@ -10,12 +10,17 @@ import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useProfile } from "../hooks/useProfile";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { updateUserEmail, updateUserPassword } from "../services/authService";
 import { supabase } from "../services/supabase";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 export default function PersonalInformationScreen() {
-    const { user } = useAuth();
+    const { t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
+    const { session } = useAuth();
+    const user = session?.user;
     const { showToast } = useToast();
 
     const [newPassword, setNewPassword] = useState("");
@@ -38,15 +43,15 @@ export default function PersonalInformationScreen() {
                 setCurrentEmail(data.user?.email ?? "");
             }
 
-            refreshUserEmail();
-        }, [])
+            if (user) void refreshUserEmail();
+        }, [user])
     );
 
     async function handleChangePassword() {
         if (!newPassword.trim()) {
             showToast({
                 type: "error",
-                message: "Password is required",
+                message: t("passwordRequired"),
             });
             return;
         }
@@ -54,7 +59,7 @@ export default function PersonalInformationScreen() {
         if (newPassword.length < 6) {
             showToast({
                 type: "error",
-                message: "Password must be at least 6 characters",
+                message: t("passwordTooShort"),
             });
             return;
         }
@@ -62,7 +67,7 @@ export default function PersonalInformationScreen() {
         if (newPassword !== confirmPassword) {
             showToast({
                 type: "error",
-                message: "Passwords do not match",
+                message: t("passwordMismatch"),
             });
             return;
         }
@@ -74,12 +79,12 @@ export default function PersonalInformationScreen() {
             setEditingSection(null);
             showToast({
                 type: "success",
-                message: "Password updated successfully",
+                message: t("passwordUpdated"),
             });
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error updating password",
+                message: error instanceof Error ? error.message : t("updatePasswordError"),
             });
         }
     }
@@ -90,7 +95,7 @@ export default function PersonalInformationScreen() {
         if (!email) {
             showToast({
                 type: "error",
-                message: "Email is required",
+                message: t("emailRequired"),
             });
             return;
         }
@@ -98,7 +103,7 @@ export default function PersonalInformationScreen() {
         if (!email.includes("@")) {
             showToast({
                 type: "error",
-                message: "Please enter a valid email",
+                message: t("invalidEmail"),
             });
             return;
         }
@@ -109,12 +114,12 @@ export default function PersonalInformationScreen() {
             setEditingSection(null);
             showToast({
                 type: "success",
-                message: "Check your new email address to confirm the change.",
+                message: t("confirmEmailChange"),
             });
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error updating email",
+                message: error instanceof Error ? error.message : t("updateEmailError"),
             });
         }
     }
@@ -126,15 +131,13 @@ export default function PersonalInformationScreen() {
 
     return (
         <ScreenContainer scroll>
-            <Text style={styles.title}>Personal Information</Text>
+            <Text style={styles.title}>{t("personalInformation")}</Text>
 
             <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                     <View>
-                        <Text style={sharedStyles.screenTitle}>Name</Text>
-                        <Text style={styles.valueText}>
-                            {fullName?.trim() || "Enter your name"}
-                        </Text>
+                        <Text style={sharedStyles.screenTitle}>{t("name")}</Text>
+                        <Text style={styles.valueText}>{fullName?.trim() || t("enterName")}</Text>
                     </View>
 
                     {editingSection !== "name" ? (
@@ -152,17 +155,17 @@ export default function PersonalInformationScreen() {
                             style={styles.input}
                             value={fullName}
                             onChangeText={setFullName}
-                            placeholder="Enter your name"
+                            placeholder={t("enterName")}
                         />
 
                         <AppButton
-                            title="Save Name"
+                            title={t("saveName")}
                             variant="success"
                             onPress={handleSaveProfile}
                         />
 
                         <AppButton
-                            title="Cancel"
+                            title={t("cancel")}
                             variant="secondary"
                             onPress={() => setEditingSection(null)}
                         />
@@ -170,101 +173,105 @@ export default function PersonalInformationScreen() {
                 ) : null}
             </Card>
 
-            <Card style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <View>
-                        <Text style={sharedStyles.screenTitle}>Email</Text>
-                        <Text style={styles.valueText}>{currentEmail}</Text>
-                    </View>
+            {session && (
+                <>
+                    <Card style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <View>
+                                <Text style={sharedStyles.screenTitle}>{t("email")}</Text>
+                                <Text style={styles.valueText}>{currentEmail}</Text>
+                            </View>
 
-                    {editingSection !== "email" ? (
-                        <IconButton
-                            icon="✎"
-                            variant="primary"
-                            onPress={() => setEditingSection("email")}
-                        />
-                    ) : null}
-                </View>
+                            {editingSection !== "email" ? (
+                                <IconButton
+                                    icon="✎"
+                                    variant="primary"
+                                    onPress={() => setEditingSection("email")}
+                                />
+                            ) : null}
+                        </View>
 
-                {editingSection === "email" ? (
-                    <>
-                        <AppInput
-                            style={styles.input}
-                            value={newEmail}
-                            onChangeText={setNewEmail}
-                            placeholder="Enter new email"
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                        />
+                        {editingSection === "email" ? (
+                            <>
+                                <AppInput
+                                    style={styles.input}
+                                    value={newEmail}
+                                    onChangeText={setNewEmail}
+                                    placeholder={t("enterNewEmail")}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
 
-                        <AppButton
-                            title="Update Email"
-                            variant="success"
-                            onPress={handleChangeEmail}
-                        />
+                                <AppButton
+                                    title={t("updateEmail")}
+                                    variant="success"
+                                    onPress={handleChangeEmail}
+                                />
 
-                        <AppButton
-                            title="Cancel"
-                            variant="secondary"
-                            onPress={() => setEditingSection(null)}
-                        />
-                    </>
-                ) : null}
-            </Card>
+                                <AppButton
+                                    title={t("cancel")}
+                                    variant="secondary"
+                                    onPress={() => setEditingSection(null)}
+                                />
+                            </>
+                        ) : null}
+                    </Card>
 
-            <Card style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <View>
-                        <Text style={sharedStyles.screenTitle}>Password</Text>
-                        <Text style={styles.valueText}>••••••••</Text>
-                    </View>
+                    <Card style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <View>
+                                <Text style={sharedStyles.screenTitle}>{t("password")}</Text>
+                                <Text style={styles.valueText}>••••••••</Text>
+                            </View>
 
-                    {editingSection !== "password" ? (
-                        <IconButton
-                            icon="✎"
-                            variant="primary"
-                            onPress={() => setEditingSection("password")}
-                        />
-                    ) : null}
-                </View>
+                            {editingSection !== "password" ? (
+                                <IconButton
+                                    icon="✎"
+                                    variant="primary"
+                                    onPress={() => setEditingSection("password")}
+                                />
+                            ) : null}
+                        </View>
 
-                {editingSection === "password" ? (
-                    <>
-                        <AppInput
-                            style={styles.input}
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                            placeholder="Enter new password"
-                            secureTextEntry
-                        />
+                        {editingSection === "password" ? (
+                            <>
+                                <AppInput
+                                    style={styles.input}
+                                    value={newPassword}
+                                    onChangeText={setNewPassword}
+                                    placeholder={t("enterNewPassword")}
+                                    secureTextEntry
+                                />
 
-                        <AppInput
-                            style={styles.input}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            placeholder="Confirm new password"
-                            secureTextEntry
-                        />
+                                <AppInput
+                                    style={styles.input}
+                                    value={confirmPassword}
+                                    onChangeText={setConfirmPassword}
+                                    placeholder={t("confirmNewPassword")}
+                                    secureTextEntry
+                                />
 
-                        <AppButton
-                            title="Update Password"
-                            variant="success"
-                            onPress={handleChangePassword}
-                        />
+                                <AppButton
+                                    title={t("updatePassword")}
+                                    variant="success"
+                                    onPress={handleChangePassword}
+                                />
 
-                        <AppButton
-                            title="Cancel"
-                            variant="secondary"
-                            onPress={() => setEditingSection(null)}
-                        />
-                    </>
-                ) : null}
-            </Card>
+                                <AppButton
+                                    title={t("cancel")}
+                                    variant="secondary"
+                                    onPress={() => setEditingSection(null)}
+                                />
+                            </>
+                        ) : null}
+                    </Card>
+                </>
+            )}
         </ScreenContainer>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     title: {
         color: colors.text,
         fontSize: typography.title,
@@ -287,4 +294,4 @@ const styles = StyleSheet.create({
         marginTop: spacing.md,
         marginBottom: spacing.md,
     },
-});
+}));

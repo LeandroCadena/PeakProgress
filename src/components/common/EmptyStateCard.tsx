@@ -1,6 +1,6 @@
-import { Text, StyleSheet } from "react-native";
+import { Text } from "react-native";
 
-import { colors, sharedStyles, spacing } from "../../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 import Card from "./Card";
 
@@ -10,6 +10,8 @@ type Props = {
 };
 
 export default function EmptyStateCard({ title, message }: Props) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Card style={styles.card}>
             <Text style={sharedStyles.screenTitle}>{title}</Text>
@@ -19,7 +21,7 @@ export default function EmptyStateCard({ title, message }: Props) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     card: {
         marginVertical: spacing.lg,
         alignItems: "center",
@@ -30,4 +32,4 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
         lineHeight: 20,
     },
-});
+}));

@@ -1,13 +1,15 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text } from "react-native";
+import { FlatList, Pressable, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getCompletedWorkoutSessions } from "../services/historyService";
-import { colors, sharedStyles, spacing } from "../theme";
+import { spacing, useAppTheme, createThemedStyles } from "../theme";
 
 type WorkoutSession = {
     routine_name_snapshot: string;
@@ -16,39 +18,43 @@ type WorkoutSession = {
     completed_at: string | null;
     total_volume: number;
     total_sets: number;
-    routines: {
+    routines?: {
         name: string;
     }[];
 };
 
 export default function HistoryScreen({ navigation }: any) {
+    const { locale, t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
+    const { user } = useAuth();
     const { showToast } = useToast();
     const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
-    async function fetchSessions() {
+    const fetchSessions = useCallback(async () => {
         try {
-            const data = await getCompletedWorkoutSessions();
+            const data = await getCompletedWorkoutSessions(user.id);
             setSessions(data as WorkoutSession[]);
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to load workout history.",
+                message: error instanceof Error ? error.message : t("workoutHistoryError"),
             });
         }
-    }
+    }, [showToast, t, user.id]);
 
     useFocusEffect(
         useCallback(() => {
             fetchSessions();
-        }, [])
+        }, [fetchSessions])
     );
 
     function formatDate(value: string) {
-        return new Date(value).toLocaleDateString();
+        return new Date(value).toLocaleDateString(locale);
     }
 
     function getDuration(startedAt: string, completedAt: string | null) {
-        if (!completedAt) return "Not completed";
+        if (!completedAt) return t("notCompleted");
 
         const start = new Date(startedAt).getTime();
         const end = new Date(completedAt).getTime();
@@ -59,7 +65,7 @@ export default function HistoryScreen({ navigation }: any) {
 
     return (
         <ScreenContainer>
-            <Text style={sharedStyles.screenTitle}>Workout History</Text>
+            <Text style={sharedStyles.screenTitle}>{t("workoutHistory")}</Text>
 
             <FlatList
                 data={sessions}
@@ -67,13 +73,13 @@ export default function HistoryScreen({ navigation }: any) {
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
                     <EmptyStateCard
-                        title="No completed workouts yet"
-                        message="Finish your first workout to see it here."
+                        title={t("noCompletedWorkouts")}
+                        message={t("firstWorkoutHistory")}
                     />
                 }
                 renderItem={({ item }) => {
                     const routineName =
-                        item.routine_name_snapshot ?? item.routines?.[0]?.name ?? "Routine";
+                        item.routine_name_snapshot ?? item.routines?.[0]?.name ?? t("routine");
 
                     return (
                         <Pressable
@@ -87,12 +93,13 @@ export default function HistoryScreen({ navigation }: any) {
                             <Card style={styles.card}>
                                 <Text style={sharedStyles.cardTitle}>{routineName}</Text>
                                 <Text style={styles.cardText}>
-                                    Sets: {item.total_sets ?? 0} · Volume:{" "}
-                                    {Number(item.total_volume ?? 0)} kg
+                                    {t("sets")}: {item.total_sets ?? 0} · {t("volume")}:{" "}
+                                    {Number(item.total_volume ?? 0).toLocaleString(locale)} kg
                                 </Text>
                                 <Text style={styles.cardText}>{formatDate(item.started_at)}</Text>
                                 <Text style={styles.cardText}>
-                                    Duration: {getDuration(item.started_at, item.completed_at)}
+                                    {t("duration")}:{" "}
+                                    {getDuration(item.started_at, item.completed_at)}
                                 </Text>
                             </Card>
                         </Pressable>
@@ -103,7 +110,7 @@ export default function HistoryScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     list: {
         gap: spacing.md,
         paddingBottom: spacing.xxl,
@@ -114,4 +121,4 @@ const styles = StyleSheet.create({
     cardText: {
         color: colors.textSecondary,
     },
-});
+}));

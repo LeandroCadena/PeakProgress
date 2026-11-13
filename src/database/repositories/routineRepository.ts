@@ -12,6 +12,13 @@ export type SaveLocalRoutineParams = {
     expectedLocalRemoteVersion?: number | null;
 };
 
+export class RoutineVersionConflictError extends Error {
+    constructor(readonly reason: "changed" | "deleted" | "syncConflict") {
+        super("The routine could not be saved because it changed while you were editing.");
+        this.name = "RoutineVersionConflictError";
+    }
+}
+
 export async function saveLocalRoutine({
     userId,
     snapshot,
@@ -59,11 +66,16 @@ export async function saveLocalRoutine({
             throw new Error("This routine belongs to another local user.");
         }
 
-        if (
-            expectedLocalRemoteVersion !== undefined &&
-            (!existingRoutine || existingRoutine.remote_version !== expectedLocalRemoteVersion)
-        ) {
-            throw new Error("Routine changed since it was loaded. Reload it before saving.");
+        if (expectedLocalRemoteVersion !== undefined) {
+            if (!existingRoutine || existingRoutine.deleted_at !== null) {
+                throw new RoutineVersionConflictError("deleted");
+            }
+            if (existingRoutine.sync_status === "conflict") {
+                throw new RoutineVersionConflictError("syncConflict");
+            }
+            if (existingRoutine.remote_version !== expectedLocalRemoteVersion) {
+                throw new RoutineVersionConflictError("changed");
+            }
         }
 
         if (existingRoutine?.deleted_at !== null && existingRoutine?.deleted_at !== undefined) {
@@ -452,6 +464,7 @@ type LocalRoutineRow = {
     id: string;
     user_id: string;
     name: string;
+    remote_version: number | null;
 };
 
 type LocalRoutineExerciseRow = {
@@ -474,20 +487,41 @@ type LocalRoutineSetRow = {
     created_at: string;
 };
 
-export async function getLocalRoutine(params: {
-    userId: string;
-    routineId: string;
-}): Promise<RoutineEditorSnapshot | null> {
-    const { userId, routineId } = params;
+type LocalRoutineKey = { userId: string; routineId: string };
 
+type VersionedLocalRoutine = {
+    snapshot: RoutineEditorSnapshot;
+    remoteVersion: number | null;
+};
+
+export async function getLocalRoutine(
+    params: LocalRoutineKey
+): Promise<RoutineEditorSnapshot | null> {
+    const db = await getDatabase();
+    return (await readLocalRoutine(db, params))?.snapshot ?? null;
+}
+
+export async function getVersionedLocalRoutine(
+    params: LocalRoutineKey
+): Promise<VersionedLocalRoutine | null> {
+    const db = await getDatabase();
+    let routine: VersionedLocalRoutine | null = null;
+    await db.withExclusiveTransactionAsync(async (tx) => {
+        routine = await readLocalRoutine(tx, params);
+    });
+    return routine;
+}
+
+async function readLocalRoutine(
+    db: Pick<Awaited<ReturnType<typeof getDatabase>>, "getFirstAsync" | "getAllAsync">,
+    { userId, routineId }: LocalRoutineKey
+): Promise<VersionedLocalRoutine | null> {
     if (!userId.trim() || !routineId.trim()) {
         throw new Error("User ID and routine ID are required.");
     }
 
-    const db = await getDatabase();
-
     const routine = await db.getFirstAsync<LocalRoutineRow>(
-        `SELECT id, user_id, name
+        `SELECT id, user_id, name, remote_version
          FROM local_routines
          WHERE id = ?
            AND user_id = ?
@@ -558,10 +592,13 @@ export async function getLocalRoutine(params: {
     }
 
     return {
-        routineId: routine.id,
-        name: routine.name,
-        exercises,
-        setsByExerciseId,
+        snapshot: {
+            routineId: routine.id,
+            name: routine.name,
+            exercises,
+            setsByExerciseId,
+        },
+        remoteVersion: routine.remote_version,
     };
 }
 

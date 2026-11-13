@@ -2,10 +2,12 @@ import {
     applyCatalogChanges,
     getCatalogSyncVersion,
     getLocalExercisesByFilter,
+    getLocalExerciseDetail,
     getLocalMuscleRegions,
 } from "../../src/database/catalogRepository";
 import { getDatabase } from "../../src/database/database";
 import { runMigrations } from "../../src/database/migrations";
+import { localizedExerciseText, matchesExerciseName } from "../../src/i18n/exerciseText";
 
 import { createTestDatabase } from "./helpers/nodeSqliteAdapter";
 
@@ -286,6 +288,42 @@ describe("Catalog repository SQLite integration", () => {
         );
 
         expect(stateAfter?.last_version).toBe(stateBefore?.last_version);
+    });
+
+    it("stores optional translations and searches both names offline", async () => {
+        const id = "translated-exercise";
+        await applyCatalogChanges([
+            {
+                version: 1,
+                entity_type: "exercises",
+                entity_id: id,
+                operation: "upsert",
+                payload: {
+                    id,
+                    name: "Barbell Row",
+                    name_es: "Remo con barra",
+                    description: "Back exercise",
+                    instructions: "Pull the bar toward your torso.",
+                    instructions_es: "Llevá la barra hacia el torso.",
+                    is_active: true,
+                },
+            },
+        ]);
+
+        const [listed] = await getLocalExercisesByFilter({ filterMode: "muscle", selectedIds: [] });
+        expect(localizedExerciseText(listed, "name", "en")).toBe("Barbell Row");
+        expect(localizedExerciseText(listed, "name", "es")).toBe("Remo con barra");
+        expect(matchesExerciseName(listed, " rémo ", "es")).toBe(true);
+        expect(matchesExerciseName(listed, "barbell", "es")).toBe(true);
+        expect(matchesExerciseName(listed, "remo", "en")).toBe(false);
+
+        const detail = await getLocalExerciseDetail(id);
+        expect(detail).not.toBeNull();
+        if (!detail) throw new Error("Expected a downloaded exercise.");
+        expect(localizedExerciseText(detail, "description", "es")).toBe("Back exercise");
+        expect(localizedExerciseText(detail, "instructions", "es")).toBe(
+            "Llevá la barra hacia el torso."
+        );
     });
 
     it("updates and deletes catalog exercises correctly", async () => {

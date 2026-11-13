@@ -1,17 +1,22 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text } from "react-native";
+import { FlatList, Pressable, Text } from "react-native";
 
 import Card from "../components/common/Card";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { localizedExerciseName } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { getExerciseProgress } from "../services/progressService";
-import { colors, sharedStyles, spacing, typography } from "../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 import { ExerciseProgress } from "../types/progress";
 
 export default function ProgressScreen({ navigation }: any) {
+    const { language, locale, t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -26,10 +31,10 @@ export default function ProgressScreen({ navigation }: any) {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error fetching progress",
+                message: error instanceof Error ? error.message : t("progressLoadError"),
             });
         }
-    }, [user, showToast]);
+    }, [user, showToast, t]);
 
     useFocusEffect(
         useCallback(() => {
@@ -39,20 +44,17 @@ export default function ProgressScreen({ navigation }: any) {
 
     return (
         <ScreenContainer style={styles.container}>
-            <Text style={sharedStyles.screenTitle}>Progress</Text>
-            <Text style={sharedStyles.screenSubtitle}>Track your personal records.</Text>
+            <Text style={sharedStyles.screenTitle}>{t("progress")}</Text>
+            <Text style={sharedStyles.screenSubtitle}>{t("recordsDescription")}</Text>
 
-            <Text style={sharedStyles.sectionTitle}>Personal Records</Text>
+            <Text style={sharedStyles.sectionTitle}>{t("personalRecords")}</Text>
 
             <FlatList
                 data={records}
                 keyExtractor={(item, index) => `${item.exerciseId}-${index}`}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={
-                    <EmptyStateCard
-                        title="No records yet"
-                        message="Complete a workout to start tracking personal records."
-                    />
+                    <EmptyStateCard title={t("noRecords")} message={t("firstRecord")} />
                 }
                 renderItem={({ item }) => (
                     <Pressable
@@ -64,13 +66,22 @@ export default function ProgressScreen({ navigation }: any) {
                         }
                     >
                         <Card>
-                            <Text style={sharedStyles.screenTitle}>{item.exerciseName}</Text>
-
-                            <Text style={styles.prValue}>
-                                {item.bestWeight} kg × {item.bestReps} reps
+                            <Text style={sharedStyles.screenTitle}>
+                                {localizedExerciseName(
+                                    item.exerciseId,
+                                    item.exerciseName,
+                                    language
+                                )}
                             </Text>
 
-                            <Text style={styles.cardText}>Best Volume: {item.bestVolume} kg</Text>
+                            <Text style={styles.prValue}>
+                                {item.bestWeight.toLocaleString(locale)} kg ×{" "}
+                                {item.bestReps.toLocaleString(locale)} {t("reps").toLowerCase()}
+                            </Text>
+
+                            <Text style={styles.cardText}>
+                                {t("bestVolume")}: {item.bestVolume.toLocaleString(locale)} kg
+                            </Text>
                         </Card>
                     </Pressable>
                 )}
@@ -79,7 +90,7 @@ export default function ProgressScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         paddingBottom: 0,
     },
@@ -96,4 +107,4 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         marginTop: spacing.xs,
     },
-});
+}));

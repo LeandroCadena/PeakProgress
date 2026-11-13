@@ -1,6 +1,8 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../../theme";
+import { localizedExerciseText, localizedCatalogLabel } from "../../i18n/exerciseText";
+import { useLanguage } from "../../i18n/LanguageProvider";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { Exercise } from "../../types/exercise";
 import AppButton from "../common/AppButton";
 import Card from "../common/Card";
@@ -26,34 +28,44 @@ export default function ExerciseListCard({
     selected = false,
     onSelect,
 }: Props) {
+    const { language, t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const card = (
-        <Card style={[alreadyAdded && styles.cardAdded, selectable && selected && styles.cardSelected]}>
+        <Card
+            style={[
+                alreadyAdded && styles.cardAdded,
+                selectable && selected && styles.cardSelected,
+            ]}
+        >
             <View style={styles.header}>
                 {exercise.image_url ? (
                     <Image source={{ uri: exercise.image_url }} style={styles.image} />
                 ) : (
                     <View style={styles.imagePlaceholder}>
-                        <Text style={styles.placeholderText}>No image</Text>
+                        <Text style={styles.placeholderText}>{t("noExerciseImage")}</Text>
                     </View>
                 )}
 
                 <View style={styles.info}>
-                    <Text style={sharedStyles.screenTitle}>{exercise.name}</Text>
+                    <Text style={sharedStyles.screenTitle}>
+                        {localizedExerciseText(exercise, "name", language)}
+                    </Text>
 
                     <Text style={styles.text}>
-                        {exercise.equipment ?? "No equipment"} ·{" "}
-                        {exercise.difficulty ?? "No difficulty"}
+                        {localizedCatalogLabel(exercise.equipment, language) ?? t("noEquipment")} ·{" "}
+                        {localizedCatalogLabel(exercise.difficulty, language) ?? t("noDifficulty")}
                     </Text>
 
                     {alreadyAdded ? (
-                        <Text style={styles.alreadyAddedText}>Already added</Text>
+                        <Text style={styles.alreadyAddedText}>{t("alreadyAdded")}</Text>
                     ) : null}
                 </View>
             </View>
 
             <View style={styles.actions}>
                 <AppButton
-                    title="More Info"
+                    title={t("moreInfo")}
                     variant="secondary"
                     onPress={onMoreInfo}
                     style={styles.actionButton}
@@ -61,14 +73,16 @@ export default function ExerciseListCard({
 
                 {selectable ? (
                     <View style={styles.selectionIndicator}>
-                        <Text style={styles.selectionText}>{selected ? "✓ Selected" : "Select"}</Text>
+                        <Text style={styles.selectionText}>
+                            {selected ? t("selected") : t("select")}
+                        </Text>
                     </View>
                 ) : showAddButton ? (
                     <AppButton
-                        title={alreadyAdded ? "Added" : "Add"}
+                        title={alreadyAdded ? t("added") : t("add")}
                         variant="success"
                         disabled={alreadyAdded}
-                        onPress={onAdd ?? (() => { })}
+                        onPress={onAdd ?? (() => {})}
                         style={styles.actionButton}
                     />
                 ) : null}
@@ -79,13 +93,17 @@ export default function ExerciseListCard({
     if (!selectable) return card;
 
     return (
-        <Pressable onPress={onSelect} accessibilityRole="checkbox" accessibilityState={{ checked: selected }}>
+        <Pressable
+            onPress={onSelect}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: selected }}
+        >
             {card}
         </Pressable>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     selectionIndicator: {
         flex: 1,
         alignItems: "center",
@@ -126,6 +144,8 @@ const styles = StyleSheet.create({
         fontSize: typography.small,
     },
     info: {
+        flex: 1,
+        minWidth: 0,
         justifyContent: "flex-start",
     },
     text: {
@@ -144,4 +164,4 @@ const styles = StyleSheet.create({
     actionButton: {
         flex: 1,
     },
-});
+}));

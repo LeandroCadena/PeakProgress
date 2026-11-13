@@ -4,8 +4,10 @@ import {
     applyRemoteRoutineDeletion,
     deleteLocalRoutine,
     getLocalRoutine,
+    getVersionedLocalRoutine,
     hydrateLocalRoutine,
     saveLocalRoutine,
+    RoutineVersionConflictError,
 } from "../../src/database/repositories/routineRepository";
 import type { RoutineEditorSnapshot } from "../../src/store/routineEditorStore";
 import { createTestDatabase } from "../catalog/helpers/nodeSqliteAdapter";
@@ -879,7 +881,13 @@ describe("Routine save regression", () => {
                 ownerQueueBefore
             );
 
-            // La rutina failedSnapshot está sincronizada con versión 1.
+            const editorBase = await getVersionedLocalRoutine({
+                userId,
+                routineId: failedRoutineId,
+            });
+            expect(editorBase).toEqual({ snapshot: failedSnapshot, remoteVersion: 1 });
+            if (!editorBase) throw new Error("Expected an existing editor snapshot.");
+
             const refreshedSnapshot: RoutineEditorSnapshot = {
                 ...failedSnapshot,
                 name: "Updated on another device",
@@ -962,9 +970,9 @@ describe("Routine save regression", () => {
                     userId,
                     snapshot: staleDraft,
                     syncOperationId: "stale-editor-save",
-                    expectedLocalRemoteVersion: 1,
+                    expectedLocalRemoteVersion: editorBase.remoteVersion,
                 })
-            ).rejects.toThrow("Routine changed since it was loaded. Reload it before saving.");
+            ).rejects.toThrow(RoutineVersionConflictError);
 
             // Debe conservarse la versión 2 descargada.
             expect(
@@ -1032,6 +1040,15 @@ describe("Routine save regression", () => {
                 remote_state: "deleted",
                 sync_status: "synced",
             });
+
+            await expect(
+                saveLocalRoutine({
+                    userId,
+                    snapshot: staleDraft,
+                    syncOperationId: "deleted-editor-save",
+                    expectedLocalRemoteVersion: editorBase.remoteVersion,
+                })
+            ).rejects.toMatchObject({ name: "RoutineVersionConflictError", reason: "deleted" });
 
             // No debe generar otra operación de subida.
             expect(await db.getAllAsync("SELECT * FROM sync_operations ORDER BY id")).toEqual(

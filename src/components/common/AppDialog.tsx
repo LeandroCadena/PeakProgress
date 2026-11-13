@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, componentStyles, sharedStyles, spacing } from "../../theme";
+import { componentStyles, spacing, useAppTheme, createThemedStyles } from "../../theme";
 
 import AppButton from "./AppButton";
 
@@ -14,6 +14,7 @@ type Props = {
     variant?: "primary" | "danger";
     errorMessage?: string | null;
     onConfirm: () => void | Promise<void>;
+    secondaryAction?: { label: string; onPress: () => void | Promise<void> };
     onCancel: () => void;
 };
 
@@ -26,19 +27,22 @@ export default function AppDialog({
     variant = "danger",
     errorMessage = null,
     onConfirm,
+    secondaryAction,
     onCancel,
 }: Props) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const [isProcessing, setIsProcessing] = useState(false);
     const processingRef = useRef(false);
 
-    async function handleConfirm() {
+    async function runAction(action: () => void | Promise<void>) {
         if (processingRef.current) return;
 
         processingRef.current = true;
         setIsProcessing(true);
 
         try {
-            await onConfirm();
+            await action();
         } catch (error) {
             console.error("Dialog confirmation failed:", error);
         } finally {
@@ -54,12 +58,7 @@ export default function AppDialog({
     }
 
     return (
-        <Modal
-            visible={visible}
-            transparent
-            animationType="fade"
-            onRequestClose={handleCancel}
-        >
+        <Modal visible={visible} transparent animationType="fade" onRequestClose={handleCancel}>
             <View style={styles.overlay}>
                 <Pressable
                     style={StyleSheet.absoluteFill}
@@ -72,9 +71,7 @@ export default function AppDialog({
 
                     <Text style={styles.message}>{message}</Text>
 
-                    {errorMessage ? (
-                        <Text style={styles.errorMessage}>{errorMessage}</Text>
-                    ) : null}
+                    {errorMessage ? <Text style={styles.errorMessage}>{errorMessage}</Text> : null}
 
                     <View style={styles.actions}>
                         <AppButton
@@ -88,18 +85,27 @@ export default function AppDialog({
                         <AppButton
                             title={confirmLabel}
                             variant={variant}
-                            onPress={handleConfirm}
+                            onPress={() => runAction(onConfirm)}
                             disabled={isProcessing}
                             style={styles.actionButton}
                         />
                     </View>
+                    {secondaryAction ? (
+                        <AppButton
+                            title={secondaryAction.label}
+                            variant="secondary"
+                            onPress={() => runAction(secondaryAction.onPress)}
+                            disabled={isProcessing}
+                            style={styles.secondaryAction}
+                        />
+                    ) : null}
                 </View>
             </View>
         </Modal>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     overlay: {
         flex: 1,
         backgroundColor: "rgba(0,0,0,0.65)",
@@ -127,7 +133,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         gap: spacing.sm,
     },
+    secondaryAction: { marginTop: spacing.sm },
     actionButton: {
         flex: 1,
     },
-});
+}));

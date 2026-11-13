@@ -6,6 +6,7 @@ export const lightTheme = {
         cardBorder: "#E5E7EB",
 
         primary: "#2563EB",
+        onAccent: "#FFFFFF",
         primaryPressed: "#1D4ED8",
 
         success: "#16A34A",

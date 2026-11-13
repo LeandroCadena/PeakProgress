@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 
-import { colors, spacing, typography } from "../../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { sanitizeIntegerInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
 
@@ -12,6 +12,8 @@ type Props = {
 };
 
 export default function RestTimeEditor({ label, value, editable, onChange }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <View style={styles.container}>
             <Text style={styles.label}>{label}</Text>
@@ -33,7 +35,7 @@ export default function RestTimeEditor({ label, value, editable, onChange }: Pro
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     container: {
         flexDirection: "row",
         alignItems: "center",
@@ -53,4 +55,4 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontSize: typography.caption,
     },
-});
+}));

@@ -1,5 +1,5 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 
 import AppButton from "../components/common/AppButton";
 import AppInput from "../components/common/AppInput";
@@ -7,7 +7,8 @@ import EmptyStateCard from "../components/common/EmptyStateCard";
 import ScreenContainer from "../components/common/ScreenContainer";
 import ExerciseListCard from "../components/exercise/ExerciseListCard";
 import { useExercisePicker } from "../hooks/useExercisePicker";
-import { colors, componentStyles, sharedStyles, spacing, typography } from "../theme";
+import { useLanguage } from "../i18n/LanguageProvider";
+import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../theme";
 
 type RouteParams = {
     ExercisePicker: {
@@ -20,6 +21,9 @@ type RouteParams = {
 };
 
 export default function ExercisePickerScreen({ navigation }: any) {
+    const { t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     const route = useRoute<RouteProp<RouteParams, "ExercisePicker">>();
     const { mode, routineId, sessionId, currentCount, currentExerciseIds } = route.params;
 
@@ -47,12 +51,12 @@ export default function ExercisePickerScreen({ navigation }: any) {
 
     return (
         <ScreenContainer contentStyle={styles.screenContent}>
-            <Text style={sharedStyles.screenTitle}>Add Exercise</Text>
+            <Text style={sharedStyles.screenTitle}>{t("addExerciseHeading")}</Text>
 
             <View style={styles.searchRow}>
                 <AppInput
                     style={styles.searchInput}
-                    placeholder="Search exercise"
+                    placeholder={t("searchExercise")}
                     value={search}
                     onChangeText={setSearch}
                 />
@@ -62,10 +66,9 @@ export default function ExercisePickerScreen({ navigation }: any) {
                     onPress={() => changeFilterMode(filterMode === "muscle" ? "region" : "muscle")}
                 >
                     <Text style={styles.filterModeText}>
-                        {filterMode === "muscle" ? "Muscle" : "Region"}
+                        {filterMode === "muscle" ? t("muscle") : t("region")}
                     </Text>
                 </Pressable>
-
             </View>
 
             <View style={styles.filtersWrapper}>
@@ -97,7 +100,7 @@ export default function ExercisePickerScreen({ navigation }: any) {
                 />
             </View>
 
-            <Text style={sharedStyles.sectionTitle}>Exercises</Text>
+            <Text style={sharedStyles.sectionTitle}>{t("exercises")}</Text>
 
             <FlatList
                 style={styles.exerciseFlatList}
@@ -111,31 +114,44 @@ export default function ExercisePickerScreen({ navigation }: any) {
                         selectable
                         selected={selectedExerciseIds.includes(item.id)}
                         onSelect={() => toggleExerciseSelection(item.id)}
-                        onMoreInfo={() => navigation.navigate("ExerciseDetail", { exerciseId: item.id })}
+                        onMoreInfo={() =>
+                            navigation.navigate("ExerciseDetail", { exerciseId: item.id })
+                        }
                     />
                 )}
                 ListEmptyComponent={
                     <EmptyStateCard
-                        title="No exercises found"
-                        message="Try changing your search or filters."
+                        title={t("noExercisesFound")}
+                        message={t("changeExerciseSearch")}
                     />
                 }
             />
 
             <View style={styles.bottomActions}>
                 <AppButton
-                    title={`Add ${selectedExerciseIds.length} ${selectedExerciseIds.length === 1 ? "Exercise" : "Exercises"}`}
+                    title={
+                        selectedExerciseIds.length === 1
+                            ? t("addOneExercise")
+                            : t("addManyExercises").replace(
+                                  "{count}",
+                                  String(selectedExerciseIds.length)
+                              )
+                    }
                     variant="success"
                     disabled={selectedExerciseIds.length === 0 || isAdding}
                     onPress={handleAddSelectedExercises}
                 />
-                <AppButton title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
+                <AppButton
+                    title={t("cancel")}
+                    variant="secondary"
+                    onPress={() => navigation.goBack()}
+                />
             </View>
         </ScreenContainer>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     screenContent: {
         paddingBottom: spacing.lg,
     },
@@ -200,4 +216,4 @@ const styles = StyleSheet.create({
         gap: spacing.md,
         paddingBottom: spacing.xxl,
     },
-});
+}));

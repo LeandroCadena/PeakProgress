@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
+import { Pressable, Text, ViewStyle } from "react-native";
 
-import { colors, componentStyles, typography } from "../../theme";
+import { componentStyles, typography, useAppTheme, createThemedStyles } from "../../theme";
 
 type Variant = "primary" | "secondary" | "danger" | "success";
 
@@ -19,6 +19,8 @@ export default function IconButton({
     variant = "secondary",
     style,
 }: Props) {
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Pressable
             style={[styles.button, styles[variant], disabled && styles.disabled, style]}
@@ -30,7 +32,7 @@ export default function IconButton({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     button: {
         width: componentStyles.iconButtonSize,
         height: componentStyles.iconButtonSize,
@@ -58,4 +60,4 @@ const styles = StyleSheet.create({
         fontSize: typography.body,
         fontWeight: "800",
     },
-});
+}));

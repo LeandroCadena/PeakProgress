@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="{{ if eq .Data.language "en" }}en{{ else }}es{{ end }}">
+<body style="margin:0;padding:24px;background:#f5f5f5;font-family:Arial,sans-serif;color:#171717">
+  <div style="max-width:480px;margin:auto;padding:24px;background:#fff;border-radius:12px">
+    <p style="font-weight:bold;color:#9a3412">Gym Time</p>
+    {{ if eq .Data.language "en" }}
+    <h1 style="font-size:24px">Confirm your email</h1>
+    <p>Welcome to Gym Time. Confirm your email to activate your account.</p>
+    <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 18px;background:#c2410c;color:#fff;border-radius:8px;font-weight:bold">Confirm my email</a></p>
+    <p>Open the link on the device where you registered, or enter this code in Gym Time: <strong>{{ .Token }}</strong>. If you didn’t create a Gym Time account, you can ignore this email.</p>
+    {{ else }}
+    <h1 style="font-size:24px">Confirmá tu correo</h1>
+    <p>Te damos la bienvenida a Gym Time. Confirmá tu correo para activar tu cuenta.</p>
+    <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 18px;background:#c2410c;color:#fff;border-radius:8px;font-weight:bold">Confirmar mi correo</a></p>
+    <p>Abrí el enlace en el dispositivo donde te registraste o ingresá este código en Gym Time: <strong>{{ .Token }}</strong>. Si no creaste una cuenta en Gym Time, podés ignorar este correo.</p>
+    {{ end }}
+  </div>
+</body>
+</html>

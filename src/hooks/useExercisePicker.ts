@@ -2,13 +2,9 @@ import * as Crypto from "expo-crypto";
 import { useEffect, useRef, useState } from "react";
 
 import { useToast } from "../context/ToastContext";
-import {
-    CatalogNotDownloadedError,
-    getCatalogAvailability,
-    getExercisesByFilter,
-    getMuscleRegions,
-    getMuscles,
-} from "../services/exerciseService";
+import { matchesExerciseName, localizedCatalogLabel } from "../i18n/exerciseText";
+import { useLanguage } from "../i18n/LanguageProvider";
+import { getExercisesByFilter, getMuscleRegions, getMuscles } from "../services/exerciseService";
 import { useRoutineEditorStore } from "../store/routineEditorStore";
 import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { Exercise, FilterMode, Muscle, MuscleRegion } from "../types/exercise";
@@ -34,6 +30,7 @@ export function useExercisePicker({
     mode,
     sessionId,
 }: Params) {
+    const { language, t } = useLanguage();
     const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [muscles, setMuscles] = useState<Muscle[]>([]);
@@ -47,7 +44,6 @@ export function useExercisePicker({
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const filterOptions = filterMode === "muscle" ? muscles : regions;
     const catalogRevision = useCatalogRevision();
-    const [catalogPending, setCatalogPending] = useState(true);
     const [exercisesLoading, setExercisesLoading] = useState(true);
     const [catalogError, setCatalogError] = useState<string | null>(null);
 
@@ -59,17 +55,6 @@ export function useExercisePicker({
 
         async function loadFilters() {
             try {
-                const availability = await getCatalogAvailability();
-
-                if (cancelled) return;
-
-                if (availability === "pending") {
-                    setCatalogPending(true);
-                    setMuscles([]);
-                    setRegions([]);
-                    return;
-                }
-
                 const [musclesData, regionsData] = await Promise.all([
                     getMuscles(),
                     getMuscleRegions(),
@@ -79,17 +64,10 @@ export function useExercisePicker({
 
                 setMuscles(musclesData);
                 setRegions(regionsData);
-                setCatalogPending(false);
             } catch (error: unknown) {
                 if (cancelled) return;
 
-                if (error instanceof CatalogNotDownloadedError) {
-                    setCatalogPending(true);
-                    return;
-                }
-
-                const message =
-                    error instanceof Error ? error.message : "Unable to load exercise filters.";
+                const message = error instanceof Error ? error.message : t("filtersLoadError");
 
                 setCatalogError(message);
                 showToast({
@@ -104,7 +82,7 @@ export function useExercisePicker({
         return () => {
             cancelled = true;
         };
-    }, [catalogRevision, showToast]);
+    }, [catalogRevision, showToast, t]);
 
     useEffect(() => {
         let cancelled = false;
@@ -121,22 +99,13 @@ export function useExercisePicker({
 
                 if (cancelled) return;
 
-                exerciseCache.current = new Map(data.map((exercise) => [exercise.id, exercise]));
+                for (const exercise of data) exerciseCache.current.set(exercise.id, exercise);
 
                 setExercises(data);
-                setCatalogPending(false);
             } catch (error: unknown) {
                 if (cancelled) return;
 
-                if (error instanceof CatalogNotDownloadedError) {
-                    setCatalogPending(true);
-                    setExercises([]);
-                    exerciseCache.current.clear();
-                    return;
-                }
-
-                const message =
-                    error instanceof Error ? error.message : "Unable to load exercises.";
+                const message = error instanceof Error ? error.message : t("exercisesLoadError");
 
                 setCatalogError(message);
                 showToast({
@@ -155,13 +124,11 @@ export function useExercisePicker({
         return () => {
             cancelled = true;
         };
-    }, [filterMode, selectedFilterIds, catalogRevision, showToast]);
+    }, [filterMode, selectedFilterIds, catalogRevision, showToast, t]);
 
     const addedIds = new Set(currentExerciseIds);
     const filteredExercises = exercises.filter(
-        (exercise) =>
-            !addedIds.has(exercise.id) &&
-            exercise.name.toLowerCase().includes(search.trim().toLowerCase())
+        (exercise) => !addedIds.has(exercise.id) && matchesExerciseName(exercise, search, language)
     );
 
     function toggleExerciseSelection(id: string) {
@@ -268,7 +235,7 @@ export function useExercisePicker({
         } catch (error: unknown) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Unable to add exercises.",
+                message: error instanceof Error ? error.message : t("addExercisesError"),
             });
         } finally {
             addingRef.current = false;
@@ -292,7 +259,10 @@ export function useExercisePicker({
         setSearch,
         filterMode,
         changeFilterMode,
-        filterOptions,
+        filterOptions: filterOptions.map((option) => ({
+            ...option,
+            name: localizedCatalogLabel(option.name, language) ?? option.name,
+        })),
         selectedFilterIds,
         toggleFilterId,
         filteredExercises,
@@ -302,7 +272,6 @@ export function useExercisePicker({
         isAdding,
 
         // Catalog state
-        catalogPending,
         exercisesLoading,
         catalogError,
     };

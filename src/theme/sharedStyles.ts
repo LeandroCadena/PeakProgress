@@ -1,12 +1,10 @@
 // theme/sharedStyles.ts
 
-import { StyleSheet } from "react-native";
-
-import { colors } from "./colors";
+import { createThemedStyles } from "./createThemedStyles";
 import { spacing } from "./spacing";
 import { typography } from "./typography";
 
-export const sharedStyles = StyleSheet.create({
+export const getSharedStyles = createThemedStyles((colors) => ({
     screenTitle: {
         color: colors.text,
         fontSize: typography.title,
@@ -42,4 +40,4 @@ export const sharedStyles = StyleSheet.create({
         marginTop: spacing.xs,
         fontSize: typography.caption,
     },
-});
+}));

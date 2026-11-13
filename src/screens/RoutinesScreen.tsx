@@ -11,7 +11,9 @@ import ActiveWorkoutBanner from "../components/workout/ActiveWorkoutBanner";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { GUEST_USER_ID } from "../database/guestAccount";
 import { getLocalRoutines } from "../database/repositories/routineRepository";
+import { useLanguage } from "../i18n/LanguageProvider";
 import { createRoutine as createRoutineService } from "../services/routineService";
 import { hydrateMissingRemoteRoutines } from "../services/sync/routineInitialHydrationService";
 import { syncRemoteRoutineDeletions } from "../services/sync/routineRemoteDeletionService";
@@ -21,10 +23,12 @@ import {
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
 import { subscribeToRoutineChanges } from "../sync/routineEvents";
-import { sharedStyles, spacing } from "../theme";
+import { spacing, useAppTheme } from "../theme";
 import { Routine } from "../types/routine";
 
 export default function RoutinesScreen({ navigation }: any) {
+    const { t } = useLanguage();
+    const { sharedStyles } = useAppTheme();
     const { user } = useAuth();
     const userId = user?.id;
     const { showToast } = useToast();
@@ -60,13 +64,10 @@ export default function RoutinesScreen({ navigation }: any) {
         } catch (error: unknown) {
             showToast({
                 type: "error",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : "Error fetching local routines",
+                message: error instanceof Error ? error.message : t("routinesLoadError"),
             });
         }
-    }, [userId, showToast]);
+    }, [userId, showToast, t]);
 
     useEffect(() => {
         if (!userId) return;
@@ -79,7 +80,7 @@ export default function RoutinesScreen({ navigation }: any) {
     }, [userId, fetchRoutines]);
 
     const hydrateRoutines = useCallback(async () => {
-        if (!userId) return;
+        if (!userId || userId === GUEST_USER_ID) return;
 
         try {
             await syncRemoteRoutineDeletions(userId);
@@ -121,7 +122,7 @@ export default function RoutinesScreen({ navigation }: any) {
         if (!name.trim()) {
             showToast({
                 type: "error",
-                message: "Routine name is required",
+                message: t("routineNameRequired"),
             });
             return;
         }
@@ -137,7 +138,7 @@ export default function RoutinesScreen({ navigation }: any) {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error creating routine",
+                message: error instanceof Error ? error.message : t("createRoutineError"),
             });
         }
     }
@@ -146,7 +147,7 @@ export default function RoutinesScreen({ navigation }: any) {
         if (!user) {
             showToast({
                 type: "error",
-                message: "User not found",
+                message: t("userNotFound"),
             });
             return;
         }
@@ -177,7 +178,7 @@ export default function RoutinesScreen({ navigation }: any) {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error starting workout",
+                message: error instanceof Error ? error.message : t("startWorkoutError"),
             });
         } finally {
             setStartingRoutineId(null);
@@ -202,7 +203,7 @@ export default function RoutinesScreen({ navigation }: any) {
         navigation.navigate("WorkoutSession", {
             sessionId: activeWorkout.id,
             routineId: activeWorkout.routine_id,
-            routineName: getActiveRoutineName(activeWorkout) ?? "Workout",
+            routineName: getActiveRoutineName(activeWorkout) ?? t("workout"),
         });
     }
 
@@ -229,7 +230,7 @@ export default function RoutinesScreen({ navigation }: any) {
         } catch (error: any) {
             showToast({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error discarding workout",
+                message: error instanceof Error ? error.message : t("discardWorkoutError"),
             });
         } finally {
             setStartingRoutineId(null);
@@ -237,7 +238,7 @@ export default function RoutinesScreen({ navigation }: any) {
     }
 
     function getActiveRoutineName(active: any) {
-        if (!active) return "Workout";
+        if (!active) return t("workout");
 
         return Array.isArray(active.routines) ? active.routines[0]?.name : active.routines?.name;
     }
@@ -264,11 +265,11 @@ export default function RoutinesScreen({ navigation }: any) {
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={
                     <>
-                        <Text style={sharedStyles.screenTitle}>Routines</Text>
+                        <Text style={sharedStyles.screenTitle}>{t("routines")}</Text>
 
                         {activeSession ? (
                             <ActiveWorkoutBanner
-                                routineName={activeSession.routines?.name ?? "Workout"}
+                                routineName={activeSession.routines?.name ?? t("workout")}
                                 elapsedText={getElapsedText(activeSession.started_at)}
                                 restRemainingText={getRestRemainingText(
                                     activeSession.rest_timer_end_at
@@ -277,7 +278,7 @@ export default function RoutinesScreen({ navigation }: any) {
                                     navigation.navigate("WorkoutSession", {
                                         sessionId: activeSession.id,
                                         routineId: activeSession.routine_id,
-                                        routineName: activeSession.routines?.name ?? "Workout",
+                                        routineName: activeSession.routines?.name ?? t("workout"),
                                     })
                                 }
                             />
@@ -286,7 +287,7 @@ export default function RoutinesScreen({ navigation }: any) {
                         <AppInput
                             value={name}
                             onChangeText={setName}
-                            placeholder="Routine name"
+                            placeholder={t("routineName")}
                             autoCapitalize="sentences"
                             returnKeyType="done"
                             style={styles.nameInput}
@@ -294,17 +295,14 @@ export default function RoutinesScreen({ navigation }: any) {
 
                         <AppButton
                             style={styles.startButton}
-                            title="+ Create Routine"
+                            title={t("createRoutine")}
                             variant="primary"
                             onPress={createRoutine}
                         />
                     </>
                 }
                 ListEmptyComponent={
-                    <EmptyStateCard
-                        title="No routines yet"
-                        message="Create your first routine and start building consistency."
-                    />
+                    <EmptyStateCard title={t("noRoutines")} message={t("createFirstRoutine")} />
                 }
                 renderItem={({ item }) => (
                     <RoutineCard
@@ -316,7 +314,7 @@ export default function RoutinesScreen({ navigation }: any) {
                             })
                         }
                         showButton={true}
-                        buttonTitle="Start"
+                        buttonTitle={t("start")}
                         onPressButton={() => startWorkout(item)}
                     />
                 )}
@@ -324,7 +322,7 @@ export default function RoutinesScreen({ navigation }: any) {
                     activeWorkout ? (
                         <ActiveWorkoutModal
                             visible={activeWorkoutModalVisible}
-                            routineName={getActiveRoutineName(activeWorkout) ?? "Workout"}
+                            routineName={getActiveRoutineName(activeWorkout) ?? t("workout")}
                             onResume={resumeActiveWorkout}
                             onDiscardAndStart={discardAndStartWorkout}
                             onCancel={() => setActiveWorkoutModalVisible(false)}

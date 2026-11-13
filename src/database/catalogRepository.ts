@@ -55,6 +55,7 @@ export async function getLocalExercisesByFilter(params: {
         SELECT DISTINCT
             e.id,
             e.name,
+            e.name_es,
             e.equipment,
             e.difficulty,
             e.image_url
@@ -184,6 +185,10 @@ export async function applyCatalogChanges(changes: CatalogChange[]): Promise<voi
                         "description",
                         "instructions",
                         "tips",
+                        "name_es",
+                        "description_es",
+                        "instructions_es",
+                        "tips_es",
                         "equipment",
                         "difficulty",
                         "image_url",

@@ -1,5 +1,6 @@
 import type * as SQLite from "expo-sqlite";
 
+import { notifyRoutineChanges } from "../../sync/routineEvents";
 import { getDatabase } from "../database";
 
 export type SyncEntityType = "routine";
@@ -504,16 +505,22 @@ export async function acknowledgeRoutineSyncOperation(params: {
 
     const db = await getDatabase();
     let acknowledged = false;
+    let upsertAcknowledgement:
+        | { routineId: string; previousVersion: number | null; remoteVersion: number }
+        | undefined;
     await db.withExclusiveTransactionAsync(async (tx) => {
         const operation = await tx.getFirstAsync<{
             entity_type: string;
             entity_id: string;
             operation_type: string;
+            remote_version: number | null;
         }>(
-            `SELECT entity_type, entity_id, operation_type
-             FROM sync_operations
-             WHERE id = ? AND user_id = ?
-               AND status = 'processing' AND lease_token = ?`,
+            `SELECT op.entity_type, op.entity_id, op.operation_type, routine.remote_version
+             FROM sync_operations op
+             LEFT JOIN local_routines routine
+               ON routine.id = op.entity_id AND routine.user_id = op.user_id
+             WHERE op.id = ? AND op.user_id = ?
+               AND op.status = 'processing' AND op.lease_token = ?`,
             [operationId, userId, leaseToken]
         );
         if (!operation) return;
@@ -561,7 +568,15 @@ export async function acknowledgeRoutineSyncOperation(params: {
             throw new Error("Could not update local routine synchronization metadata.");
         }
         acknowledged = true;
+        if (operation.operation_type === "upsert") {
+            upsertAcknowledgement = {
+                routineId: operation.entity_id,
+                previousVersion: operation.remote_version,
+                remoteVersion,
+            };
+        }
     });
+    if (upsertAcknowledgement) notifyRoutineChanges(userId, upsertAcknowledgement);
     return acknowledged;
 }
 

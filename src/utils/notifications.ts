@@ -1,6 +1,8 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
+import { messages, type Language } from "../i18n/messages";
+
 const REST_NOTIFICATION_ID = "rest-finished";
 const REST_NOTIFICATION_CHANNEL_ID = "workout-rest";
 
@@ -32,25 +34,25 @@ export function setNotificationsEnabled(value: boolean) {
     notificationsEnabled = value;
 }
 
-async function configureNotificationChannel() {
+async function configureNotificationChannel(language: Language) {
     if (Platform.OS !== "android") return;
 
     await Notifications.setNotificationChannelAsync(REST_NOTIFICATION_CHANNEL_ID, {
-        name: "Workout rest timers",
-        description: "Notifications when a workout rest timer finishes",
+        name: messages[language].restChannel,
+        description: messages[language].restChannelDescription,
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
     });
 }
 
-async function requestNotificationPermissions() {
+async function requestNotificationPermissions(language: Language) {
     if (Platform.OS === "web") return false;
 
     /*
      * On Android 13+, a channel must exist before Android can
      * display the notification permission prompt.
      */
-    await configureNotificationChannel();
+    await configureNotificationChannel(language);
 
     const currentPermissions = await Notifications.getPermissionsAsync();
 
@@ -63,7 +65,7 @@ async function requestNotificationPermissions() {
     return requestedPermissions.status === "granted";
 }
 
-export async function scheduleRestFinishedNotification(endAt: number) {
+export async function scheduleRestFinishedNotification(endAt: number, language: Language) {
     if (
         !notificationsEnabled ||
         Platform.OS === "web" ||
@@ -75,7 +77,7 @@ export async function scheduleRestFinishedNotification(endAt: number) {
 
     const version = ++restNotificationVersion;
 
-    const hasPermission = await requestNotificationPermissions();
+    const hasPermission = await requestNotificationPermissions(language);
 
     if (!hasPermission || version !== restNotificationVersion) {
         return null;
@@ -95,8 +97,8 @@ export async function scheduleRestFinishedNotification(endAt: number) {
         return Notifications.scheduleNotificationAsync({
             identifier: REST_NOTIFICATION_ID,
             content: {
-                title: "Rest finished",
-                body: "Time for your next set.",
+                title: messages[language].restFinished,
+                body: messages[language].nextSetTime,
                 sound: true,
                 data: {
                     type: "rest-finished",

@@ -1,6 +1,7 @@
-import { Modal, StyleSheet, Text, View } from "react-native";
+import { Modal, Text, View } from "react-native";
 
-import { sharedStyles, spacing } from "../../theme";
+import { useLanguage } from "../../i18n/LanguageProvider";
+import { spacing, useAppTheme, createThemedStyles } from "../../theme";
 import AppButton from "../common/AppButton";
 
 type Props = {
@@ -22,14 +23,17 @@ export default function ActiveWorkoutModal({
     onCancel,
     isStarting,
 }: Props) {
+    const { t } = useLanguage();
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Modal visible={visible} transparent animationType="fade">
             <View style={styles.overlay}>
                 <View style={styles.content}>
-                    <Text style={sharedStyles.screenTitle}>Workout already running</Text>
+                    <Text style={sharedStyles.screenTitle}>{t("workoutRunning")}</Text>
 
                     <Text style={sharedStyles.screenSubtitle}>
-                        You already have an active workout.
+                        {t("workoutRunningDescription")}
                     </Text>
 
                     <Text style={styles.routineName}>{routineName}</Text>
@@ -38,14 +42,14 @@ export default function ActiveWorkoutModal({
 
                     <AppButton
                         style={styles.appButton}
-                        title={"Resume Workout"}
+                        title={t("resumeWorkout")}
                         onPress={onResume}
                     />
 
                     <AppButton
                         style={styles.appButton}
                         variant="danger"
-                        title={isStarting ? "Starting..." : "Discard and Start New"}
+                        title={isStarting ? t("starting") : t("discardAndStart")}
                         onPress={onDiscardAndStart}
                         disabled={isStarting}
                     />
@@ -53,7 +57,7 @@ export default function ActiveWorkoutModal({
                     <AppButton
                         style={styles.appButton}
                         variant="secondary"
-                        title={"Cancel"}
+                        title={t("cancel")}
                         onPress={onCancel}
                         disabled={isStarting}
                     />
@@ -63,7 +67,7 @@ export default function ActiveWorkoutModal({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     overlay: {
         flex: 1,
         backgroundColor: "rgba(0,0,0,0.65)",
@@ -72,24 +76,24 @@ const styles = StyleSheet.create({
     },
     content: {
         width: "100%",
-        backgroundColor: "#161B22",
+        backgroundColor: colors.card,
         borderRadius: 18,
         padding: 22,
         borderWidth: 1,
-        borderColor: "#30363D",
+        borderColor: colors.cardBorder,
     },
     routineName: {
-        color: "#FFFFFF",
+        color: colors.text,
         fontSize: 18,
         fontWeight: "800",
         marginBottom: 4,
     },
     elapsed: {
-        color: "#4CAF50",
+        color: colors.success,
         fontWeight: "700",
         marginBottom: 18,
     },
     appButton: {
         marginTop: spacing.md,
     },
-});
+}));

@@ -1,6 +1,6 @@
-import { StyleSheet, Text } from "react-native";
+import { Text } from "react-native";
 
-import { colors, sharedStyles, spacing, typography } from "../../theme";
+import { spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 
 import Card from "./Card";
 
@@ -11,6 +11,8 @@ type Props = {
 };
 
 export default function StatCard({ label, value, helper }: Props) {
+    const { colors, sharedStyles } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Card style={styles.card}>
             <Text style={styles.value}>{value}</Text>
@@ -21,7 +23,7 @@ export default function StatCard({ label, value, helper }: Props) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     card: {
         flex: 1,
     },
@@ -35,4 +37,4 @@ const styles = StyleSheet.create({
         fontWeight: typography.weightExtraBold,
         marginTop: spacing.xs,
     },
-});
+}));

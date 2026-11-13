@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Clock3, Hourglass } from "lucide-react-native"; //remove later
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { colors, spacing, typography, componentStyles } from "../../theme";
+import { useLanguage } from "../../i18n/LanguageProvider";
+import { spacing, typography, componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 import Card from "../common/Card";
 
 type Props = {
@@ -18,6 +19,9 @@ export default function ActiveWorkoutBanner({
     restRemainingText,
     onPress,
 }: Props) {
+    const { t } = useLanguage();
+    const { colors } = useAppTheme();
+    const styles = getStyles(colors);
     return (
         <Pressable onPress={onPress}>
             <Card style={styles.banner}>
@@ -27,7 +31,7 @@ export default function ActiveWorkoutBanner({
                     </View>
 
                     <View>
-                        <Text style={styles.label}>WORKOUT RUNNING</Text>
+                        <Text style={styles.label}>{t("workoutRunning").toUpperCase()}</Text>
                         <Text style={styles.routineName}>{routineName}</Text>
                     </View>
                 </View>
@@ -58,7 +62,7 @@ export default function ActiveWorkoutBanner({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = createThemedStyles((colors) => ({
     label: {
         color: colors.success,
         fontWeight: typography.weightBold,
@@ -125,4 +129,4 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontWeight: typography.weightBold,
     },
-});
+}));
