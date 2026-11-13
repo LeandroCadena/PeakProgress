@@ -1,9 +1,10 @@
 import { View, Pressable, Text } from "react-native";
 
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { spacing, componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
 import { sanitizeIntegerInput, sanitizeWeightInput } from "../../utils/numberInput";
-import AppInput from "../common/AppInput";
+import SetInput from "../common/SetInput";
 import SwipeableCard from "../common/SwipeableCard";
 
 type WorkoutSetRowProps = {
@@ -35,6 +36,7 @@ export default function WorkoutSetRow({
     displaySetNumber,
     isTemporarySet,
 }: WorkoutSetRowProps) {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     return (
@@ -43,8 +45,9 @@ export default function WorkoutSetRow({
                 <View style={styles.row}>
                     <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
-                    <AppInput
+                    <SetInput
                         style={styles.setRow}
+                        accessibilityLabel={t("weight")}
                         keyboardType="decimal-pad"
                         selectTextOnFocus
                         value={weightValue}
@@ -55,8 +58,9 @@ export default function WorkoutSetRow({
                         }
                     />
 
-                    <AppInput
+                    <SetInput
                         style={styles.setRow}
+                        accessibilityLabel={t("reps")}
                         keyboardType="number-pad"
                         selectTextOnFocus
                         value={repsValue}

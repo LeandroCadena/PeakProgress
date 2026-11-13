@@ -19,7 +19,6 @@ type AuthContextType = {
     continueOffline: () => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signIn: (email: string, password: string) => Promise<void>;
-    signUp: (email: string, password: string, language: "en" | "es") => Promise<boolean>;
     resendConfirmation: (email: string) => Promise<void>;
     confirmEmailCode: (email: string, token: string) => Promise<void>;
     signOut: () => Promise<void>;
@@ -180,18 +179,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error;
     }
 
-    async function signUp(email: string, password: string, language: "en" | "es") {
-        offlineOnly.current = false;
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { emailRedirectTo: AUTH_CONFIRMATION_URL, data: { language } },
-        });
-
-        if (error) throw error;
-        return Boolean(data.session);
-    }
-
     async function resendConfirmation(email: string) {
         const { error } = await supabase.auth.resend({
             type: "signup",
@@ -223,7 +210,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 continueOffline,
                 signIn,
                 signInWithGoogle,
-                signUp,
                 resendConfirmation,
                 confirmEmailCode,
                 signOut,

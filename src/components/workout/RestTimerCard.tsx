@@ -14,53 +14,59 @@ export default function RestTimerCard({ timer, lastTimerDuration, onRestart }: P
     const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
+    const progress =
+        lastTimerDuration > 0 ? Math.min(1, Math.max(0, timer / lastTimerDuration)) : 0;
+
     return (
         <View style={styles.header}>
-            <View>
-                <Text style={styles.timer}>{timer}s</Text>
+            <Text style={styles.timer}>{timer}s</Text>
+            <View
+                style={styles.track}
+                accessible
+                accessibilityRole="progressbar"
+                accessibilityLabel={t("restTimerProgress")}
+                accessibilityValue={{ min: 0, max: 100, now: Math.round(progress * 100) }}
+            >
+                <View style={[styles.fill, { width: `${progress * 100}%` }]} />
             </View>
-
             <Pressable
-                style={styles.restartButton}
+                style={[styles.restartButton, lastTimerDuration <= 0 && styles.disabled]}
                 onPress={onRestart}
+                disabled={lastTimerDuration <= 0}
                 accessibilityRole="button"
                 accessibilityLabel={t("restartRestTimer")}
             >
-                <Ionicons name="reload-outline" size={28} color={colors.text} />
+                <Ionicons name="reload-outline" size={20} color={colors.text} />
             </Pressable>
         </View>
     );
 }
 
 const getStyles = createThemedStyles((colors) => ({
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-    label: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        marginBottom: spacing.xs,
-    },
+    header: { flexDirection: "row", alignItems: "center", gap: spacing.md },
     timer: {
         color: colors.text,
-        fontSize: 36,
+        fontSize: 24,
         fontWeight: typography.weightExtraBold,
-        marginLeft: 20,
+        fontVariant: ["tabular-nums"],
     },
-    lastTimerText: {
-        color: colors.textSecondary,
-        marginTop: spacing.sm,
+    track: {
+        flex: 1,
+        height: 5,
+        borderRadius: 3,
+        backgroundColor: colors.cardBorder,
+        overflow: "hidden",
     },
+    fill: { height: "100%", backgroundColor: "#F97316" },
     restartButton: {
-        width: 50,
-        height: 40,
+        width: 44,
+        height: 44,
         borderRadius: 22,
-        borderWidth: 1,
-        backgroundColor: colors.primary,
+        backgroundColor: colors.card,
         alignItems: "center",
         justifyContent: "center",
-        marginRight: 20,
+        borderWidth: 1,
+        borderColor: colors.cardBorder,
     },
+    disabled: { opacity: 0.45 },
 }));

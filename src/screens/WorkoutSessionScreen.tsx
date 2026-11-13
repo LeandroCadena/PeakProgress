@@ -285,7 +285,12 @@ export default function WorkoutSessionScreen({ navigation }: any) {
             />
 
             {!isInitializingSession ? (
-                <View style={styles.footerContainer}>
+                <View
+                    style={[
+                        styles.footerContainer,
+                        { paddingBottom: Math.max(insets.bottom, spacing.xs) },
+                    ]}
+                >
                     <RestTimerCard
                         timer={timer}
                         lastTimerDuration={lastTimerDuration}
@@ -371,8 +376,7 @@ const getStyles = createThemedStyles((colors) => ({
         backgroundColor: colors.background,
 
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.sm,
-        paddingBottom: spacing.lg,
+        paddingTop: spacing.xs,
 
         borderTopWidth: 1,
         borderTopColor: colors.cardBorder,

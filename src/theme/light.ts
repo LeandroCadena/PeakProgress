@@ -1,13 +1,13 @@
 export const lightTheme = {
     colors: {
-        background: "#F9FAFB",
+        background: "#EEF1F6",
 
         card: "#FFFFFF",
-        cardBorder: "#E5E7EB",
+        cardBorder: "#D5DCE7",
 
-        primary: "#2563EB",
+        primary: "#B9470D",
         onAccent: "#FFFFFF",
-        primaryPressed: "#1D4ED8",
+        primaryPressed: "#953408",
 
         success: "#16A34A",
         successDark: "#DCFCE7",
@@ -18,9 +18,9 @@ export const lightTheme = {
         danger: "#DC2626",
 
         text: "#111827",
-        textSecondary: "#6B7280",
+        textSecondary: "#4B5565",
 
-        inputBackground: "#FFFFFF",
+        inputBackground: "#F3F5F9",
         inputBorder: "#D1D5DB",
     },
 };

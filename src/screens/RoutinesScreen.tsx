@@ -154,7 +154,7 @@ export default function RoutinesScreen({ navigation }: any) {
             });
             return;
         }
-        if (startingRoutineId === routine.id) return;
+        if (startingRoutineId) return;
 
         setStartingRoutineId(routine.id);
 
@@ -314,15 +314,14 @@ export default function RoutinesScreen({ navigation }: any) {
                     <RoutineCard
                         title={item.name}
                         cover={item.cover}
-                        onPress={() =>
+                        onEdit={() =>
                             navigation.navigate("RoutineDetail", {
                                 routineId: item.id,
                                 routineName: item.name,
                             })
                         }
-                        showButton={true}
-                        buttonTitle={t("start")}
-                        onPressButton={() => startWorkout(item)}
+                        startDisabled={Boolean(startingRoutineId)}
+                        onStart={() => startWorkout(item)}
                     />
                 )}
                 ListFooterComponent={

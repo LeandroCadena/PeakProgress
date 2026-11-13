@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     if (!ready) return <StartupScreen message={t("startupPreparing")} />;
 
-    const isDark = preference === "system" ? systemScheme !== "light" : preference === "dark";
+    const isDark = preference === "system" ? systemScheme === "dark" : preference === "dark";
     const colors = isDark ? darkTheme.colors : lightTheme.colors;
 
     return (

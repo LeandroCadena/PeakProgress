@@ -236,7 +236,6 @@ export default function HomeScreen({ navigation }: any) {
                                 workout.completed_at,
                                 workout.workout_session_exercises?.length ?? 0
                             )}
-                            onPress={() => {}}
                         />
                     ))}
                 </View>

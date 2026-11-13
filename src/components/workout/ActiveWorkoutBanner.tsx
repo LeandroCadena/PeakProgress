@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Clock3, Hourglass } from "lucide-react-native"; //remove later
+import { Clock3, Hourglass } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 
 import { useLanguage } from "../../i18n/LanguageProvider";
@@ -30,13 +30,11 @@ export default function ActiveWorkoutBanner({
                         <Ionicons name="barbell-outline" size={22} color={colors.success} />
                     </View>
 
-                    <View>
+                    <View style={styles.details}>
                         <Text style={styles.label}>{t("workoutRunning").toUpperCase()}</Text>
                         <Text style={styles.routineName}>{routineName}</Text>
                     </View>
                 </View>
-
-                <View style={styles.divider} />
 
                 <View style={styles.right}>
                     <View style={styles.metric}>
@@ -45,18 +43,13 @@ export default function ActiveWorkoutBanner({
                     </View>
 
                     {restRemainingText ? (
-                        <>
-                            <View style={styles.smallDivider} />
-
-                            <View style={styles.metric}>
-                                <Hourglass size={18} color={colors.warning} />
-                                <Text style={styles.metricText}>{restRemainingText}</Text>
-                            </View>
-                        </>
+                        <View style={styles.metric}>
+                            <Hourglass size={18} color={colors.warning} />
+                            <Text style={styles.metricText}>{restRemainingText}</Text>
+                        </View>
                     ) : null}
-
-                    <Ionicons name="chevron-forward" size={18} color={colors.text} />
                 </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.text} />
             </Card>
         </Pressable>
     );
@@ -76,6 +69,7 @@ const getStyles = createThemedStyles((colors) => ({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
+        gap: spacing.sm,
         marginBottom: spacing.md,
         paddingTop: 14,
         paddingBottom: 14,
@@ -86,13 +80,10 @@ const getStyles = createThemedStyles((colors) => ({
         flex: 1,
         gap: spacing.md,
     },
+    details: { flex: 1, minWidth: 0 },
     right: {
-        flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: spacing.sm,
-    },
-    icon: {
-        fontSize: 20,
     },
     iconCircle: {
         width: 44,
@@ -106,19 +97,6 @@ const getStyles = createThemedStyles((colors) => ({
         color: colors.text,
         fontSize: typography.subtitle,
         fontWeight: typography.weightBold,
-    },
-    divider: {
-        width: 1,
-        height: 44,
-        backgroundColor: colors.cardBorder,
-        marginHorizontal: spacing.md,
-        opacity: 0.8,
-    },
-    smallDivider: {
-        width: 1,
-        height: 18,
-        backgroundColor: colors.cardBorder,
-        marginHorizontal: spacing.xs,
     },
     metric: {
         flexDirection: "row",

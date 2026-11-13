@@ -147,9 +147,6 @@ export default function LoginScreen({ navigation }: any) {
                             <Pressable onPress={handleResend}>
                                 <Text style={styles.link}>{t("resendConfirmation")}</Text>
                             </Pressable>
-                            <Pressable onPress={() => navigation.navigate("Register")}>
-                                <Text style={styles.link}>{t("createAccount")}</Text>
-                            </Pressable>
                         </View>
                     )}
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { RoutineExerciseSet } from "../../types/routine";
 import {
@@ -8,7 +9,7 @@ import {
     sanitizeIntegerInput,
     sanitizeWeightInput,
 } from "../../utils/numberInput";
-import AppInput from "../common/AppInput";
+import SetInput from "../common/SetInput";
 import SwipeableCard from "../common/SwipeableCard";
 
 type Props = {
@@ -28,6 +29,7 @@ export default function RoutineExerciseSetRow({
     onDelete,
     isTemporarySet,
 }: Props) {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     const [weightValue, setWeightValue] = useState(displayZeroAsEmpty(set.weight));
@@ -61,9 +63,10 @@ export default function RoutineExerciseSetRow({
             <View style={styles.row}>
                 <Text style={styles.setNumber}>{displaySetNumber}</Text>
 
-                <AppInput
+                <SetInput
                     style={styles.setRow}
                     value={weightValue}
+                    accessibilityLabel={t("weight")}
                     keyboardType="decimal-pad"
                     selectTextOnFocus
                     onChangeText={handleWeightChange}
@@ -71,9 +74,10 @@ export default function RoutineExerciseSetRow({
                 />
 
                 <View style={styles.repsContainer}>
-                    <AppInput
+                    <SetInput
                         style={styles.setRow}
                         value={repsValue}
+                        accessibilityLabel={t("reps")}
                         keyboardType="number-pad"
                         selectTextOnFocus
                         onChangeText={handleRepsChange}
