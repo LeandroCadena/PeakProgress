@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
+import { useLanguage } from "../../i18n/LanguageProvider";
 import { componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 
 const CARD_DELETE_THRESHOLD = 64;
@@ -30,10 +31,12 @@ export default function SwipeableCard({
     fullSwipeThreshold,
     onActionPress,
 }: Props) {
+    const { t } = useLanguage();
     const { colors } = useAppTheme();
     const styles = getStyles(colors);
     const translateX = useSharedValue(0);
     const gestureStartX = useSharedValue(0);
+    const swipeActivated = useSharedValue(false);
 
     const deleteThreshold =
         fullSwipeThreshold ?? (compact ? COMPACT_DELETE_THRESHOLD : CARD_DELETE_THRESHOLD);
@@ -42,9 +45,14 @@ export default function SwipeableCard({
 
     const panGesture = Gesture.Pan()
         .enabled(enabled && !isDragging)
-        .activeOffsetX([-14, 14])
+        .activeOffsetX([-10, 10])
+        .shouldCancelWhenOutside(false)
         .failOffsetY([-10, 10])
         .onBegin(() => {
+            swipeActivated.set(false);
+        })
+        .onStart(() => {
+            swipeActivated.set(true);
             gestureStartX.set(translateX.get());
         })
         .onUpdate((event) => {
@@ -53,9 +61,12 @@ export default function SwipeableCard({
                 Math.max(-actionWidth, Math.min(0, gestureStartX.get() + event.translationX))
             );
         })
-        .onEnd(() => {
-            const shouldOpen =
-                Math.abs(translateX.get()) >= Math.min(deleteThreshold, actionWidth) / 2;
+        .onFinalize((_event, success) => {
+            if (!swipeActivated.get()) return;
+            swipeActivated.set(false);
+
+            const position = success ? translateX.get() : gestureStartX.get();
+            const shouldOpen = Math.abs(position) >= Math.min(deleteThreshold, actionWidth) / 2;
             translateX.set(
                 withSpring(shouldOpen ? -actionWidth : 0, {
                     damping: 20,
@@ -78,24 +89,27 @@ export default function SwipeableCard({
     }));
 
     return (
-        <View style={[styles.container, compact && styles.compactContainer]}>
-            <Animated.View
-                style={[styles.deleteBackground, compact && styles.compactDeleteBackground]}
+        <GestureDetector gesture={panGesture}>
+            <View
+                collapsable={false}
+                style={[styles.container, compact && styles.compactContainer]}
             >
-                <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Delete"
-                    disabled={!enabled || isDragging}
-                    onPress={onActionPress}
-                    style={[styles.deleteIcon, compact && styles.compactDeleteIcon]}
+                <Animated.View
+                    style={[styles.deleteBackground, compact && styles.compactDeleteBackground]}
                 >
-                    <Animated.View style={animatedDeleteIconStyle}>
-                        <Ionicons name="trash" size={compact ? 20 : 24} color={colors.text} />
-                    </Animated.View>
-                </Pressable>
-            </Animated.View>
+                    <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={t("deleteSet")}
+                        disabled={!enabled || isDragging}
+                        onPress={onActionPress}
+                        style={[styles.deleteIcon, compact && styles.compactDeleteIcon]}
+                    >
+                        <Animated.View style={animatedDeleteIconStyle}>
+                            <Ionicons name="trash" size={compact ? 20 : 24} color={colors.text} />
+                        </Animated.View>
+                    </Pressable>
+                </Animated.View>
 
-            <GestureDetector gesture={panGesture}>
                 <Animated.View
                     style={[
                         styles.childrenContainer,
@@ -117,8 +131,8 @@ export default function SwipeableCard({
                         {children}
                     </View>
                 </Animated.View>
-            </GestureDetector>
-        </View>
+            </View>
+        </GestureDetector>
     );
 }
 

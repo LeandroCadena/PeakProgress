@@ -50,6 +50,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
     const { user } = useAuth();
     const { showToast } = useToast();
 
+    const cover = useRoutineEditorStore((state) => state.cover);
+    const setCover = useRoutineEditorStore((state) => state.setCover);
     const name = useRoutineEditorStore((state) => state.name);
 
     const exercises = useRoutineEditorStore((state) => state.exercises);
@@ -360,6 +362,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
         }
         return {
             routineId: copyId ?? routineId,
+            ...(cover ? { cover } : {}),
             name: copyId ? `${normalizedName} (${t("copy")})` : normalizedName,
             exercises: normalizedExercises,
             setsByExerciseId: normalizedSetsByExerciseId,
@@ -419,6 +422,7 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
                 editorNow.originalSnapshot === editorBefore.originalSnapshot &&
                 editorNow.editingValues === editorBefore.editingValues &&
                 editorNow.name === editorBefore.name &&
+                editorNow.cover === editorBefore.cover &&
                 editorNow.exercises === editorBefore.exercises &&
                 editorNow.setsByExerciseId === editorBefore.setsByExerciseId
             ) {
@@ -600,6 +604,8 @@ export function useRoutineDetail({ routineId, routineName, navigation }: Params)
 
     return {
         routineTitle: name,
+        cover,
+        setCover,
         routineExercises: exercises,
         routineExerciseSets: setsByExerciseId,
 

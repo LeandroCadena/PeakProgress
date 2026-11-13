@@ -17,6 +17,7 @@ import AppDialog from "../components/common/AppDialog";
 import EmptyStateCard from "../components/common/EmptyStateCard";
 import LoadingCard from "../components/common/LoadingCard";
 import ScreenContainer from "../components/common/ScreenContainer";
+import RoutineCoverPicker from "../components/routine/RoutineCoverPicker";
 import RoutineExerciseCard from "../components/routine/RoutineExerciseCard";
 import ActiveWorkoutModal from "../components/workout/ActiveWorkoutModal";
 import RestTimeEditor from "../components/workout/RestTimeEditor";
@@ -53,10 +54,13 @@ export default function RoutineDetailScreen() {
     const [pendingNavigationAction, setPendingNavigationAction] = useState<NavigationAction | null>(
         null
     );
+    const [showCoverPicker, setShowCoverPicker] = useState(false);
     const isConfirmedNavigationRef = useRef(false);
 
     const {
         routineTitle,
+        cover,
+        setCover,
         routineExercises,
         routineExerciseSets,
 
@@ -256,6 +260,16 @@ export default function RoutineDetailScreen() {
                     updateLocalTemplateSetValue={updateLocalTemplateSetValue}
                     onUpdateSetRest={updateSetRest}
                     onDelete={() => handleDeleteExercise(item.id)}
+                    onMoreInfo={
+                        item.exercise_id
+                            ? () => {
+                                  setOpenExerciseMenuId(null);
+                                  navigation.navigate("ExerciseDetail", {
+                                      exerciseId: item.exercise_id,
+                                  });
+                              }
+                            : undefined
+                    }
                     onDrag={drag}
                     isDragging={isActive}
                     isActionsMenuOpen={openExerciseMenuId === item.id}
@@ -307,6 +321,12 @@ export default function RoutineDetailScreen() {
                         onOpenChange={setIsRoutineMenuOpen}
                         disabled={isLoadingRoutine || isSavingRoutine}
                         items={[
+                            {
+                                key: "cover",
+                                label: t("changeRoutineCover"),
+                                icon: "image-outline",
+                                onPress: () => setShowCoverPicker(true),
+                            },
                             {
                                 key: "delete",
                                 label: t("deleteRoutine"),
@@ -442,6 +462,15 @@ export default function RoutineDetailScreen() {
                     setDialog(null);
                 }}
             />
+            <RoutineCoverPicker
+                visible={showCoverPicker}
+                cover={cover ?? "fullBody"}
+                onClose={() => setShowCoverPicker(false)}
+                onSelect={(next) => {
+                    if (next !== (cover ?? "fullBody")) setCover(next);
+                    setShowCoverPicker(false);
+                }}
+            />
         </ScreenContainer>
     );
 }
@@ -486,7 +515,6 @@ const getStyles = createThemedStyles((colors) => ({
     },
     list: {
         gap: spacing.xs,
-        paddingHorizontal: spacing.lg,
         paddingTop: 100,
         paddingBottom: 120,
     },

@@ -76,6 +76,7 @@ export async function buildRoutineSyncPayload(params: {
     return {
         routineId: snapshot.routineId,
         name: snapshot.name,
+        ...(snapshot.cover ? { cover: snapshot.cover } : {}),
         exercises,
         setsByExerciseId,
     };

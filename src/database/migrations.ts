@@ -1,6 +1,6 @@
 import type * as SQLite from "expo-sqlite";
 
-export const DATABASE_VERSION = 12;
+export const DATABASE_VERSION = 13;
 
 export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
     await db.execAsync("PRAGMA foreign_keys = ON;");
@@ -394,6 +394,10 @@ export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
                     PRIMARY KEY (user_id, kind)
                 );
             `);
+        }
+
+        if (currentVersion < 13) {
+            await tx.execAsync("ALTER TABLE local_routines ADD COLUMN cover_key TEXT;");
         }
 
         await tx.execAsync(`PRAGMA user_version = ${DATABASE_VERSION};`);

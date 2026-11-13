@@ -230,3 +230,24 @@ In **Authentication → URL Configuration**, add `gymtime://auth/confirm` to **R
 In **Authentication → Email Templates → Confirm signup**, set the subject to `Gym Time | Confirmá tu correo / Confirm your email` and paste [the confirmation template](supabase/templates/confirmation.html). Send a new confirmation email after saving. Open the link on the device where you registered, with a native build that includes the `gymtime` scheme. You can also enter the one-time code in Gym Time on the sign-in screen.
 
 Guest workouts and other guest data are stored on the device. On sign-in, the app attaches them to the account on that device. Guest routines enter the existing routine sync queue. Guest workout history, progress and preferences remain on that device.
+
+### Google sign-in on Android
+
+1. In Google Auth Platform, configure the OAuth consent screen for Gym Time.
+   While it is in testing, add the Google accounts used by your testers.
+2. Create a **Web application** OAuth client. Copy the callback URL from the
+   Google provider page in Supabase into that client's authorized redirect URIs.
+   Enable Google in Supabase Auth and enter the Web client ID and secret there.
+3. Create an **Android** OAuth client with package `com.leandrocadena.gymtime`.
+   For the Google Play internal track, use the SHA-1 under **App signing key
+   certificate** in Play Console's **App integrity** screen. For a separately
+   signed development APK, create an additional Android client for its SHA-1.
+4. Set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` to the **Web** client ID in the EAS
+   production environment and in your local environment when testing a native
+   development build. The client secret belongs in Supabase only.
+5. Build a new native Android app. In the installed build, go to **Profile →
+   Sign in → Continue with Google**. Test cancellation, then sign in after
+   saving a guest routine and confirm it remains visible.
+
+The Google button appears on configured Android builds. Guest mode and the
+existing email flow remain available during internal testing.

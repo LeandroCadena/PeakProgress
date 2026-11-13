@@ -1,10 +1,12 @@
 import { create } from "zustand";
 
 import type { RoutineExercise, RoutineExerciseSet } from "../types/routine";
+import type { RoutineCover } from "../types/routineCover";
 
 export type RoutineEditorSnapshot = {
     routineId: string;
     name: string;
+    cover?: RoutineCover;
     exercises: RoutineExercise[];
     setsByExerciseId: Record<string, RoutineExerciseSet[]>;
 };
@@ -23,6 +25,7 @@ type UpdateRoutineSetInput = {
 type RoutineEditorState = {
     routineId: string | null;
     name: string;
+    cover?: RoutineCover;
 
     exercises: RoutineExercise[];
     setsByExerciseId: Record<string, RoutineExerciseSet[]>;
@@ -36,6 +39,7 @@ type RoutineEditorState = {
     initializeEditor: (snapshot: RoutineEditorSnapshot, remoteVersion: number | null) => void;
     updateSavedSnapshot: (snapshot: RoutineEditorSnapshot) => void;
 
+    setCover: (cover: RoutineCover) => void;
     setName: (name: string) => void;
 
     reorderExercises: (exercises: RoutineExercise[]) => void;
@@ -64,6 +68,7 @@ type RoutineEditorState = {
 const initialState = {
     routineId: null,
     name: "",
+    cover: undefined,
 
     exercises: [],
     setsByExerciseId: {},
@@ -96,13 +101,17 @@ function cloneSnapshot(snapshot: RoutineEditorSnapshot): RoutineEditorSnapshot {
     return {
         routineId: snapshot.routineId,
         name: snapshot.name,
+        ...(snapshot.cover ? { cover: snapshot.cover } : {}),
         exercises: cloneExercises(snapshot.exercises),
         setsByExerciseId: cloneSetsByExerciseId(snapshot.setsByExerciseId),
     };
 }
 
 function createCurrentSnapshot(
-    state: Pick<RoutineEditorState, "routineId" | "name" | "exercises" | "setsByExerciseId">
+    state: Pick<
+        RoutineEditorState,
+        "routineId" | "name" | "cover" | "exercises" | "setsByExerciseId"
+    >
 ): RoutineEditorSnapshot | null {
     if (!state.routineId) {
         return null;
@@ -111,6 +120,7 @@ function createCurrentSnapshot(
     return cloneSnapshot({
         routineId: state.routineId,
         name: state.name,
+        cover: state.cover,
         exercises: state.exercises,
         setsByExerciseId: state.setsByExerciseId,
     });
@@ -125,6 +135,7 @@ export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
         set({
             routineId: nextSnapshot.routineId,
             name: nextSnapshot.name,
+            cover: nextSnapshot.cover,
             exercises: nextSnapshot.exercises,
             setsByExerciseId: nextSnapshot.setsByExerciseId,
             editingValues: {},
@@ -135,6 +146,9 @@ export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
     },
 
     updateSavedSnapshot: (snapshot) => set({ originalSnapshot: cloneSnapshot(snapshot) }),
+
+    setCover: (cover) =>
+        set((state) => (state.cover === cover ? state : { cover, hasUnsavedChanges: true })),
 
     setName: (name) => {
         set({
@@ -330,6 +344,7 @@ export const useRoutineEditorStore = create<RoutineEditorState>((set) => ({
             return {
                 routineId: originalSnapshot.routineId,
                 name: originalSnapshot.name,
+                cover: originalSnapshot.cover,
                 exercises: originalSnapshot.exercises,
                 setsByExerciseId: originalSnapshot.setsByExerciseId,
                 editingValues: {},

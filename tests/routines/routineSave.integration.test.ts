@@ -4,6 +4,7 @@ import {
     applyRemoteRoutineDeletion,
     deleteLocalRoutine,
     getLocalRoutine,
+    getLocalRoutines,
     getVersionedLocalRoutine,
     hydrateLocalRoutine,
     saveLocalRoutine,
@@ -21,6 +22,47 @@ const mockGetDatabase = jest.mocked(getDatabase);
 describe("Routine save regression", () => {
     afterEach(() => {
         jest.resetAllMocks();
+    });
+
+    it("persists the selected cover and queues it with the routine snapshot", async () => {
+        const db = createTestDatabase();
+        try {
+            await runMigrations(db as any);
+            mockGetDatabase.mockResolvedValue(db as any);
+            const snapshot: RoutineEditorSnapshot = {
+                routineId: "cover-routine",
+                name: "Training",
+                exercises: [],
+                setsByExerciseId: {},
+            };
+            const userId = "test-user";
+            await saveLocalRoutine({
+                userId,
+                snapshot,
+                syncOperationId: "create-cover-routine",
+                createdLocally: true,
+            });
+            expect(await getLocalRoutine({ userId, routineId: snapshot.routineId })).toEqual(
+                snapshot
+            );
+
+            await saveLocalRoutine({
+                userId,
+                snapshot: { ...snapshot, cover: "legs" },
+                syncOperationId: "edit-cover-routine",
+            });
+
+            expect(await getLocalRoutines(userId)).toEqual([
+                expect.objectContaining({ id: snapshot.routineId, cover: "legs" }),
+            ]);
+            const operation = await db.getFirstAsync<{ payload: string }>(
+                "SELECT payload FROM sync_operations WHERE entity_id = ?",
+                snapshot.routineId
+            );
+            expect(JSON.parse(operation!.payload).cover).toBe("legs");
+        } finally {
+            await db.closeAsync();
+        }
     });
 
     it("saves an edited routine without duplicating existing set IDs", async () => {

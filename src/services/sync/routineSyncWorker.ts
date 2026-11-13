@@ -7,15 +7,19 @@ import {
     scheduleTransientSyncRetry,
     type SyncOperation,
 } from "../../database/repositories/syncQueueRepository";
+import { isRoutineCover } from "../../types/routineCover";
 
 import { recoverRoutineConflictSnapshot } from "./routineConflictSnapshotService";
-import { applyRoutineSyncOperation, RoutineSyncNetworkError, type RoutineSyncPayload } from "./routineSyncRpcService";
+import {
+    applyRoutineSyncOperation,
+    RoutineSyncNetworkError,
+    type RoutineSyncPayload,
+} from "./routineSyncRpcService";
 
 type WorkerResult = "idle" | "applied" | "conflict" | "failed" | "stale_claim" | "retry_scheduled";
 
 const MAX_TRANSIENT_ATTEMPTS = 5;
 const RETRY_BASE_MS = 30_000;
-
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -99,7 +103,16 @@ function parsePersistedPayload(
     for (const key of Object.keys(parsed.setsByExerciseId)) {
         if (!exerciseIds.has(key)) throw new Error("Orphan queued set group.");
     }
-    return { routineId: operation.entity_id, name: parsed.name, exercises, setsByExerciseId };
+    const cover = parsed.cover;
+    if (cover !== undefined && !isRoutineCover(cover))
+        throw new Error("Invalid queued routine cover.");
+    return {
+        routineId: operation.entity_id,
+        name: parsed.name,
+        ...(cover ? { cover } : {}),
+        exercises,
+        setsByExerciseId,
+    };
 }
 
 /** Processes at most one eligible operation; invoke only after authentication and migration verification. */
@@ -173,7 +186,10 @@ export async function processOneRoutineSyncOperation(
         if (error instanceof RoutineSyncNetworkError && attemptNumber < MAX_TRANSIENT_ATTEMPTS) {
             const delayMs = RETRY_BASE_MS * 2 ** (attemptNumber - 1);
             const scheduled = await scheduleTransientSyncRetry(
-                userId, operation.id, leaseToken, delayMs
+                userId,
+                operation.id,
+                leaseToken,
+                delayMs
             );
             if (!scheduled) throw new Error("Transient retry lost its lease.");
             return "retry_scheduled";

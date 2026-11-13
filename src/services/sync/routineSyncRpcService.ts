@@ -1,3 +1,4 @@
+import type { RoutineCover } from "../../types/routineCover";
 import { supabase } from "../supabase";
 
 export type RoutineSyncOperationType = "upsert" | "delete";
@@ -11,10 +12,13 @@ export class RoutineSyncNetworkError extends Error {
 
 /** Only classify unmistakable transport failures as automatically retryable. */
 function isNetworkFailure(message: string): boolean {
-    return /(?:failed to fetch|network request failed|network error|fetch failed|network connection lost|internet connection appears to be offline)/i.test(message);
+    return /(?:failed to fetch|network request failed|network error|fetch failed|network connection lost|internet connection appears to be offline)/i.test(
+        message
+    );
 }
 
 export interface RoutineSyncPayload {
+    cover?: RoutineCover;
     routineId: string;
     name: string;
     exercises: {

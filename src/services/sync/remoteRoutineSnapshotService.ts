@@ -1,4 +1,5 @@
 import type { RoutineEditorSnapshot } from "../../store/routineEditorStore";
+import { isRoutineCover, type RoutineCover } from "../../types/routineCover";
 import { getRoutineExercises, getRoutineExerciseSetsByRoutineId } from "../routineService";
 import { supabase } from "../supabase";
 
@@ -7,8 +8,9 @@ import { getRemoteRoutineVersion } from "./routineRemoteVersionService";
 export async function getRemoteRoutineSnapshot(params: {
     routineId: string;
     name: string;
+    cover?: RoutineCover;
 }): Promise<RoutineEditorSnapshot> {
-    const { routineId, name } = params;
+    const { routineId, name, cover } = params;
 
     if (!routineId.trim()) {
         throw new Error("Routine ID is required.");
@@ -46,6 +48,7 @@ export async function getRemoteRoutineSnapshot(params: {
     return {
         routineId,
         name,
+        ...(cover ? { cover } : {}),
         exercises,
         setsByExerciseId,
     };
@@ -73,11 +76,11 @@ export async function getVersionedRemoteRoutineSnapshot(params: {
         throw new Error("Remote routine is missing or deleted.");
     }
 
-    const name = await getRemoteRoutineName(routineId);
+    const metadata = await getRemoteRoutineMetadata(routineId);
 
     const snapshot = await getRemoteRoutineSnapshot({
         routineId,
-        name,
+        ...metadata,
     });
 
     const after = await getRemoteRoutineVersion({
@@ -95,10 +98,10 @@ export async function getVersionedRemoteRoutineSnapshot(params: {
     };
 }
 
-async function getRemoteRoutineName(routineId: string): Promise<string> {
+async function getRemoteRoutineMetadata(routineId: string) {
     const { data, error } = await supabase
         .from("routines")
-        .select("name")
+        .select("*")
         .eq("id", routineId)
         .single();
 
@@ -110,5 +113,8 @@ async function getRemoteRoutineName(routineId: string): Promise<string> {
         throw new Error("Remote routine name is missing.");
     }
 
-    return data.name;
+    return {
+        name: data.name as string,
+        cover: isRoutineCover(data.cover_key) ? data.cover_key : undefined,
+    };
 }

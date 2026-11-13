@@ -1,5 +1,6 @@
 import type { RoutineEditorSnapshot } from "../../store/routineEditorStore";
 import { notifyRoutineChanges } from "../../sync/routineEvents";
+import type { RoutineCover } from "../../types/routineCover";
 import { getDatabase } from "../database";
 
 import { enqueueSyncOperation, replacePendingRoutineUpsert } from "./syncQueueRepository";
@@ -183,21 +184,32 @@ export async function saveLocalRoutine({
         id,
         user_id,
         name,
+        cover_key,
         created_at,
         updated_at,
         deleted_at,
         sync_status,
         remote_state
     )
-    VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
+        cover_key = COALESCE(excluded.cover_key, local_routines.cover_key),
         updated_at = excluded.updated_at,
         deleted_at = NULL,
         sync_status = excluded.sync_status,
         remote_state = local_routines.remote_state
     WHERE local_routines.user_id = excluded.user_id`,
-            [snapshot.routineId, userId, snapshot.name, now, now, syncStatus, remoteState]
+            [
+                snapshot.routineId,
+                userId,
+                snapshot.name,
+                snapshot.cover ?? null,
+                now,
+                now,
+                syncStatus,
+                remoteState,
+            ]
         );
 
         // Remove existing sets explicitly before replacing the
@@ -377,12 +389,13 @@ export async function hydrateLocalRoutine(params: {
 
         await tx.runAsync(
             `INSERT INTO local_routines (
-                id, user_id, name, created_at, updated_at,
+                id, user_id, name, cover_key, created_at, updated_at,
                 deleted_at, sync_status, remote_state, remote_version
             )
-            VALUES (?, ?, ?, ?, ?, NULL, 'synced', 'exists', ?)
+            VALUES (?, ?, ?, ?, ?, ?, NULL, 'synced', 'exists', ?)
             ON CONFLICT(id) DO UPDATE SET
                 name = excluded.name,
+                cover_key = COALESCE(excluded.cover_key, local_routines.cover_key),
                 updated_at = excluded.updated_at,
                 sync_status = 'synced',
                 remote_state = 'exists',
@@ -390,7 +403,15 @@ export async function hydrateLocalRoutine(params: {
             WHERE local_routines.user_id = excluded.user_id
               AND local_routines.deleted_at IS NULL
               AND local_routines.sync_status = 'synced'`,
-            [snapshot.routineId, userId, snapshot.name, now, now, remoteVersion]
+            [
+                snapshot.routineId,
+                userId,
+                snapshot.name,
+                snapshot.cover ?? null,
+                now,
+                now,
+                remoteVersion,
+            ]
         );
 
         await tx.runAsync(
@@ -464,6 +485,7 @@ type LocalRoutineRow = {
     id: string;
     user_id: string;
     name: string;
+    cover_key: RoutineCover | null;
     remote_version: number | null;
 };
 
@@ -521,7 +543,7 @@ async function readLocalRoutine(
     }
 
     const routine = await db.getFirstAsync<LocalRoutineRow>(
-        `SELECT id, user_id, name, remote_version
+        `SELECT id, user_id, name, cover_key, remote_version
          FROM local_routines
          WHERE id = ?
            AND user_id = ?
@@ -595,6 +617,7 @@ async function readLocalRoutine(
         snapshot: {
             routineId: routine.id,
             name: routine.name,
+            ...(routine.cover_key ? { cover: routine.cover_key } : {}),
             exercises,
             setsByExerciseId,
         },
@@ -603,6 +626,7 @@ async function readLocalRoutine(
 }
 
 export type LocalRoutineSummary = {
+    cover?: RoutineCover;
     id: string;
     name: string;
     created_at: string;
@@ -620,6 +644,7 @@ export async function getLocalRoutines(userId: string): Promise<LocalRoutineSumm
         `SELECT
             id,
             name,
+            cover_key AS cover,
             created_at,
             updated_at
          FROM local_routines

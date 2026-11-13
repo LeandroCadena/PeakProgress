@@ -225,6 +225,16 @@ export default function WorkoutSessionScreen({ navigation }: any) {
                                 deleteSet={deleteSet}
                                 addEmptySet={addEmptySet}
                                 onDeleteExercise={() => handleDeleteExercise(item.id)}
+                                onMoreInfo={
+                                    item.exercise_id
+                                        ? () => {
+                                              setOpenExerciseMenuId(null);
+                                              navigation.navigate("ExerciseDetail", {
+                                                  exerciseId: item.exercise_id,
+                                              });
+                                          }
+                                        : undefined
+                                }
                                 onDrag={drag}
                                 isDragging={isActive}
                                 isActionsMenuOpen={openExerciseMenuId === item.id}

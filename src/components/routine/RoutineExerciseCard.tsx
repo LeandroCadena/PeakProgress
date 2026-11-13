@@ -17,6 +17,7 @@ import RoutineExerciseSetRow from "./RoutineExerciseSetRow";
 type Props = {
     item: RoutineExercise;
     onDelete: () => void;
+    onMoreInfo?: () => void;
     onDrag: () => void;
     isDragging: boolean;
     sets: RoutineExerciseSet[];
@@ -37,6 +38,7 @@ type Props = {
 export default function RoutineExerciseCard({
     item,
     onDelete,
+    onMoreInfo,
     onDrag,
     isDragging,
     sets,
@@ -78,6 +80,16 @@ export default function RoutineExerciseCard({
                                 onOpenChange={onActionsMenuOpenChange}
                                 disabled={isDragging}
                                 items={[
+                                    ...(onMoreInfo
+                                        ? [
+                                              {
+                                                  key: "moreInfo",
+                                                  label: t("moreInfo"),
+                                                  icon: "information-circle-outline" as const,
+                                                  onPress: onMoreInfo,
+                                              },
+                                          ]
+                                        : []),
                                     {
                                         key: "delete",
                                         label: t("deleteExercise"),

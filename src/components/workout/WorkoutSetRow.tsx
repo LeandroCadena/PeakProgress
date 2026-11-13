@@ -2,7 +2,7 @@ import { View, Pressable, Text } from "react-native";
 
 import { spacing, componentStyles, useAppTheme, createThemedStyles } from "../../theme";
 import { WorkoutSessionSet } from "../../types/workout";
-import { sanitizeIntegerInput } from "../../utils/numberInput";
+import { sanitizeIntegerInput, sanitizeWeightInput } from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
 import SwipeableCard from "../common/SwipeableCard";
 
@@ -45,20 +45,26 @@ export default function WorkoutSetRow({
 
                     <AppInput
                         style={styles.setRow}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
+                        selectTextOnFocus
                         value={weightValue}
                         disabled={set.is_completed}
-                        onChangeText={(value) => onWeightChange(sanitizeIntegerInput(value))}
-                        onEndEditing={(event) => onWeightBlur(event.nativeEvent.text)}
+                        onChangeText={(value) => onWeightChange(sanitizeWeightInput(value))}
+                        onEndEditing={(event) =>
+                            onWeightBlur(sanitizeWeightInput(event.nativeEvent.text))
+                        }
                     />
 
                     <AppInput
                         style={styles.setRow}
-                        keyboardType="numeric"
+                        keyboardType="number-pad"
+                        selectTextOnFocus
                         value={repsValue}
                         disabled={set.is_completed}
                         onChangeText={(value) => onRepsChange(sanitizeIntegerInput(value))}
-                        onEndEditing={(event) => onRepsBlur(event.nativeEvent.text)}
+                        onEndEditing={(event) =>
+                            onRepsBlur(sanitizeIntegerInput(event.nativeEvent.text))
+                        }
                     />
 
                     <Pressable

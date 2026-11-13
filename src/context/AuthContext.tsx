@@ -4,6 +4,7 @@ import { Linking } from "react-native";
 
 import { attachGuestData, GUEST_USER_ID } from "../database/guestAccount";
 import { AUTH_CONFIRMATION_URL } from "../services/authRedirect";
+import { getGoogleIdToken } from "../services/googleSignIn";
 import { supabase } from "../services/supabase";
 
 const guest = { id: GUEST_USER_ID };
@@ -16,6 +17,7 @@ type AuthContextType = {
     issue: AccountIssue | null;
     retry: () => void;
     continueOffline: () => Promise<void>;
+    signInWithGoogle: () => Promise<void>;
     signIn: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, language: "en" | "es") => Promise<boolean>;
     resendConfirmation: (email: string) => Promise<void>;
@@ -163,6 +165,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await applySession(null);
     }
 
+    async function signInWithGoogle() {
+        const token = await getGoogleIdToken();
+        if (!token) return;
+
+        offlineOnly.current = false;
+        const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token });
+        if (error) throw error;
+    }
+
     async function signIn(email: string, password: string) {
         offlineOnly.current = false;
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -211,6 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 retry,
                 continueOffline,
                 signIn,
+                signInWithGoogle,
                 signUp,
                 resendConfirmation,
                 confirmEmailCode,

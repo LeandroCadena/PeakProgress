@@ -22,6 +22,7 @@ import {
     getActiveWorkoutSession,
     getOrCreateWorkoutAfterDiscard,
 } from "../services/workoutService";
+import { useWorkoutSessionStore } from "../store/workoutSessionStore";
 import { subscribeToRoutineChanges } from "../sync/routineEvents";
 import { spacing, useAppTheme } from "../theme";
 import { Routine } from "../types/routine";
@@ -33,6 +34,8 @@ export default function RoutinesScreen({ navigation }: any) {
     const userId = user?.id;
     const { showToast } = useToast();
     const [activeSession, setActiveSession] = useState<any>(null);
+    const localSessionId = useWorkoutSessionStore((state) => state.sessionId);
+    const localRestTimerEndAt = useWorkoutSessionStore((state) => state.restTimerEndAt);
     const [now, setNow] = useState(() => Date.now());
 
     const [routines, setRoutines] = useState<Routine[]>([]);
@@ -269,16 +272,19 @@ export default function RoutinesScreen({ navigation }: any) {
 
                         {activeSession ? (
                             <ActiveWorkoutBanner
-                                routineName={activeSession.routines?.name ?? t("workout")}
+                                routineName={getActiveRoutineName(activeSession) ?? t("workout")}
                                 elapsedText={getElapsedText(activeSession.started_at)}
                                 restRemainingText={getRestRemainingText(
-                                    activeSession.rest_timer_end_at
+                                    activeSession.id === localSessionId
+                                        ? localRestTimerEndAt
+                                        : activeSession.rest_timer_end_at
                                 )}
                                 onPress={() =>
                                     navigation.navigate("WorkoutSession", {
                                         sessionId: activeSession.id,
                                         routineId: activeSession.routine_id,
-                                        routineName: activeSession.routines?.name ?? t("workout"),
+                                        routineName:
+                                            getActiveRoutineName(activeSession) ?? t("workout"),
                                     })
                                 }
                             />
@@ -307,6 +313,7 @@ export default function RoutinesScreen({ navigation }: any) {
                 renderItem={({ item }) => (
                     <RoutineCard
                         title={item.name}
+                        cover={item.cover}
                         onPress={() =>
                             navigation.navigate("RoutineDetail", {
                                 routineId: item.id,

@@ -2,9 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text, View, Image, Pressable } from "react-native";
 
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
+import type { RoutineCover } from "../../types/routineCover";
 import Card from "../common/Card";
 
+import { defaultRoutineCover, routineCoverImages } from "./routineCoverImages";
+
 type Props = {
+    cover?: RoutineCover;
     title: string;
     subtitle?: string;
     onPress: () => void;
@@ -24,6 +28,7 @@ export default function RoutineCard({
     buttonDisabled,
     onPressButton,
     imageUrl,
+    cover,
 }: Props) {
     const { colors, sharedStyles } = useAppTheme();
     const styles = getStyles(colors);
@@ -33,9 +38,11 @@ export default function RoutineCard({
                 <View style={styles.routineContent}>
                     <Image
                         source={
-                            imageUrl
-                                ? { uri: imageUrl }
-                                : require("../../../assets/routine-placeholder.png")
+                            cover
+                                ? routineCoverImages[cover]
+                                : imageUrl
+                                  ? { uri: imageUrl }
+                                  : defaultRoutineCover
                         }
                         style={styles.routineImage}
                     />

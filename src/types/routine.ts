@@ -1,4 +1,7 @@
+import type { RoutineCover } from "./routineCover";
+
 export type Routine = {
+    cover?: RoutineCover;
     imageUrl?: string;
     id: string;
     name: string;

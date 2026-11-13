@@ -3,7 +3,11 @@ import { Text, View } from "react-native";
 
 import { componentStyles, spacing, typography, useAppTheme, createThemedStyles } from "../../theme";
 import { RoutineExerciseSet } from "../../types/routine";
-import { displayZeroAsEmpty, sanitizeIntegerInput } from "../../utils/numberInput";
+import {
+    displayZeroAsEmpty,
+    sanitizeIntegerInput,
+    sanitizeWeightInput,
+} from "../../utils/numberInput";
 import AppInput from "../common/AppInput";
 import SwipeableCard from "../common/SwipeableCard";
 
@@ -37,7 +41,7 @@ export default function RoutineExerciseSetRow({
     }, [set.id, set.weight, set.reps]);
 
     function handleWeightChange(value: string) {
-        const sanitizedValue = sanitizeIntegerInput(value);
+        const sanitizedValue = sanitizeWeightInput(value);
 
         setWeightValue(sanitizedValue);
 
@@ -60,7 +64,8 @@ export default function RoutineExerciseSetRow({
                 <AppInput
                     style={styles.setRow}
                     value={weightValue}
-                    keyboardType="numeric"
+                    keyboardType="decimal-pad"
+                    selectTextOnFocus
                     onChangeText={handleWeightChange}
                     onEndEditing={() => onUpdate("weight", weightValue)}
                 />
@@ -69,7 +74,8 @@ export default function RoutineExerciseSetRow({
                     <AppInput
                         style={styles.setRow}
                         value={repsValue}
-                        keyboardType="numeric"
+                        keyboardType="number-pad"
+                        selectTextOnFocus
                         onChangeText={handleRepsChange}
                         onEndEditing={() => onUpdate("reps", repsValue)}
                     />

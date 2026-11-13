@@ -28,6 +28,7 @@ type WorkoutExerciseCardProps = {
     deleteSet: (setId: string) => void;
     addEmptySet: (exerciseId: string) => void;
     onDeleteExercise: () => void;
+    onMoreInfo?: () => void;
     onDrag: () => void;
     isDragging: boolean;
     isActionsMenuOpen: boolean;
@@ -48,6 +49,7 @@ export default function WorkoutExerciseCard({
     deleteSet,
     addEmptySet,
     onDeleteExercise,
+    onMoreInfo,
     onDrag,
     isDragging,
     isActionsMenuOpen,
@@ -90,6 +92,16 @@ export default function WorkoutExerciseCard({
                                 onOpenChange={onActionsMenuOpenChange}
                                 disabled={isDragging}
                                 items={[
+                                    ...(onMoreInfo
+                                        ? [
+                                              {
+                                                  key: "moreInfo",
+                                                  label: t("moreInfo"),
+                                                  icon: "information-circle-outline" as const,
+                                                  onPress: onMoreInfo,
+                                              },
+                                          ]
+                                        : []),
                                     {
                                         key: "delete",
                                         label: t("deleteExercise"),
