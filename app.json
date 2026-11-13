@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PeakProgress",
-    "slug": "PeakProgress",
+    "name": "Gym Time",
+    "slug": "gym-time",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,7 +17,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.leandrocadena.PeakProgress"
+      "package": "com.leandrocadena.gymtime"
     },
     "web": {
       "favicon": "./assets/favicon.png"
